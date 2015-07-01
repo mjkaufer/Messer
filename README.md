@@ -31,6 +31,11 @@ The quotes around the username are mandatory. An example might be `message "Matt
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
+## Todo
+
+* Let user log in via terminal, perhaps using [this](https://github.com/flatiron/prompt) instead of REPL to obscure passwords
+* Track received messages from users, and give the user the ability to look at them with a command
+
 ## Contributing
 
-Send a pull request!
+Send a pull request! Check out the list of todos

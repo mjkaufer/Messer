@@ -21,20 +21,25 @@ Simply type `messer path/to/config.json`, replacing `path/to/config.json` with t
 
 Once you're logged in, you'll see a REPL.
 
-Currently, the only supported command is `message`
+Currently, the only supported commands are `message` and `reply`
 
 ### Syntax:
 
-`message "[user]" message`
+`message "[user]" [message]`
 
 The quotes around the username are mandatory. An example might be `message "Matthew" hello world!`
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
+`reply [message]`
+
+This will reply to the last message you received. Note: this will only work if you have received at least one message through Messer.
+
 ## Todo
 
 * Let user log in via terminal, perhaps using [this](https://github.com/flatiron/prompt) instead of REPL to obscure passwords
 * Track received messages from users, and give the user the ability to look at them with a command
+* Make a Messenger-esque UI in the terminal
 
 ## Contributing
 

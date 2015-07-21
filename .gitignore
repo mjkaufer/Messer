@@ -2,3 +2,4 @@ config.json
 node_modules
 facebook-chat-api
 *.html
+.DS_Store

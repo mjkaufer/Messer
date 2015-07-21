@@ -89,7 +89,8 @@ fs.readFile(process.argv[2], function(err, data){
 
 					var body = cmd.substring("reply".length).trim();
 
-					api.sendDirectMessage(body, lastThread, function(err, data){
+					api.sendMessage(body, lastThread, function(err, data){
+
 						if(err){
 							console.log("ERROR!")
 							console.log(err)

@@ -48,7 +48,7 @@ This will reply to the last message you received. Note: this will only work if y
 
 ## Warnings
 
-facebook-chat-api@1.0.6 is currently broken - use 1.0.5 instead until the problem is resolved
+facebook-chat-api@1.0.6 relies on a version of node which requires basic ES6 support - use facebook-chat-api@1.0.5 if you have an older version of node
 
 ## Contributing
 

@@ -30,12 +30,22 @@ fs.readFile(process.argv[2], function(err, data){
 			if(err)
 				return console.log(err)
 			
+			var from = message.threadName
+
+			if(message.participantNames && message.participantNames.length > 1)
+				from = "'" + from + "'" + " (" + message.senderName + ")"
+
 			process.stderr.write("\007");//makes a beep
 			if(message.type == "sticker"){
-				console.log("New sticker from " + message.senderName + " - Sticker URL: " + message.sticker_url)
+				// console.log("New sticker from " + message.senderName + " - Sticker URL: " + message.sticker_url)
+				console.log("New sticker from " + from + " - Sticker URL: " + message.sticker_url)
+			} else if(message.type == "message" && message.body !== undefined && message.body != ""){
+				console.log("New message from " + from + " - " + message.body)
+			} else {
+				console.log("New " + message.type + " from " + from + ", unrenderable in Messer :(")
 			}
-			console.log("New message from " + message.senderName + " - " + message.body)
-			lastThread = message.thread_id;
+			
+			lastThread = message.threadID;
 
 		});
 

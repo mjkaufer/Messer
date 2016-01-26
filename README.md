@@ -1,7 +1,9 @@
 # Messer
+
 Command-line messaging for Facebook Messenger
 
 ## Installation
+
 Install `messer` globally with `npm install messer -g`, so you can use the command in any context.
 
 ## Setup
@@ -17,6 +19,7 @@ Create a `config.json` somewhere. Inside of the `config.json`, add
 Fill in the email you use for facebook, along with your facebook password
 
 ## Usage
+
 Simply type `messer path/to/config.json`, replacing `path/to/config.json` with the path to your `config.json`
 
 Once you're logged in, you'll see a REPL.
@@ -42,7 +45,10 @@ This will reply to the last message you received. Note: this will only work if y
 * Make a Messenger-esque UI in the terminal
 * Be able to send to specific group chats
 	* Maybe something with `getThreadList` - a list of recent conversations with indices, and be able to reply to a conversation by inputting its index
-	
+
+## Warnings
+
+facebook-chat-api@1.0.6 is currently broken - use 1.0.5 instead until the problem is resolved
 
 ## Contributing
 

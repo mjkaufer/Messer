@@ -32,9 +32,9 @@ fs.readFile(process.argv[2], function(err, data){
 			
 			process.stderr.write("\007");//makes a beep
 			if(message.type == "sticker"){
-				console.log("New sticker from " + message.sender_name + " - Sticker URL: " + message.sticker_url)
+				console.log("New sticker from " + message.senderName + " - Sticker URL: " + message.sticker_url)
 			}
-			console.log("New message from " + message.sender_name + " - " + message.body)
+			console.log("New message from " + message.senderName + " - " + message.body)
 			lastThread = message.thread_id;
 
 		});
@@ -69,17 +69,22 @@ fs.readFile(process.argv[2], function(err, data){
 						showHelp()
 						return callback(null)
 					}
-
-					api.sendDirectMessage(message, to, function(err, data){
+					api.getUserID(to, function(err, data){
 						if(err){
-							console.log("ERROR!")
-							console.log(err)
+							console.log("ERROR!", err)
 							return callback(null)
 						}
-
-						console.log("Sent message to " + to)
-						return callback(null)
-					})
+						var threadID = data[0].userID;
+						api.sendMessage(message, threadID, function(err){
+							if(err){
+								console.log("ERROR!", err)
+								return callback(null)
+							}
+							console.log("Sent message to " + to);
+					        	return callback(null)
+						});
+					
+					});
 
 				} else if(cmd.toLowerCase().indexOf("reply") == 0){
 					if(lastThread === null){

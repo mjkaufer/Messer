@@ -46,6 +46,7 @@ This will reply to the last message you received. Note: this will only work if y
 * Be able to send to specific group chats
 	* Maybe something with `getThreadList` - a list of recent conversations with indices, and be able to reply to a conversation by inputting its index
 * Different colors for different chats?
+* Giphy support - send random gif based on text user sends
 
 ## Warnings
 

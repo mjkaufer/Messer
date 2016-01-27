@@ -4,6 +4,7 @@ var login = require("facebook-chat-api");
 var fs = require('fs')
 var repl = require('repl')
 var lastThread = null;
+var unrenderableMessage = ", unrenderable in Messer :("
 
 if(process.argv.length < 3)
 	return console.log("Please specify a config JSON as your second argument!")
@@ -26,7 +27,7 @@ fs.readFile(process.argv[2], function(err, data){
 			logLevel: "silent"
 		})
 
-		api.listen(function callback(err, message) {
+		api.listen(function cb(err, message) {
 			if(err)
 				return console.log(err)
 			
@@ -36,13 +37,24 @@ fs.readFile(process.argv[2], function(err, data){
 				from = "'" + from + "'" + " (" + message.senderName + ")"
 
 			process.stderr.write("\007");//makes a beep
-			if(message.type == "sticker"){
-				// console.log("New sticker from " + message.senderName + " - Sticker URL: " + message.sticker_url)
-				console.log("New sticker from " + from + " - Sticker URL: " + message.sticker_url)
-			} else if(message.type == "message" && message.body !== undefined && message.body != ""){
-				console.log("New message from " + from + " - " + message.body)
-			} else {
-				console.log("New " + message.type + " from " + from + ", unrenderable in Messer :(")
+
+			var messageBody = null
+
+
+			if(message.type != "message"){
+				return
+			}
+			else if(message.body !== undefined && message.body != ""){
+				// console.log("New message from " + from + " - " + message.body)
+				messageBody = " - " + message.body
+			} 
+
+			if(message.attachments.length == 0)
+				console.log("New message from " + from + (messageBody || unrenderableMessage))
+			else{
+				var attachment = message.attachments[0]//only first attachment
+				var attachmentType = attachment.type.replace(/\_/g," ")
+				console.log("New " + attachmentType + " from " + from + (messageBody || unrenderableMessage))
 			}
 			
 			lastThread = message.threadID;

@@ -1,6 +1,6 @@
 {
   "name": "messer",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Command-line messaging for Facebook Messenger",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/mjkaufer/Messer#readme",
   "dependencies": {
-    "facebook-chat-api": ">=1.0.5"
+    "facebook-chat-api": ">=1.0.5",
+    "prompt": "^0.2.14"
   },
   "preferGlobal": true,
   "bin": {

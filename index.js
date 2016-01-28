@@ -1,27 +1,46 @@
 #! /usr/bin/env node
 
 var login = require("facebook-chat-api");
-var fs = require('fs')
 var repl = require('repl')
 var lastThread = null;
 var unrenderableMessage = ", unrenderable in Messer :("
 
-if(process.argv.length < 3)
-	return console.log("Please specify a config JSON as your second argument!")
+if(process.argv.length < 3){//user didn't store credentials in JSON, make them manually enter credentials
 
+	//return console.log("Please specify a config JSON as your second argument!")
+	var prompt = require('prompt')
+	console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
+	prompt.start();
 
-fs.readFile(process.argv[2], function(err, data){
-	if(err)
-		return console.log(err)
+	prompt.get([{
+			name: 'email',
+			required: true
+		}, {
+			name: 'password',
+			hidden: true,
+			conform: function (value) {
+				return true;
+			}
+		}], function (err, result) {
+			authenticate(result)
+	});
 
+} else{
+	var fs = require('fs')
+	fs.readFile(process.argv[2], function(err, data){
+		if(err)
+			return console.log(err)
 
-	var json = JSON.parse(data)
+		authenticate(JSON.parse(data))
+	})
+}
 
-	login(json, function(err, api) {
+function authenticate(credentials){//where credentials is the user's credentials as an object, fields `email` and `password
+	login(credentials, function(err, api) {
 
 		if(err) return console.error(err);
 
-		console.log("Logged in as " + json.email)
+		console.log("Logged in as " + credentials.email)
 
 		api.setOptions({
 			logLevel: "silent"
@@ -103,7 +122,7 @@ fs.readFile(process.argv[2], function(err, data){
 								return callback(null)
 							}
 							console.log("Sent message to " + to);
-					        	return callback(null)
+										return callback(null)
 						});
 					
 					});
@@ -146,7 +165,5 @@ fs.readFile(process.argv[2], function(err, data){
 		}
 
 	});
-})
-
-
+}
 		

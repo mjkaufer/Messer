@@ -43,6 +43,8 @@ This will reply to the last message you received. Note: this will only work if y
 * Let user log in via terminal, perhaps using [this](https://github.com/flatiron/prompt) instead of REPL to obscure passwords
 * Track received messages from users, and give the user the ability to look at them with a command
 * Make a Messenger-esque UI in the terminal
+	* Using `blessed`
+	* Make an option to use prettier UI vs plain text
 * Be able to send to specific group chats
 	* Maybe something with `getThreadList` - a list of recent conversations with indices, and be able to reply to a conversation by inputting its index
 * Different colors for different chats?

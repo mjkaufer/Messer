@@ -8,6 +8,10 @@ Install `messer` globally with `npm install messer -g`, so you can use the comma
 
 ## Setup
 
+Make sure you are running Node 4.x
+
+If you want to log in with your credentials stored in a file, do the following - otherwise, you'll log in by typing in your credentials each time you run Messer
+
 Create a `config.json` somewhere. Inside of the `config.json`, add
 
 ```
@@ -16,11 +20,11 @@ Create a `config.json` somewhere. Inside of the `config.json`, add
 	"password": "password"
 }
 ```
-Fill in the email you use for facebook, along with your facebook password
+Fill in the email you use for Facebook, along with your Facebook password
 
 ## Usage
 
-Simply type `messer path/to/config.json`, replacing `path/to/config.json` with the path to your `config.json`
+If you stored your credentials in a json, simply type `messer path/to/config.json`, replacing `path/to/config.json` with the path to your `config.json` Otherwise, type `messer` and input your email and password as you are prompted for them. The password will not be visible as you type it in.
 
 Once you're logged in, you'll see a REPL.
 

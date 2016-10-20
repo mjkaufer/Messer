@@ -4,18 +4,18 @@
 var login = require("facebook-chat-api")
 var repl = require("repl")
 
-/* Global variables */
-var api
-var user = {} // store for user details
-var lastThread = null
-
 /* Command type constants */
-var commands = {
+var commandEnum = {
 	MESSAGE: "message",
 	REPLY: "reply",
 	CONTACTS: "contacts",
 	HELP: "help"
 }
+
+/* Global variables */
+var api
+var user = {} // store for user details
+var lastThread = null
 
 /* Initialisation */
 if (process.argv.length < 3) {
@@ -46,6 +46,78 @@ if (process.argv.length < 3) {
 
 		authenticate(JSON.parse(data))
 	})
+}
+
+/* command handlers */
+var commands = {
+  /**
+   * Sends message to given user
+   */
+  message: function (rawCommand) {
+    var quoteReg = /(".*?")(.*)/g
+    cmd = rawCommand.substring(commandEnum.MESSAGE.length).trim()
+
+    if (cmd.match(quoteReg) == null) {
+      console.warn("Invalid message - check your syntax")
+      processCommand("help")
+    }
+
+    var decomposed = quoteReg.exec(cmd)
+    var rawReceiver = decomposed[1].replace(/"/g, "")
+    var message = decomposed[2].trim()
+
+    if (message.length == 0) {
+      console.warn("No message to send - check your syntax")
+      processCommand("help")
+    }
+
+    var receiver = user.friendsList.find(function (f) {
+      return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
+    });
+
+    if (!receiver)
+      console.warn(rawReceiver + " could not be found in your friends list!")
+
+    api.sendMessage(message, receiver.userID, function (err) {
+      if (err) {
+        console.warn("ERROR!", err)
+      }
+      console.log("Sent message to " + receiver.fullName);
+    })
+  },
+
+  /**
+   * Replies with a given message to the last received thread.
+   */
+  reply: function (rawCommand) {
+    if (lastThread === null) {
+      console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!");
+    }
+
+    var body = rawCommand.substring(commandEnum.REPLY.length).trim();
+
+    api.sendMessage(body, lastThread, function (err, data) {
+      if (err) console.error(err)
+      console.log("Successfully replied!")
+    })
+  },
+
+  /**
+   * Displays users friend list
+   */
+  contacts: function () {
+    user.friendsList.forEach(function (f) { console.log(f.fullName) })
+  },
+
+  /**
+   * Displays usage instructions
+   */
+  help: function () {
+    console.log("Commands:\n" +
+      "\tmessage \"[user]\" [message]\n" +
+      "\tcontacts\n"
+    )
+  }
 }
 
 /**
@@ -102,76 +174,16 @@ function handleMessage(message) {
 }
 
 /**
- * Sends message to given user
- */
-function sendMessage(rawCommand) {
-	var quoteReg = /(".*?")(.*)/g
-	cmd = rawCommand.substring(commands.MESSAGE.length).trim()
-
-	if (cmd.match(quoteReg) == null) {
-		console.warn("Invalid message - check your syntax")
-		processCommand("help")
-	}
-
-	var decomposed = quoteReg.exec(cmd)
-	var rawReceiver = decomposed[1].replace(/"/g, "")
-	var message = decomposed[2].trim()
-
-	if (message.length == 0) {
-		console.warn("No message to send - check your syntax")
-		processCommand("help")
-	}
-
-	var receiver = user.friendsList.find(function (f) {
-		return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-	});
-
-	if (!receiver)
-		console.warn(rawReceiver + " could not be found in your friends list!")
-
-	api.sendMessage(message, receiver.userID, function (err) {
-		if (err) {
-			console.warn("ERROR!", err)
-		}
-		console.log("Sent message to " + receiver.fullName);
-	})
-}
-
-/**
- * Replies with a given message to the last received thread.
- */
-function replyToLatest(rawCommand) {
-	if (lastThread === null) {
-		console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!");
-	}
-
-	var body = rawCommand.substring(commands.REPLY.length).trim();
-
-	api.sendMessage(body, lastThread, function (err, data) {
-		if (err) console.error(err)
-		console.log("Successfully replied!")
-	})
-}
-
-/**
  * Execute appropriate action for user input commands
  */
 function processCommand(rawCommand, cb) {
 	var args = rawCommand.replace('\n', '').split(' ');
-	if (args[0].toLowerCase() === commands.MESSAGE) {
-		sendMessage(rawCommand);
-	} else if (args[0].toLowerCase() === commands.REPLY) {
-		replyToLatest(rawCommand);
-	}
-	else if (args[0].toLowerCase() === commands.HELP) {
-		console.log("Commands:\n" +
-			"\tmessage \"[user]\" [message]\n" +
-			"\tcontacts\n"
-		)
-	} else if (args[0].toLowerCase() === commands.CONTACTS) {
-		user.friendsList.forEach(function (f) { console.log(f.fullName) })
-	} else {
+	var commandHandler = commands[args[0]];
+
+	if (!commandHandler) {
 		console.error("Invalid command - check your syntax")
+	} else {
+		commandHandler(rawCommand)
 	}
 
 	return cb(null);

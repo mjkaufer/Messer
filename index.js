@@ -26,10 +26,10 @@ if (process.argv.length < 3) {
 	prompt.start()
 
 	prompt.get([{
-		name: 'email',
+		name: "email",
 		required: true
 	}, {
-		name: 'password',
+		name: "password",
 		hidden: true,
 		conform: function (value) {
 			return true
@@ -39,7 +39,7 @@ if (process.argv.length < 3) {
 	})
 
 } else {
-	var fs = require('fs')
+	var fs = require("fs")
 	fs.readFile(process.argv[2], function (err, data) {
 		if (err)
 			return console.log(err)
@@ -73,7 +73,7 @@ var commands = {
 
     var receiver = user.friendsList.find(function (f) {
       return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-    });
+    })
 
     if (!receiver)
       console.warn(rawReceiver + " could not be found in your friends list!")
@@ -82,7 +82,7 @@ var commands = {
       if (err) {
         console.warn("ERROR!", err)
       }
-      console.log("Sent message to " + receiver.fullName);
+      console.log("Sent message to " + receiver.fullName)
     })
   },
 
@@ -91,10 +91,10 @@ var commands = {
    */
   reply: function (rawCommand) {
     if (lastThread === null) {
-      console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!");
+      console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
     }
 
-    var body = rawCommand.substring(commandEnum.REPLY.length).trim();
+    var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
     api.sendMessage(body, lastThread, function (err, data) {
       if (err) console.error(err)
@@ -177,8 +177,8 @@ function handleMessage(message) {
  * Execute appropriate action for user input commands
  */
 function processCommand(rawCommand, cb) {
-	var args = rawCommand.replace('\n', '').split(' ');
-	var commandHandler = commands[args[0]];
+	var args = rawCommand.replace('\n', '').split(' ')
+	var commandHandler = commands[args[0]]
 
 	if (!commandHandler) {
 		console.error("Invalid command - check your syntax")
@@ -186,7 +186,7 @@ function processCommand(rawCommand, cb) {
 		commandHandler(rawCommand)
 	}
 
-	return cb(null);
+	return cb(null)
 }
 
 /**

@@ -66,10 +66,16 @@ function getUserDetails() {
  */
 function handleMessage(message) {
 	var unrenderableMessage = ", unrenderable in Messer :("
-	var from = user.friendsList.find(function (f) { return f.userID === message.senderID }).fullName
+
+	// seen message (not sent)
+	if (!message.senderID)
+		return
+
+	var sender = user.friendsList.find(function (f) { return f.userID === message.senderID })
+	sender = sender.fullName
 
 	if (message.participantNames && message.participantNames.length > 1)
-		from = "'" + from + "'" + " (" + message.senderName + ")"
+		sender = "'" + sender + "'" + " (" + message.senderName + ")"
 
 	process.stderr.write("\007")	// Makes a beep
 
@@ -79,16 +85,16 @@ function handleMessage(message) {
 		return
 	}
 	else if (message.body !== undefined && message.body != "") {
-		// console.log("New message from " + from + " - " + message.body)
+		// console.log("New message sender " + sender + " - " + message.body)
 		messageBody = " - " + message.body
 	}
 
 	if (message.attachments.length == 0)
-		console.log("New message from " + from + (messageBody || unrenderableMessage))
+		console.log("New message from " + sender + (messageBody || unrenderableMessage))
 	else {
 		var attachment = message.attachments[0]//only first attachment
 		var attachmentType = attachment.type.replace(/\_/g, " ")
-		console.log("New " + attachmentType + " from " + from + (messageBody || unrenderableMessage))
+		console.log("New " + attachmentType + " from " + sender + (messageBody || unrenderableMessage))
 	}
 
 	lastThread = message.threadID
@@ -143,7 +149,7 @@ function processCommand(rawArgs, cb) {
 	} else {
 		console.error("Invalid command - check your syntax")
 	}
-	
+
 	return cb(null);
 }
 

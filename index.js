@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 
 /* imports */
 var login = require("facebook-chat-api")

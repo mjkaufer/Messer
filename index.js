@@ -12,6 +12,7 @@ var lastThread = null
 /* Command type constants */
 var commands = {
 	MESSAGE: "message",
+	REPLY: "reply",
 	CONTACTS: "contacts",
 	HELP: "help"
 }
@@ -51,7 +52,7 @@ if (process.argv.length < 3) {
  * Fetches and stores all relevant user details using a promise.
  */
 function getUserDetails() {
-	console.log("Fetching user details...")
+	console.info("Fetching user details...")
 	return promise = new Promise(function (resolve, reject) {
 		api.getFriendsList(function (err, data) {
 			if (err) return console.error(err)
@@ -108,7 +109,7 @@ function sendMessage(rawCommand) {
 	cmd = rawCommand.substring(commands.MESSAGE.length).trim()
 
 	if (cmd.match(quoteReg) == null) {
-		console.log("Invalid message - check your syntax")
+		console.warn("Invalid message - check your syntax")
 		processCommand("help")
 	}
 
@@ -117,29 +118,52 @@ function sendMessage(rawCommand) {
 	var message = decomposed[2].trim()
 
 	if (message.length == 0) {
-		console.log("No message to send - check your syntax")
+		console.warn("No message to send - check your syntax")
 		processCommand("help")
 	}
 
-	var receiver = user.friendsList.find(function (f) { return f.fullName.startsWith(rawReceiver) });
+	var receiver = user.friendsList.find(function (f) {
+		return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
+	});
+
+	if (!receiver)
+		console.warn(rawReceiver + " could not be found in your friends list!")
 
 	api.sendMessage(message, receiver.userID, function (err) {
 		if (err) {
-			console.log("ERROR!", err)
+			console.warn("ERROR!", err)
 		}
 		console.log("Sent message to " + receiver.fullName);
 	})
 }
 
 /**
+ * Replies with a given message to the last received thread.
+ */
+function replyToLatest(rawCommand) {
+	if (lastThread === null) {
+		console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!");
+	}
+
+	var body = rawCommand.substring(commands.REPLY.length).trim();
+
+	api.sendMessage(body, lastThread, function (err, data) {
+		if (err) console.error(err)
+		console.log("Successfully replied!")
+	})
+}
+
+/**
  * Execute appropriate action for user input commands
  */
-function processCommand(rawArgs, cb) {
-	var args = rawArgs.replace('\n', '').split(' ');
-	console.log(rawArgs)
+function processCommand(rawCommand, cb) {
+	var args = rawCommand.replace('\n', '').split(' ');
 	if (args[0].toLowerCase() === commands.MESSAGE) {
-		sendMessage(rawArgs);
-	} else if (args[0].toLowerCase() === commands.HELP) {
+		sendMessage(rawCommand);
+	} else if (args[0].toLowerCase() === commands.REPLY) {
+		replyToLatest(rawCommand);
+	}
+	else if (args[0].toLowerCase() === commands.HELP) {
 		console.log("Commands:\n" +
 			"\tmessage \"[user]\" [message]\n" +
 			"\tcontacts\n"
@@ -164,14 +188,14 @@ function authenticate(credentials) {
 		api = fbApi // assign to global variable
 		api.setOptions({ logLevel: "silent" })
 
-		console.log("Logged in as " + credentials.email)
+		console.info("Logged in as " + credentials.email)
 
 		getUserDetails(api, user).then(function () {
-			console.log("Listening for incoming messages...")
+			console.info("Listening for incoming messages...")
 
 			// listen for incoming messages
 			api.listen(function (err, message) {
-				if (err) return console.log(err)
+				if (err) return console.error(err)
 				handleMessage(message)
 			})
 

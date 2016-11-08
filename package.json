@@ -1,6 +1,6 @@
 {
   "name": "messer",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Command-line messaging for Facebook Messenger",
   "main": "index.js",
   "scripts": {

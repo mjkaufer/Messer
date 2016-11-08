@@ -30,17 +30,24 @@ Once you're logged in, you'll see a REPL.
 
 Currently, the only supported commands are `message` and `reply`
 
-### Syntax:
+### Commands Reference
 
+#### message
 `message "[user]" [message]`
 
 The quotes around the username are mandatory. An example might be `message "Matthew" hello world!`
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
+#### reply
 `reply [message]`
 
 This will reply to the last message you received. Note: this will only work if you have received at least one message through Messer.
+
+#### contacts
+`contacts`
+
+This will list all of your Facebook friends
 
 ## Todo
 

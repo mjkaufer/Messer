@@ -3,3 +3,4 @@ node_modules
 facebook-chat-api
 *.html
 .DS_Store
+npm-debug.log

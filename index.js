@@ -1,32 +1,32 @@
 #!/usr/bin/env node
 
 /* imports */
-var login = require("facebook-chat-api")
-var repl = require("repl")
+const login = require("facebook-chat-api")
+const repl = require("repl")
 
 /* Command type constants */
-var commandEnum = {
+const commandEnum = {
 	MESSAGE: "message",
 	REPLY: "reply",
 	CONTACTS: "contacts",
 	HELP: "help"
 }
 
-var commandMap = {
+const commandMap = {
 	"r": commandEnum.REPLY,
 	"m": commandEnum.MESSAGE
 }
 
 /* Global variables */
-var api
-var user = {} // store for user details
-var lastThread = null
+let api
+let user = {} // store for user details
+let lastThread = null
 
 /* Initialisation */
 if (process.argv.length < 3) {
 	//	User didn't store credentials in JSON, make them manually enter credentials
 
-	var prompt = require("prompt")
+	const prompt = require("prompt")
 	console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
 	prompt.start()
 
@@ -44,7 +44,7 @@ if (process.argv.length < 3) {
 	})
 
 } else {
-	var fs = require("fs")
+	const fs = require("fs")
 	fs.readFile(process.argv[2], function(err, data) {
 		if (err)
 			return console.log(err)
@@ -54,24 +54,24 @@ if (process.argv.length < 3) {
 }
 
 /* command handlers */
-var commands = {
+const commands = {
   /**
    * Sends message to given user
    */
-	message: function(rawCommand) {
-		var quoteReg = /(".*?")(.*)/g
+	message(rawCommand) {
+		const quoteReg = /(".*?")(.*)/g
 		// to get length of first arg
-		var args = rawCommand.replace('\n', '').split(' ')
-		cmd = rawCommand.substring(args[0].length).trim()
+		const args = rawCommand.replace('\n', '').split(' ')
+		const cmd = rawCommand.substring(args[0].length).trim()
 
 		if (cmd.match(quoteReg) == null) {
 			console.warn("Invalid message - check your syntax")
 			return processCommand("help")
 		}
 
-		var decomposed = quoteReg.exec(cmd)
-		var rawReceiver = decomposed[1].replace(/"/g, "")
-		var message = decomposed[2].trim()
+		const decomposed = quoteReg.exec(cmd)
+		const rawReceiver = decomposed[1].replace(/"/g, "")
+		const message = decomposed[2].trim()
 
 		if (message.length == 0) {
 			console.warn("No message to send - check your syntax")
@@ -79,7 +79,7 @@ var commands = {
 		}
 
 		// Find the given reciever in the users friendlist
-		var receiver = user.friendsList.find(function(f) {
+		const receiver = user.friendsList.find(function(f) {
 			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
 		})
 
@@ -99,13 +99,13 @@ var commands = {
   /**
    * Replies with a given message to the last received thread.
    */
-	reply: function(rawCommand) {
+	reply(rawCommand) {
 		if (lastThread === null) {
 			console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
 		}
 
-		var args = rawCommand.replace('\n', '').split(' ')
-		var body = rawCommand.substring(args[0].length).trim()
+		const args = rawCommand.replace('\n', '').split(' ')
+		const body = rawCommand.substring(args[0].length).trim()
 
 		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
@@ -118,14 +118,14 @@ var commands = {
   /**
    * Displays users friend list
    */
-	contacts: function() {
-		user.friendsList.forEach(function(f) { console.log(f.fullName) })
+	contacts() {
+		user.friendsList.forEach(f => { console.log(f.fullName) })
 	},
 
   /**
    * Displays usage instructions
    */
-	help: function() {
+	help() {
 		console.log("Commands:\n" +
 			"\tmessage \"[user]\" [message]\n" +
 			"\tcontacts\n"
@@ -157,7 +157,7 @@ function handleMessage(message) {
 	if (!message.senderID)
 		return
 
-	var sender = user.friendsList.find(function(f) { return f.userID === message.senderID })
+	let sender = user.friendsList.find(function(f) { return f.userID === message.senderID })
 	sender = sender.fullName || "Unknown User";
 
 	if (message.participantNames && message.participantNames.length > 1)
@@ -165,7 +165,7 @@ function handleMessage(message) {
 
 	process.stderr.write("\007")	// Terminal notification
 
-	var messageBody = null
+	let messageBody = null
 
 	if (message.type != "message") {
 		return
@@ -178,8 +178,8 @@ function handleMessage(message) {
 	if (message.attachments.length == 0)
 		console.log("New message from " + sender + (messageBody || unrenderableMessage))
 	else {
-		var attachment = message.attachments[0]//only first attachment
-		var attachmentType = attachment.type.replace(/\_/g, " ")
+		const attachment = message.attachments[0]//only first attachment
+		const attachmentType = attachment.type.replace(/\_/g, " ")
 		console.log("New " + attachmentType + " from " + sender + (messageBody || unrenderableMessage))
 	}
 
@@ -190,14 +190,16 @@ function handleMessage(message) {
  * Execute appropriate action for user input commands
  */
 function processCommand(rawCommand, cb) {
-	var args = rawCommand.replace('\n', '').split(' ')
-	var command = commandMap[args[0]] || args[0]
-	var commandHandler = commands[command]
+	const args = rawCommand.replace('\n', '').split(' ')
+	const command = commandMap[args[0]] || args[0]
+	const commandHandler = commands[command]
+
 	if (!commandHandler) {
 		console.error("Invalid command - check your syntax")
 	} else {
 		commandHandler(rawCommand)
 	}
+
 	if (cb)
 		return cb(null)
 }
@@ -215,7 +217,7 @@ function authenticate(credentials) {
 
 		console.info("Logged in as " + credentials.email)
 
-		getUserDetails(api, user).then(function() {
+		getUserDetails(api, user).then(() => {
 			console.info("Listening for incoming messages...")
 
 			// listen for incoming messages
@@ -227,7 +229,7 @@ function authenticate(credentials) {
 			// start REPL
 			repl.start({
 				ignoreUndefined: true,
-				eval: function(cmd, context, filename, callback) {
+				eval(cmd, context, filename, callback) {
 					processCommand(cmd, callback)
 				}
 			})

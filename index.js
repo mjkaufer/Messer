@@ -3,6 +3,7 @@
 /* imports */
 const login = require("facebook-chat-api")
 const repl = require("repl")
+const chalk = require("chalk")
 
 /* Command type constants */
 const commandEnum = {
@@ -17,10 +18,13 @@ const commandMap = {
 	"m": commandEnum.MESSAGE
 }
 
+const colors = ["green", "yellow", "blue", "magenta", "cyan", "red"]
+
 /* Global variables */
 let api
 let user = {} // store for user details
 let lastThread = null
+let activeConversations = [] // store full names of recipients
 
 /* Initialisation */
 if (process.argv.length < 3) {
@@ -110,8 +114,13 @@ const commands = {
 		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
 		api.sendMessage(body, lastThread, function(err, data) {
-			if (err) console.error(err)
-			console.log("✓")
+			if (err) {
+				console.error(err)
+				return
+			}
+
+			const color = colors[activeConversations.length % colors.length]
+			console.log(chalk[color]("✓"))
 		})
 	},
 
@@ -175,9 +184,14 @@ function handleMessage(message) {
 		messageBody = " - " + message.body
 	}
 
-	if (message.attachments.length == 0)
-		console.log("New message from " + sender + (messageBody || unrenderableMessage))
-	else {
+	// add to active conversations if it is new
+	if (!activeConversations.indexOf(sender))
+		activeConversations.push(sender)
+
+	if (message.attachments.length == 0) {
+		const color = colors[activeConversations.length % colors.length]
+		console.log(chalk[color]("New message from " + sender + (messageBody || unrenderableMessage)))
+	} else {
 		const attachment = message.attachments[0]//only first attachment
 		const attachmentType = attachment.type.replace(/\_/g, " ")
 		console.log("New " + attachmentType + " from " + sender + (messageBody || unrenderableMessage))

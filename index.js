@@ -17,7 +17,7 @@ const commandEnum = {
 	CONTACTS: "contacts",
 	HELP: "help"
 }
-var test = "asd"
+
 const commandMap = {
 	"r": commandEnum.REPLY,
 	"m": commandEnum.MESSAGE

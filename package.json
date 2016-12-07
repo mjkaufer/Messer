@@ -25,5 +25,8 @@
   "preferGlobal": true,
   "bin": {
     "messer": "index.js"
+  },
+  "devDependencies": {
+    "eslint": "^3.11.1"
   }
 }

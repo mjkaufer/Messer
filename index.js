@@ -69,7 +69,7 @@ function getUserDetails() {
  * Handles incoming messages by logging appropriately.
  */
 function handleMessage(message) {
-	var unrenderableMessage = ", unrenderable in Messer :("
+	const unrenderableMessage = ", unrenderable in Messer :("
 
 	// seen message (not sent)
 	if (!message.senderID || message.type != "message")

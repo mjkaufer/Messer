@@ -33,14 +33,15 @@ Currently, the only supported commands are `message` and `reply`
 ### Commands Reference
 
 #### message
-`message "[user]" [message]`
+`[message | m] "[user]" [message]`
 
-The quotes around the username are mandatory. An example might be `message "Matthew" hello world!`
+The quotes around the username are mandatory. 
+An example might be `message "Matthew" hello world!`, or its shorter equivalent `m "Matthew" hello world!`
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
 #### reply
-`reply [message]`
+`[reply | r] [message]`
 
 This will reply to the last message you received. Note: this will only work if you have received at least one message through Messer.
 

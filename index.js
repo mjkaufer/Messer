@@ -1,32 +1,32 @@
 #!/usr/bin/env node
+"use strict"
 
-/* imports */
-var login = require("facebook-chat-api")
-var repl = require("repl")
+/* Imports */
+const repl = require("repl")
+const facebook = require("facebook-chat-api")
+
+/* Globals */
+let api = {}
+let user = {}
+let lastThread = null
 
 /* Command type constants */
-var commandEnum = {
+const commandEnum = {
 	MESSAGE: "message",
 	REPLY: "reply",
 	CONTACTS: "contacts",
 	HELP: "help"
 }
 
-var commandMap = {
+const commandMap = {
 	"r": commandEnum.REPLY,
 	"m": commandEnum.MESSAGE
 }
 
-/* Global variables */
-var api
-var user = {} // store for user details
-var lastThread = null
-
 /* Initialisation */
 if (process.argv.length < 3) {
 	//	User didn't store credentials in JSON, make them manually enter credentials
-
-	var prompt = require("prompt")
+	const prompt = require("prompt")
 	console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
 	prompt.start()
 
@@ -36,101 +36,16 @@ if (process.argv.length < 3) {
 	}, {
 		name: "password",
 		hidden: true,
-		conform: function(value) {
-			return true
-		}
-	}], function(err, result) {
-		authenticate(result)
-	})
+		conform() { return true }
+	}], (err, result) => { authenticate(result) })
 
 } else {
-	var fs = require("fs")
-	fs.readFile(process.argv[2], function(err, data) {
-		if (err)
-			return console.log(err)
+	const fs = require("fs")
+	fs.readFile(process.argv[2], (err, data) => {
+		if (err) return console.log(err)
 
 		authenticate(JSON.parse(data))
 	})
-}
-
-/* command handlers */
-var commands = {
-  /**
-   * Sends message to given user
-   */
-	message: function(rawCommand) {
-		var quoteReg = /(".*?")(.*)/g
-		// to get length of first arg
-		var args = rawCommand.replace('\n', '').split(' ')
-		cmd = rawCommand.substring(args[0].length).trim()
-
-		if (cmd.match(quoteReg) == null) {
-			console.warn("Invalid message - check your syntax")
-			return processCommand("help")
-		}
-
-		var decomposed = quoteReg.exec(cmd)
-		var rawReceiver = decomposed[1].replace(/"/g, "")
-		var message = decomposed[2].trim()
-
-		if (message.length == 0) {
-			console.warn("No message to send - check your syntax")
-			return processCommand("help")
-		}
-
-		// Find the given reciever in the users friendlist
-		var receiver = user.friendsList.find(function(f) {
-			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-		})
-
-		if (!receiver) {
-			console.warn("User \"" + rawReceiver + "\"" + " could not be found in your friends list!")
-			return
-		}
-
-		api.sendMessage(message, receiver.userID, function(err) {
-			if (err) {
-				console.warn("ERROR!", err)
-			}
-			console.log("Sent message to " + receiver.fullName)
-		})
-	},
-
-  /**
-   * Replies with a given message to the last received thread.
-   */
-	reply: function(rawCommand) {
-		if (lastThread === null) {
-			console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
-		}
-
-		var args = rawCommand.replace('\n', '').split(' ')
-		var body = rawCommand.substring(args[0].length).trim()
-
-		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
-
-		api.sendMessage(body, lastThread, function(err, data) {
-			if (err) console.error(err)
-			console.log("✓")
-		})
-	},
-
-  /**
-   * Displays users friend list
-   */
-	contacts: function() {
-		user.friendsList.forEach(function(f) { console.log(f.fullName) })
-	},
-
-  /**
-   * Displays usage instructions
-   */
-	help: function() {
-		console.log("Commands:\n" +
-			"\tmessage \"[user]\" [message]\n" +
-			"\tcontacts\n"
-		)
-	}
 }
 
 /**
@@ -138,9 +53,12 @@ var commands = {
  */
 function getUserDetails() {
 	console.info("Fetching user details...")
-	return promise = new Promise(function(resolve, reject) {
-		api.getFriendsList(function(err, data) {
-			if (err) return console.error(err)
+	return new Promise((resolve, reject) => {
+		api.getFriendsList((err, data) => {
+			if (err) {
+				console.error(err)
+				reject()
+			}
 			user.friendsList = data
 			resolve()
 		})
@@ -151,63 +69,135 @@ function getUserDetails() {
  * Handles incoming messages by logging appropriately.
  */
 function handleMessage(message) {
-	var unrenderableMessage = ", unrenderable in Messer :("
+	const unrenderableMessage = ", unrenderable in Messer :("
 
 	// seen message (not sent)
-	if (!message.senderID)
+	if (!message.senderID || message.type != "message")
 		return
 
-	var sender = user.friendsList.find(function(f) { return f.userID === message.senderID })
-	sender = sender.fullName || "Unknown User";
+	let sender = user.friendsList.find(f => { return f.userID === message.senderID })
+	sender = sender.fullName || "Unknown User"
 
 	if (message.participantNames && message.participantNames.length > 1)
 		sender = "'" + sender + "'" + " (" + message.senderName + ")"
 
-	process.stderr.write("\007")	// Terminal notification
+	process.stderr.write("\x07")	// Terminal notification
 
-	var messageBody = null
+	let messageBody = null
 
-	if (message.type != "message") {
-		return
-	}
-	else if (message.body !== undefined && message.body != "") {
+	if (message.body !== undefined && message.body != "") {
 		// console.log("New message sender " + sender + " - " + message.body)
 		messageBody = " - " + message.body
 	}
 
-	if (message.attachments.length == 0)
+	if (message.attachments.length == 0) {
 		console.log("New message from " + sender + (messageBody || unrenderableMessage))
-	else {
-		var attachment = message.attachments[0]//only first attachment
-		var attachmentType = attachment.type.replace(/\_/g, " ")
+	} else {
+		const attachment = message.attachments[0]//only first attachment
+		const attachmentType = attachment.type.replace(/\_/g, " ")
 		console.log("New " + attachmentType + " from " + sender + (messageBody || unrenderableMessage))
 	}
 
 	lastThread = message.threadID
 }
 
+/* command handlers */
+const commands = {
+  /**
+   * Sends message to given user
+   */
+	message(rawCommand) {
+		const quoteReg = /(".*?")(.*)/g
+		// to get length of first arg
+		const args = rawCommand.replace("\n", "").split(" ")
+		const cmd = rawCommand.substring(args[0].length).trim()
+
+		if (cmd.match(quoteReg) == null) {
+			console.warn("Invalid message - check your syntax")
+			return processCommand("help")
+		}
+
+		const decomposed = quoteReg.exec(cmd)
+		const rawReceiver = decomposed[1].replace(/"/g, "")
+		const message = decomposed[2].trim()
+
+		if (message.length == 0) {
+			console.warn("No message to send - check your syntax")
+			return processCommand("help")
+		}
+
+		// Find the given reciever in the users friendlist
+		const receiver = user.friendsList.find(f => {
+			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
+		})
+
+		if (!receiver) {
+			console.warn("User \"" + rawReceiver + "\"" + " could not be found in your friends list!")
+			return
+		}
+
+		api.sendMessage(message, receiver.userID, err => {
+			if (err) console.warn("ERROR!", err)
+
+			console.log("Sent message to " + receiver.fullName)
+		})
+	},
+
+  /**
+   * Replies with a given message to the last received thread.
+   */
+	reply(rawCommand) {
+		if (lastThread === null) {
+			console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
+		}
+
+		const args = rawCommand.replace("\n", "").split(" ")
+		const body = rawCommand.substring(args[0].length).trim()
+
+		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
+
+		api.sendMessage(body, lastThread, err => {
+			if (err) return console.error(err)
+
+			console.log("✓")
+		})
+	},
+
+  /**
+   * Displays users friend list
+   */
+	contacts() {
+		user.friendsList.forEach(f => { console.log(f.fullName) })
+	},
+
+  /**
+   * Displays usage instructions
+   */
+	help() {
+		console.log("Commands:\n" +
+			"\tmessage \"[user]\" [message]\n" +
+			"\tcontacts\n"
+		)
+	}
+}
+
 /**
  * Execute appropriate action for user input commands
  */
-function processCommand(rawCommand, cb) {
-	var args = rawCommand.replace('\n', '').split(' ')
-	var command = commandMap[args[0]] || args[0]
-	var commandHandler = commands[command]
+function processCommand(rawCommand) {
+	const args = rawCommand.replace("\n", "").split(" ")
+	const command = commandMap[args[0]] || args[0]
+	const commandHandler = commands[command]
+
 	if (!commandHandler) {
 		console.error("Invalid command - check your syntax")
 	} else {
 		commandHandler(rawCommand)
 	}
-	if (cb)
-		return cb(null)
 }
 
-/**
- * Initialise Messer
- */
 function authenticate(credentials) {
-	// Where credentials is the user's credentials as an object, fields `email` and `password
-	login(credentials, function(err, fbApi) {
+	facebook(credentials, (err, fbApi) => {
 		if (err) return console.error(err)
 
 		api = fbApi // assign to global variable
@@ -215,11 +205,11 @@ function authenticate(credentials) {
 
 		console.info("Logged in as " + credentials.email)
 
-		getUserDetails(api, user).then(function() {
+		getUserDetails(api, user).then(() => {
 			console.info("Listening for incoming messages...")
 
 			// listen for incoming messages
-			api.listen(function(err, message) {
+			api.listen((err, message) => {
 				if (err) return console.error(err)
 				handleMessage(message)
 			})
@@ -227,8 +217,8 @@ function authenticate(credentials) {
 			// start REPL
 			repl.start({
 				ignoreUndefined: true,
-				eval: function(cmd, context, filename, callback) {
-					processCommand(cmd, callback)
+				eval(cmd) {
+					processCommand(cmd)
 				}
 			})
 		})

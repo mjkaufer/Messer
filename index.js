@@ -57,7 +57,7 @@ function getUserDetails() {
 		api.getFriendsList((err, data) => {
 			if (err) {
 				console.error(err)
-				reject()
+				reject(err)
 			}
 			user.friendsList = data
 			resolve()
@@ -69,8 +69,6 @@ function getUserDetails() {
  * Handles incoming messages by logging appropriately.
  */
 function handleMessage(message) {
-	const unrenderableMessage = ", unrenderable in Messer :("
-
 	// seen message (not sent)
 	if (!message.senderID || message.type != "message")
 		return
@@ -79,7 +77,7 @@ function handleMessage(message) {
 	sender = sender.fullName || "Unknown User"
 
 	if (message.participantNames && message.participantNames.length > 1)
-		sender = "'" + sender + "'" + " (" + message.senderName + ")"
+		sender = `'${sender}' (${message.senderName})`
 
 	process.stderr.write("\x07")	// Terminal notification
 
@@ -87,15 +85,17 @@ function handleMessage(message) {
 
 	if (message.body !== undefined && message.body != "") {
 		// console.log("New message sender " + sender + " - " + message.body)
-		messageBody = " - " + message.body
+		messageBody = ` -  ${message.body}`
+	} else {
+		messageBody = ", unrenderable in Messer :("
 	}
 
 	if (message.attachments.length == 0) {
-		console.log("New message from " + sender + (messageBody || unrenderableMessage))
+		console.log(`New message from ${sender} ${messageBody}`)
 	} else {
-		const attachment = message.attachments[0]//only first attachment
+		const attachment = message.attachments[0] // only first attachment
 		const attachmentType = attachment.type.replace(/\_/g, " ")
-		console.log("New " + attachmentType + " from " + sender + (messageBody || unrenderableMessage))
+		console.log(`New ${attachmentType} from ${sender} ${messageBody}`)
 	}
 
 	lastThread = message.threadID
@@ -132,14 +132,14 @@ const commands = {
 		})
 
 		if (!receiver) {
-			console.warn("User \"" + rawReceiver + "\"" + " could not be found in your friends list!")
+			console.warn(`User '${rawReceiver}' could not be found in your friends list!`)
 			return
 		}
 
 		api.sendMessage(message, receiver.userID, err => {
 			if (err) console.warn("ERROR!", err)
 
-			console.log("Sent message to " + receiver.fullName)
+			console.log(`Sent message to ${receiver.fullName}`)
 		})
 	},
 
@@ -203,7 +203,7 @@ function authenticate(credentials) {
 		api = fbApi // assign to global variable
 		api.setOptions({ logLevel: "silent" })
 
-		console.info("Logged in as " + credentials.email)
+		console.info(`Logged in as ${credentials.email}`)
 
 		getUserDetails(api, user).then(() => {
 			console.info("Listening for incoming messages...")

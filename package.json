@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/mjkaufer/Messer#readme",
   "dependencies": {
-    "facebook-chat-api": ">=1.0.5",
+    "facebook-chat-api": "^1.4.0",
     "prompt": "^0.2.14"
   },
   "preferGlobal": true,

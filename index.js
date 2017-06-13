@@ -23,6 +23,12 @@ const commandMap = {
 	"m": commandEnum.MESSAGE
 }
 
+const facebookStickers = { //packid -> sticker id
+	"227877430692340": {
+		"369239263222822": ":thumbsup:"
+	}
+}
+
 /* Initialisation */
 if (process.argv.length < 3) {
 	//	User didn't store credentials in JSON, make them manually enter credentials
@@ -36,7 +42,7 @@ if (process.argv.length < 3) {
 	}, {
 		name: "password",
 		hidden: true,
-		conform() { return true }
+		conform: () => true
 	}], (err, result) => { authenticate(result) })
 
 } else {
@@ -66,15 +72,35 @@ function getUserDetails() {
 }
 
 /**
+ * Returns the user info for a given userID.
+ */
+function getUser(userID) {
+	const _user = user.friendsList.find(f => f.userID === userID)
+	if (!_user) {
+		api.getUserInfo(userID, (err, data) => {
+			if (err) return console.error(err)
+
+			data[userID].userID = Object.keys(data)[0]
+			user.friendsList.push(data[userID])
+			getUser(userID)
+		})
+	} else {
+		return _user
+	}
+}
+
+/**
  * Handles incoming messages by logging appropriately.
  */
 function handleMessage(message) {
 	// seen message (not sent)
-	if (!message.senderID || message.type != "message")
+	if (!message.senderID || message.type !== "message")
 		return
 
-	let sender = user.friendsList.find(f => { return f.userID === message.senderID })
-	sender = sender.fullName || "Unknown User"
+	let senderObj = getUser(message.senderID)
+	let sender = senderObj.fullName || senderObj.name || "Unknown User"
+	if (!senderObj.isFriend)
+		sender += " [not your friend]"
 
 	if (message.participantNames && message.participantNames.length > 1)
 		sender = `'${sender}' (${message.senderName})`
@@ -84,18 +110,21 @@ function handleMessage(message) {
 	let messageBody = null
 
 	if (message.body !== undefined && message.body != "") {
-		// console.log("New message sender " + sender + " - " + message.body)
-		messageBody = ` -  ${message.body}`
+		messageBody = message.body
 	} else {
-		messageBody = ", unrenderable in Messer :("
+		messageBody = "unrenderable in Messer :("
 	}
 
-	if (message.attachments.length == 0) {
-		console.log(`New message from ${sender} ${messageBody}`)
+	if (message.attachments.length === 0) {
+		console.log(`New message from ${sender} - ${messageBody}`)
 	} else {
 		const attachment = message.attachments[0] // only first attachment
 		const attachmentType = attachment.type.replace(/\_/g, " ")
-		console.log(`New ${attachmentType} from ${sender} ${messageBody}`)
+
+		if (attachmentType === "sticker")
+			messageBody = facebookStickers[attachment.packID][attachment.stickerID] || messageBody
+
+		console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
 	}
 
 	lastThread = message.threadID
@@ -198,7 +227,7 @@ function processCommand(rawCommand) {
 
 function authenticate(credentials) {
 	facebook(credentials, (err, fbApi) => {
-		if (err) return console.error(err)
+		if (err) return
 
 		api = fbApi // assign to global variable
 		api.setOptions({ logLevel: "silent" })
@@ -210,7 +239,7 @@ function authenticate(credentials) {
 
 			// listen for incoming messages
 			api.listen((err, message) => {
-				if (err) return console.error(err)
+				if (err) return
 				handleMessage(message)
 			})
 

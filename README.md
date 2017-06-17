@@ -2,6 +2,8 @@
 
 Command-line messaging for Facebook Messenger
 
+![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
+
 ## Installation
 
 Install `messer` globally with `npm install messer -g`, so you can use the command in any context.

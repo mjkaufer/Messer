@@ -135,7 +135,7 @@ const commands = {
   /**
    * Sends message to given user
    */
-	message(rawCommand) {
+	[commandEnum.MESSAGE](rawCommand) {
 		const quoteReg = /(".*?")(.*)/g
 		// to get length of first arg
 		const args = rawCommand.replace("\n", "").split(" ")
@@ -166,7 +166,7 @@ const commands = {
 		}
 
 		api.sendMessage(message, receiver.userID, err => {
-			if (err) console.warn("ERROR!", err)
+			if (err) return console.error("ERROR:", err.error)
 
 			console.log(`Sent message to ${receiver.fullName}`)
 		})
@@ -175,9 +175,9 @@ const commands = {
   /**
    * Replies with a given message to the last received thread.
    */
-	reply(rawCommand) {
+	[commandEnum.REPLY](rawCommand) {
 		if (lastThread === null) {
-			console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
+			return console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
 		}
 
 		const args = rawCommand.replace("\n", "").split(" ")
@@ -186,7 +186,7 @@ const commands = {
 		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
 		api.sendMessage(body, lastThread, err => {
-			if (err) return console.error(err)
+			if (err) return console.error("ERROR:", err.error)
 
 			console.log("✓")
 		})
@@ -195,14 +195,17 @@ const commands = {
   /**
    * Displays users friend list
    */
-	contacts() {
+	[commandEnum.CONTACTS]() {
+		if (user.friendsList.length === 0) {
+			console.log("You have no friends :cry:")
+		}
 		user.friendsList.forEach(f => { console.log(f.fullName) })
 	},
 
   /**
    * Displays usage instructions
    */
-	help() {
+	[commandEnum.HELP]() {
 		console.log("Commands:\n" +
 			"\tmessage \"[user]\" [message]\n" +
 			"\tcontacts\n"
@@ -214,6 +217,9 @@ const commands = {
  * Execute appropriate action for user input commands
  */
 function processCommand(rawCommand) {
+	// skip if command is only spaces
+	if (rawCommand.trim().length === 0) return
+
 	const args = rawCommand.replace("\n", "").split(" ")
 	const command = commandMap[args[0]] || args[0]
 	const commandHandler = commands[command]

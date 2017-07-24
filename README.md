@@ -52,9 +52,15 @@ This will reply to the last message you received. Note: this will only work if y
 
 This will list all of your Facebook friends
 
+#### read
+`[read] "[user]" [numMessages]`
+
+The quotes around the username are mandatory. The number of messages to retrieve are optional (default is 5).
+An example might be `read "Matthew" 5`, or its shorter equivalent `read "Matthew"`. 
+
 ## Todo
 
-* Track received messages from users, and give the user the ability to look at them with a command
+* Track received messages from users, and ~~give the user the ability to look at them with a command~~
 * Make a Messenger-esque UI in the terminal
 	* Using `blessed`
 	* Make an option to use prettier UI vs plain text

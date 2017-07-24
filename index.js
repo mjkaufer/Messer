@@ -210,7 +210,7 @@ const commands = {
 		console.log("Commands:\n" +
 			"\tmessage \"[user]\" [message]\n" +
 			"\tcontacts\n" +
-			"\tread \"[user]\" numMessages\n"
+			"\tread \"[user]\" [numMessages]\n"
 		)
 	},
 

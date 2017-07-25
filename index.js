@@ -15,7 +15,8 @@ const commandEnum = {
 	MESSAGE: "message",
 	REPLY: "reply",
 	CONTACTS: "contacts",
-	HELP: "help"
+	HELP: "help",
+	READ: "read"
 }
 
 const commandMap = {
@@ -230,8 +231,47 @@ const commands = {
 	[commandEnum.HELP]() {
 		console.log("Commands:\n" +
 			"\tmessage \"[user]\" [message]\n" +
-			"\tcontacts\n"
+			"\tcontacts\n" +
+			"\tread \"[user]\" [numMessages]\n"
 		)
+	},
+
+	 /**
+   * Retrieves last x messages from specified friend
+   */
+	[commandEnum.READ](rawCommand) {
+		const quoteReg = /(".*?")(.*)/g
+		// to get length of first arg
+		const args = rawCommand.replace("\n", "").split(" ")
+		const cmd = rawCommand.substring(args[0].length).trim()
+
+		if (cmd.match(quoteReg) == null) {
+			console.warn("Invalid message - check your syntax")
+			return processCommand("help")
+		}
+
+		const decomposed = quoteReg.exec(cmd)
+		const rawReceiver = decomposed[1].replace(/"/g, "")
+		var messageCount = Number.parseInt(decomposed[2].trim())
+
+		if (Number.isNaN(messageCount)) {
+			messageCount = 5
+		}
+
+		// Find the given reciever in the users friendlist
+		const receiver = user.friendsList.find(f => {
+			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
+		})
+
+		if (!receiver) {
+			console.warn(`User '${rawReceiver}' could not be found in your friends list!`)
+			return
+		}
+
+		api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
+			if (err) return console.log("ERROR:", err.error)
+			history.map(cv => { console.log(`${cv.senderName}: ${cv.body}`)})
+		})
 	}
 }
 

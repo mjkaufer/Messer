@@ -7,48 +7,59 @@ const repl = require("repl")
 
 const fbAssets = require("./fb-assets.js")
 const helpers = require("./helpers.js")
-const commands = require("./commands")
+const getCommandHandler = require("./commands").getCommandHandler
 
 /**
  * Messer creates a singleton that represents a Messer session 
  */
 function Messer() {
+	this.api = null
+	this.user = null
 	this.lastThread = null
+	this.userCache = null // cache non-friends
+}
 
-	const credentials = helpers.getCredentials(process.argv[2])
+Messer.prototype.authenticate = function (credentials) {
+	return new Promise((resolve, reject) => {
 
-	this.authenticate(credentials, function () {
-		console.info(`Successfully logged in as ${credentials.email}`)
+		facebook(credentials, (err, fbApi) => {
+			if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
-		this.api.listen((err, message) => {
-			if (err) return
-			this.handleInboundMessage(message)
+			fbApi.setOptions({ logLevel: "silent" })
+			this.api = fbApi
+
+			console.info("Fetching your details...")
+
+			helpers.fetchCurrentUser.call(this).then(user => {
+				this.user = user
+
+				return resolve()
+			})
 		})
 
-		repl.start({
-			ignoreUndefined: true,
-			eval(cmd) {
-				this.processCommand(cmd)
-			}
-		})
 	})
 }
 
-Messer.prototype.authenticate = function (credentials, callback) {
-	facebook(credentials, (err, fbApi) => {
-		if (err) return console.error(`Failed to login as [${credentials.email}]`)
+Messer.prototype.start = function () {
+	helpers.getCredentials()
+		.then(credentials => this.authenticate(credentials))
+		.then(() => {
+			console.log("success")
+			// console.info(`Successfully logged in as ${credentials.email}`)
 
-		this.api = fbApi // assign to global variable
-		api.setOptions({ logLevel: "silent" })
+			this.api.listen((err, message) => {
+				if (err) return
+				this.handleInboundMessage(message)
+			})
 
-		console.info("Fetching your details...")
-
-		helpers.getCurrentUser().then(user => {
-			this.user = user
-
-			callback()
+			repl.start({
+				ignoreUndefined: true,
+				eval: (cmd) => {
+					this.processCommand(cmd)
+				}
+			})
 		})
-	})
+		.catch(err => console.error(err))
 }
 
 /**
@@ -58,43 +69,63 @@ Messer.prototype.handleInboundMessage = function (message) {
 	// seen message (not sent)
 	if (!message.senderID || message.type !== "message") return
 
-	let senderObj = helpers.getUser(message.senderID)
-	let sender = senderObj.fullName || senderObj.name || "Unknown User"
-	if (!senderObj.isFriend) {
-		sender += " [not your friend]"
-	}
+	// TODO: break this up...
+	helpers.getUserByID.call(this, message.senderID)
+		.then(user => {
+			let sender = user.fullName || user.name
+			if (!user.isFriend) {
+				sender += " [not your friend]"
+			}
 
-	if (message.participantNames && message.participantNames.length > 1) {
-		sender = `'${sender}' (${message.senderName})`
-	}
+			if (message.participantNames && message.participantNames.length > 1) {
+				sender = `'${sender}' (${message.senderName})`
+			}
 
-	let messageBody = null
+			let messageBody = null
 
-	if (message.body !== undefined && message.body != "") {
-		messageBody = message.body
-	} else {
-		messageBody = "unrenderable in Messer :("
-	}
+			if (message.body !== undefined && message.body != "") {
+				messageBody = message.body
+			} else {
+				messageBody = "unrenderable in Messer :("
+			}
 
-	process.stderr.write("\x07")	// Terminal notification
+			process.stderr.write("\x07")	// Terminal notification
 
-	if (message.attachments.length === 0) {
-		console.log(`New message from ${sender} - ${messageBody}`)
-	} else {
-		const attachment = message.attachments[0] // only first attachment
-		const attachmentType = attachment.type.replace(/\_/g, " ")
+			if (message.attachments.length === 0) {
+				console.log(`New message from ${sender} - ${messageBody}`)
+			} else {
+				const attachment = message.attachments[0] // only first attachment
+				const attachmentType = attachment.type.replace(/\_/g, " ")
 
-		if (attachmentType === "sticker") {
-			messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || messageBody
-		}
+				if (attachmentType === "sticker") {
+					messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || messageBody
+				}
 
-		console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
-	}
+				console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
+			}
 
-	this.lastThread = message.threadID
+			this.lastThread = message.threadID
+		})
+
 }
 
-Object.assign(Messer.prototype, commands)
+/**
+* Execute appropriate action for user input commands
+*/
+Messer.prototype.processCommand = function (rawCommand) {
+
+	// ignore if rawCommand is only spaces
+	if (rawCommand.trim().length === 0) return null
+
+	const args = rawCommand.replace("\n", "").split(" ")
+	const commandHandler = getCommandHandler(args[0])
+
+	if (!commandHandler) {
+		return console.error("Invalid command - check your syntax")
+	}
+	commandHandler.call(this, rawCommand)
+}
 
 // create new Messer instance
-new Messer()
+const messer = new Messer()
+messer.start()

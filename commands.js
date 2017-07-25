@@ -1,9 +1,12 @@
+const helpers = require("./helpers")
+
 /* Command type constants */
 const commandEnum = {
 	MESSAGE: "message",
 	REPLY: "reply",
 	CONTACTS: "contacts",
-	HELP: "help"
+	HELP: "help",
+	READ: "read",
 }
 
 const commandShortcuts = {
@@ -16,36 +19,28 @@ const commands = {
 	 * Sends message to given user
 	 */
 	[commandEnum.MESSAGE](rawCommand) {
-		const quoteReg = /(".*?")(.*)/g
-		// to get length of first arg
 		const args = rawCommand.replace("\n", "").split(" ")
 		const cmd = rawCommand.substring(args[0].length).trim()
 
+		const quoteReg = /(".*?")(.*)/g
 		if (cmd.match(quoteReg) == null) {
 			console.warn("Invalid message - check your syntax")
-			return processCommand("help")
+			return this.processCommand()
 		}
 
 		const decomposed = quoteReg.exec(cmd)
 		const rawReceiver = decomposed[1].replace(/"/g, "")
 		const message = decomposed[2].trim()
 
-		if (message.length == 0) {
+		if (message.length === 0) {
 			console.warn("No message to send - check your syntax")
-			return processCommand("help")
+			return this.processCommand()
 		}
 
 		// Find the given receiver in the users friendlist
-		const receiver = user.friendsList.find(f => {
-			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-		})
+		const receiver = helpers.getFriendByName.call(this, rawReceiver)
 
-		if (!receiver) {
-			console.warn(`User '${rawReceiver}' could not be found in your friends list!`)
-			return
-		}
-
-		api.sendMessage(message, receiver.userID, err => {
+		this.api.sendMessage(message, receiver.userID, err => {
 			if (err) return console.error("ERROR:", err.error)
 
 			console.log(`Sent message to ${receiver.fullName}`)
@@ -56,7 +51,7 @@ const commands = {
 	 * Replies with a given message to the last received thread.
 	 */
 	[commandEnum.REPLY](rawCommand) {
-		if (lastThread === null) {
+		if (this.lastThread === null) {
 			return console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
 		}
 
@@ -65,7 +60,7 @@ const commands = {
 
 		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
-		api.sendMessage(body, lastThread, err => {
+		this.api.sendMessage(body, this.lastThread, err => {
 			if (err) return console.error("ERROR:", err.error)
 
 			console.log("✓")
@@ -76,10 +71,10 @@ const commands = {
 	 * Displays users friend list
 	 */
 	[commandEnum.CONTACTS]() {
-		if (user.friendsList.length === 0) {
+		if (this.user.friendsList.length === 0) {
 			console.log("You have no friends :cry:")
 		}
-		user.friendsList.forEach(f => { console.log(f.fullName) })
+		this.user.friendsList.forEach(f => { console.log(f.fullName) })
 	},
 
 	/**
@@ -90,28 +85,45 @@ const commands = {
 			"\tmessage \"[user]\" [message]\n" +
 			"\tcontacts\n"
 		)
-	}
+	},
+
+	/**
+	* Retrieves last n messages from specified friend
+	*/
+	[commandEnum.READ](rawCommand) {
+		const quoteReg = /(".*?")(.*)/g
+		// to get length of first arg
+		const args = rawCommand.replace("\n", "").split(" ")
+		const cmd = rawCommand.substring(args[0].length).trim()
+
+		if (cmd.match(quoteReg) == null) {
+			console.warn("Invalid message - check your syntax")
+			return this.processCommand("help")
+		}
+
+		const decomposed = quoteReg.exec(cmd)
+		const rawReceiver = decomposed[1].replace(/"/g, "")
+		let messageCount = Number.parseInt(decomposed[2].trim())
+
+		if (Number.isNaN(messageCount)) {
+			messageCount = 5
+		}
+
+		// Find the given reciever in the users friendlist
+		const receiver = helpers.getFriendByName.call(this, rawReceiver)
+
+		this.api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
+			if (err) return console.log("ERROR:", err.error)
+			history.forEach(cv => { console.log(`${cv.senderName}: ${cv.body}`) })
+		})
+	},
 }
 
-/**
- * Execute appropriate action for user input commands
- */
-function processCommand(rawCommand) {
-	// ignore if rawCommand is only spaces
-	if (rawCommand.trim().length === 0) return null
-
-	const args = rawCommand.replace("\n", "").split(" ")
-	const command = commandShortcuts[args[0]] || args[0]
-	const commandHandler = this.commands[command]
-
-	if (!commandHandler) {
-		return console.error("Invalid command - check your syntax")
-	}
-
-	return commandHandler(rawCommand)
+function getCommandHandler(rawCommandKeyword) {
+	const command = commandShortcuts[rawCommandKeyword] || rawCommandKeyword
+	return commands[command]
 }
 
 module.exports = {
-	processCommand,
-	commands,
+	getCommandHandler,
 }

@@ -4,30 +4,47 @@ const prompt = require("prompt")
 /**
  * Fetches and stores all relevant user details using a promise.
  */
-function getCurrentUser(api, session) {
+function fetchCurrentUser() {
+	const user = {}
 
 	return new Promise((resolve, reject) => {
+		user.userID = this.api.getCurrentUserID()
 
-		session.user.userID = api.getCurrentUserID()
-
-		api.getUserInfo(session.user.userID, (err, data) => {
+		this.api.getUserInfo(user.userID, (err, data) => {
 			if (err) return reject(err)
 
-			Object.assign(user, data[session.user.userID])
+			Object.assign(user, data[user.userID])
 
 			// user is a friend of themselves (to make things easier)
-			session.user.friendsList = [data[session.user.userID]]
+			user.friendsList = [data[user.userID]]
 
 			// fetch and cache user's friends list
-			api.getFriendsList((err, data) => {
+			this.api.getFriendsList((err, data) => {
 				if (err) return reject(err)
 
 				// add users' actual friends
-				session.user.friendsList.concat(data)
+				user.friendsList = user.friendsList.concat(data)
+				console.log(user.friendsList)
 
-				return resolve()
+				return resolve(user)
 			})
 
+		})
+
+	})
+}
+
+function fetchUser(userID) {
+	return new Promise((resolve, reject) => {
+
+		this.api.getUserInfo(userID, (err, data) => {
+			if (err) reject(console.error(err))
+
+			const user = data[userID]
+
+			user.userID = Object.keys(data)[0]
+			this.userCache.push(user)
+			resolve(user)
 		})
 
 	})
@@ -36,56 +53,77 @@ function getCurrentUser(api, session) {
 /**
  * Returns the user info for a given userID.
  */
-function getUser(session, userID) {
-	// current user
-	if (userID === session.user.userID) return session.user
+function getUserByID(userID) {
+	return new Promise((resolve, reject) => {
 
-	let user = session.user.friendsList.find(f => f.userID === userID)
+		// is the current user
+		if (userID === this.user.userID) return resolve(this.user)
+
+		const user =
+			this.user.friendsList.find(f => f.userID === userID) ||
+			this.userCache.find(u => u.userID === userID)
+
+		if (!user) {
+			fetchUser.call(this, userID)
+				.then(user => resolve(user))
+				.catch(() => reject())
+		}
+
+		return resolve(user)
+	})
+}
+
+/**
+ * Returns the user info for a given name. Matches on the closest name
+ */
+function getFriendByName(name) {
+	const user = this.user.friendsList.find(f => {
+		const fullName = f.fullName || f.name
+		return fullName.toLowerCase().startsWith(name.toLowerCase())
+	})
 
 	if (!user) {
-		api.getUserInfo(userID, (err, data) => {
-			if (err) return console.error(err)
-
-			user = data[userID]
-
-			user.userID = Object.keys(data)[0]
-			user.friendsList.push(user)
-		})
+		console.warn(`User '${name}' could not be found in your friends list!`)
+		return null
 	}
 
 	return user
 }
 
-function getCredentials(configFilePath) {
-	let credentials = {}
+/**
+ * Returns a promise resolving with the credentials to log in with
+ */
+function getCredentials() {
+	const configFilePath = process.argv[2]
 
-	if (!configFilePath) {
-		//	No credentials file specified; prompt for manual entry
+	return new Promise((resolve, reject) => {
+		if (!configFilePath) {
+			//	No credentials file specified; prompt for manual entry
+			console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
+			prompt.start()
 
-		console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
-		prompt.start()
+			return prompt.get([{
+				name: "email",
+				required: true
+			}, {
+				name: "password",
+				hidden: true,
+				conform: () => true
+			}], (err, result) => { resolve(result) })
+		} else {
+			fs.readFile(configFilePath, (err, data) => {
+				if (err) return reject(err)
 
-		prompt.get([{
-			name: "email",
-			required: true
-		}, {
-			name: "password",
-			hidden: true,
-			conform: () => true
-		}], (err, result) => { credentials = result })
-	} else {
-		fs.readFile(configFilePath, (err, data) => {
-			if (err) return console.error(err)
-
-			credentials = data
-		})
-	}
-
-	return credentials
+				return resolve(JSON.parse(data))
+			})
+		}
+	})
 }
 
 module.exports = {
-	getCurrentUser,
-	getUser,
+	fetchCurrentUser,
+	fetchUser,
+	getUserByID,
+	getFriendByName,
 	getCredentials,
 }

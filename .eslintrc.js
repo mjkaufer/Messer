@@ -1,21 +1,9 @@
 module.exports = {
     "env": {
-        "es6": true,
         "node": true
     },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-        "sourceType": "module"
-    },
+    "extends": "airbnb-base",
     "rules": {
-        "indent": [
-            "error",
-            "tab"
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
         "quotes": [
             "error",
             "double"
@@ -24,8 +12,8 @@ module.exports = {
             "error",
             "never"
         ],
-        "no-console": 0,
-        "no-unused-vars": 2,
-        "no-var": 2
+        // "no-console": 0,
+        // "no-unused-vars": 2,
+        // "no-var": 2
     }
 };

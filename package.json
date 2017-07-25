@@ -26,6 +26,8 @@
     "messer": "index.js"
   },
   "devDependencies": {
-    "eslint": "^3.11.1"
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.7.0"
   }
 }

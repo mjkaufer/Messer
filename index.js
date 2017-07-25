@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-"use strict"
 
 /* Imports */
 const facebook = require("facebook-chat-api")
@@ -13,117 +12,115 @@ const getCommandHandler = require("./commands").getCommandHandler
  * Messer creates a singleton that represents a Messer session 
  */
 function Messer() {
-	this.api = null
-	this.user = null
-	this.lastThread = null
-	this.userCache = null // cache non-friends
+  this.api = null
+  this.user = null
+  this.lastThread = null
+  this.userCache = null // cache non-friends
 }
 
 Messer.prototype.authenticate = function (credentials) {
-	return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    facebook(credentials, (err, fbApi) => {
+      if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
-		facebook(credentials, (err, fbApi) => {
-			if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
+      fbApi.setOptions({ logLevel: "silent" })
+      this.api = fbApi
 
-			fbApi.setOptions({ logLevel: "silent" })
-			this.api = fbApi
+      console.info("Fetching your details...")
 
-			console.info("Fetching your details...")
+      return helpers.fetchCurrentUser.call(this).then((user) => {
+        this.user = user
 
-			helpers.fetchCurrentUser.call(this).then(user => {
-				this.user = user
-
-				return resolve()
-			})
-		})
-
-	})
+        return resolve()
+      })
+    })
+  })
 }
 
 Messer.prototype.start = function () {
-	helpers.getCredentials()
-		.then(credentials => this.authenticate(credentials))
-		.then(() => {
-			console.log("success")
-			// console.info(`Successfully logged in as ${credentials.email}`)
+  helpers.getCredentials()
+    .then(credentials => this.authenticate(credentials))
+    .then(() => {
+      console.log("success")
+      // console.info(`Successfully logged in as ${credentials.email}`)
 
-			this.api.listen((err, message) => {
-				if (err) return
-				this.handleInboundMessage(message)
-			})
+      this.api.listen((err, message) => {
+        if (err) return
+        this.handleInboundMessage(message)
+      })
 
-			repl.start({
-				ignoreUndefined: true,
-				eval: (cmd) => {
-					this.processCommand(cmd)
-				}
-			})
-		})
-		.catch(err => console.error(err))
+      repl.start({
+        ignoreUndefined: true,
+        eval: (cmd) => {
+          this.processCommand(cmd)
+        },
+      })
+    })
+    .catch(err => console.error(err))
 }
 
 /**
  * Handles incoming messages by logging appropriately.
  */
 Messer.prototype.handleInboundMessage = function (message) {
-	// seen message (not sent)
-	if (!message.senderID || message.type !== "message") return
+  // seen message (not sent)
+  if (!message.senderID || message.type !== "message") return
 
-	// TODO: break this up...
-	helpers.getUserByID.call(this, message.senderID)
-		.then(user => {
-			let sender = user.fullName || user.name
-			if (!user.isFriend) {
-				sender += " [not your friend]"
-			}
+  // TODO: break this up...
+  helpers.getUserByID.call(this, message.senderID)
+    .then((user) => {
+      let sender = user.fullName || user.name
+      if (!user.isFriend) {
+        sender += " [not your friend]"
+      }
 
-			if (message.participantNames && message.participantNames.length > 1) {
-				sender = `'${sender}' (${message.senderName})`
-			}
+      if (message.participantNames && message.participantNames.length > 1) {
+        sender = `'${sender}' (${message.senderName})`
+      }
 
-			let messageBody = null
+      let messageBody = null
 
-			if (message.body !== undefined && message.body != "") {
-				messageBody = message.body
-			} else {
-				messageBody = "unrenderable in Messer :("
-			}
+      if (message.body !== undefined && message.body !== "") {
+        messageBody = message.body
+      } else {
+        messageBody = "unrenderable in Messer :("
+      }
 
-			process.stderr.write("\x07")	// Terminal notification
+      process.stderr.write("\x07") // Terminal notification
 
-			if (message.attachments.length === 0) {
-				console.log(`New message from ${sender} - ${messageBody}`)
-			} else {
-				const attachment = message.attachments[0] // only first attachment
-				const attachmentType = attachment.type.replace(/\_/g, " ")
+      if (message.attachments.length === 0) {
+        console.log(`New message from ${sender} - ${messageBody}`)
+      } else {
+        const attachment = message.attachments[0] // only first attachment
+        const attachmentType = attachment.type.replace(/_/g, " ")
 
-				if (attachmentType === "sticker") {
-					messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || messageBody
-				}
+        if (attachmentType === "sticker") {
+          messageBody =
+            fbAssets.facebookStickers[attachment.packID][attachment.stickerID] ||
+            messageBody
+        }
 
-				console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
-			}
+        console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
+      }
 
-			this.lastThread = message.threadID
-		})
-
+      this.lastThread = message.threadID
+    })
 }
 
 /**
 * Execute appropriate action for user input commands
 */
 Messer.prototype.processCommand = function (rawCommand) {
+  // ignore if rawCommand is only spaces
+  if (rawCommand.trim().length === 0) return null
 
-	// ignore if rawCommand is only spaces
-	if (rawCommand.trim().length === 0) return null
+  const args = rawCommand.replace("\n", "").split(" ")
+  const commandHandler = getCommandHandler(args[0])
 
-	const args = rawCommand.replace("\n", "").split(" ")
-	const commandHandler = getCommandHandler(args[0])
-
-	if (!commandHandler) {
-		return console.error("Invalid command - check your syntax")
-	}
-	commandHandler.call(this, rawCommand)
+  if (!commandHandler) {
+    return console.error("Invalid command - check your syntax")
+  }
+  return commandHandler.call(this, rawCommand)
 }
 
 // create new Messer instance

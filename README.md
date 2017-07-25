@@ -80,4 +80,4 @@ facebook-chat-api@1.0.6 relies on a version of node which requires basic ES6 sup
 
 ## Contributing
 
-Send a pull request! Check out the list of todos
+Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. In the future, only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!

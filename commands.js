@@ -97,18 +97,21 @@ const commands = {
  * Execute appropriate action for user input commands
  */
 function processCommand(rawCommand) {
-	// skip if command is only spaces
-	if (rawCommand.trim().length === 0) return
+	// ignore if rawCommand is only spaces
+	if (rawCommand.trim().length === 0) return null
 
 	const args = rawCommand.replace("\n", "").split(" ")
 	const command = commandShortcuts[args[0]] || args[0]
-	const commandHandler = commands[command]
+	const commandHandler = this.commands[command]
 
 	if (!commandHandler) {
-		console.error("Invalid command - check your syntax")
-	} else {
-		commandHandler(rawCommand)
+		return console.error("Invalid command - check your syntax")
 	}
+
+	return commandHandler(rawCommand)
 }
 
-module.exports = processCommand()
+module.exports = {
+	processCommand,
+	commands,
+}

@@ -7,9 +7,10 @@ const repl = require("repl")
 
 const fbAssets = require("./fb-assets.js")
 const helpers = require("./helpers.js")
+const commands = require("./commands")
 
 /**
- * Messer represents a Messer Messer 
+ * Messer creates a singleton that represents a Messer session 
  */
 function Messer() {
 	this.lastThread = null
@@ -93,4 +94,7 @@ Messer.prototype.handleInboundMessage = function (message) {
 	this.lastThread = message.threadID
 }
 
+Object.assign(Messer.prototype, commands)
+
+// create new Messer instance
 new Messer()

@@ -58,32 +58,17 @@ if (process.argv.length < 3) {
 /**
  * Fetches and stores all relevant user details using a promise.
  */
-function getCurrentUser() {
-	console.info("Fetching your details...")
+function getUserDetails() {
+	console.info("Fetching user details...")
 	return new Promise((resolve, reject) => {
-
-		user.userID = api.getCurrentUserID()
-
-		api.getUserInfo(user.userID, (err, data) => {
-			if (err) return reject(err)
-
-			Object.assign(user, data[user.userID])
-
-			// user is a friend of themselves (to make things easier)
-			user.friendsList = [data[user.userID]]
-
-			// fetch and cache user's friends list
-			api.getFriendsList((err, data) => {
-				if (err) return reject(err)
-
-				// add users' actual friends
-				user.friendsList.concat(data)
-
-				return resolve()
-			})
-
+		api.getFriendsList((err, data) => {
+			if (err) {
+				console.error(err)
+				reject(err)
+			}
+			user.friendsList = data
+			resolve()
 		})
-
 	})
 }
 
@@ -91,23 +76,18 @@ function getCurrentUser() {
  * Returns the user info for a given userID.
  */
 function getUser(userID) {
-	// current user
-	if (userID === user.userID) return user
-
-	let _user = user.friendsList.find(f => f.userID === userID)
-
+	const _user = user.friendsList.find(f => f.userID === userID)
 	if (!_user) {
 		api.getUserInfo(userID, (err, data) => {
 			if (err) return console.error(err)
 
-			_user = data[userID]
-
-			_user.userID = Object.keys(data)[0]
-			user.friendsList.push(_user)
+			data[userID].userID = Object.keys(data)[0]
+			user.friendsList.push(data[userID])
+			getUser(userID)
 		})
+	} else {
+		return _user
 	}
-
-	return _user
 }
 
 /**
@@ -151,13 +131,11 @@ function handleMessage(message) {
 	lastThread = message.threadID
 }
 
-
-
 /* command handlers */
 const commands = {
-	/**
-	 * Sends message to given user
-	 */
+  /**
+   * Sends message to given user
+   */
 	[commandEnum.MESSAGE](rawCommand) {
 		const quoteReg = /(".*?")(.*)/g
 		// to get length of first arg
@@ -195,9 +173,9 @@ const commands = {
 		})
 	},
 
-	/**
-	 * Replies with a given message to the last received thread.
-	 */
+  /**
+   * Replies with a given message to the last received thread.
+   */
 	[commandEnum.REPLY](rawCommand) {
 		if (lastThread === null) {
 			return console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
@@ -215,16 +193,16 @@ const commands = {
 		})
 	},
 
-	/**
-	 * Displays users friend list
-	 */
+  /**
+   * Displays users friend list
+   */
 	[commandEnum.CONTACTS]() {
 		if (user.friendsList.length === 0) {
 			console.log("You have no friends :cry:")
 		}
 		user.friendsList.forEach(f => { console.log(f.fullName) })
 	},
-
+	
 	/**
 	 * Displays usage instructions
 	 */
@@ -236,9 +214,9 @@ const commands = {
 		)
 	},
 
-	 /**
-   * Retrieves last x messages from specified friend
-   */
+	/**
+	* Retrieves last n messages from specified friend
+	*/
 	[commandEnum.READ](rawCommand) {
 		const quoteReg = /(".*?")(.*)/g
 		// to get length of first arg
@@ -252,7 +230,7 @@ const commands = {
 
 		const decomposed = quoteReg.exec(cmd)
 		const rawReceiver = decomposed[1].replace(/"/g, "")
-		var messageCount = Number.parseInt(decomposed[2].trim())
+		let messageCount = Number.parseInt(decomposed[2].trim())
 
 		if (Number.isNaN(messageCount)) {
 			messageCount = 5
@@ -270,9 +248,10 @@ const commands = {
 
 		api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
 			if (err) return console.log("ERROR:", err.error)
-			history.map(cv => { console.log(`${cv.senderName}: ${cv.body}`)})
+			history.forEach(cv => { console.log(`${cv.senderName}: ${cv.body}`) })
 		})
-	}
+	},
+	
 }
 
 /**
@@ -302,8 +281,7 @@ function authenticate(credentials) {
 
 		console.info(`Logged in as ${credentials.email}`)
 
-		getCurrentUser().then(() => {
-			console.log(Object.keys(user))
+		getUserDetails(api, user).then(() => {
 			console.info("Listening for incoming messages...")
 
 			// listen for incoming messages

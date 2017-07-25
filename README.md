@@ -30,33 +30,38 @@ If you stored your credentials in a json, simply type `messer path/to/config.jso
 
 Once you're logged in, you'll see a REPL.
 
-Currently, the only supported commands are `message` and `reply`
-
 ### Commands Reference
 
 #### message
 `[message | m] "[user]" [message]`
+Sends a _message_ to a given _user_
 
-The quotes around the username are mandatory. 
-An example might be `message "Matthew" hello world!`, or its shorter equivalent `m "Matthew" hello world!`
+Examples
+- `message "Matthew" hello world!`
+- `m "Matthew" hello world!`
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
 #### reply
+Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
 `[reply | r] [message]`
 
-This will reply to the last message you received. Note: this will only work if you have received at least one message through Messer.
+Example
+- `r "hey yo this is my reply"`
+
+Note: this will only work if you have received at least one message through Messer.
 
 #### contacts
+Lists all of your Facebook friends
 `contacts`
 
-This will list all of your Facebook friends
-
 #### read
-`[read] "[user]" [numMessages]`
+Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
+`read "[user]" [numMessages]`
 
-The quotes around the username are mandatory. The number of messages to retrieve are optional (default is 5).
-An example might be `read "Matthew" 5`, or its shorter equivalent `read "Matthew"`. 
+Examples
+- `read "Matthew" 10`
+- `read "Matthew"`
 
 ## Todo
 

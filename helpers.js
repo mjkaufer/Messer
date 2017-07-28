@@ -24,7 +24,6 @@ function fetchCurrentUser() {
 
         // add users' actual friends
         user.friendsList = user.friendsList.concat(data)
-        console.log(user.friendsList)
 
         return resolve(user)
       })
@@ -104,7 +103,9 @@ function getCredentials() {
         name: "password",
         hidden: true,
         conform: () => true,
-      }], (err, result) => { resolve(result) })
+      }], (err, result) => {
+        resolve(result)
+      })
     }
 
     return fs.readFile(configFilePath, (err, data) => {

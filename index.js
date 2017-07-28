@@ -23,13 +23,16 @@ Messer.prototype.authenticate = function (credentials) {
     facebook(credentials, (err, fbApi) => {
       if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
-      fbApi.setOptions({ logLevel: "silent" })
+      fbApi.setOptions({
+        logLevel: "silent",
+      })
       this.api = fbApi
 
       console.info("Fetching your details...")
 
       return helpers.fetchCurrentUser.call(this).then((user) => {
         this.user = user
+        this.user.email = credentials.email
 
         return resolve()
       })
@@ -41,8 +44,7 @@ Messer.prototype.start = function () {
   helpers.getCredentials()
     .then(credentials => this.authenticate(credentials))
     .then(() => {
-      console.log("success")
-      // console.info(`Successfully logged in as ${credentials.email}`)
+      console.info(`Successfully logged in as ${this.user.email}`)
 
       this.api.listen((err, message) => {
         if (err) return
@@ -51,9 +53,10 @@ Messer.prototype.start = function () {
 
       repl.start({
         ignoreUndefined: true,
-        eval: (cmd) => {
-          this.processCommand(cmd)
+        eval: (input, context, filename, cb) => {
+          this.processCommand(input, cb)
         },
+        // eval: cmd => this.processCommand(cmd),
       })
     })
     .catch(err => console.error(err))
@@ -108,9 +111,9 @@ Messer.prototype.handleInboundMessage = function (message) {
 }
 
 /**
-* Execute appropriate action for user input commands
-*/
-Messer.prototype.processCommand = function (rawCommand) {
+ * Execute appropriate action for user input commands
+ */
+Messer.prototype.processCommand = function (rawCommand, callback) {
   // ignore if rawCommand is only spaces
   if (rawCommand.trim().length === 0) return null
 
@@ -120,7 +123,16 @@ Messer.prototype.processCommand = function (rawCommand) {
   if (!commandHandler) {
     return console.error("Invalid command - check your syntax")
   }
+
   return commandHandler.call(this, rawCommand)
+    .then((message) => {
+      console.log(message)
+      callback(null)
+    })
+    .catch((err) => {
+      console.log(err)
+      callback(null)
+    })
 }
 
 // create new Messer instance

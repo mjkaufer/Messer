@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/mjkaufer/Messer#readme",
   "dependencies": {
+    "chalk": "^2.0.1",
     "facebook-chat-api": "^1.4.0",
     "prompt": "^0.2.14"
   },

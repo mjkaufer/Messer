@@ -1,5 +1,6 @@
 const fs = require("fs")
 const prompt = require("prompt")
+const log = require("./log")
 
 /**
  * Fetches and stores all relevant user details using a promise.
@@ -34,7 +35,7 @@ function fetchCurrentUser() {
 function fetchUser(userID) {
   return new Promise((resolve, reject) => {
     this.api.getUserInfo(userID, (err, data) => {
-      if (err) return reject(console.error(err))
+      if (err) return reject(err)
 
       const user = data[userID]
 
@@ -77,11 +78,28 @@ function getFriendByName(name) {
   })
 
   if (!user) {
-    console.warn(`User '${name}' could not be found in your friends list!`)
+    log(`User '${name}' could not be found in your friends list!`)
     return null
   }
 
   return user
+}
+
+function fetchThreadInfo(threadID) {
+  return new Promise((resolve, reject) => {
+    const threadInfo = this.threadCache[threadID]
+
+    if (!threadInfo) {
+      return this.api.getThreadInfo(threadID, (err, info) => {
+        if (err) return reject(err)
+
+        this.threadCache[threadID] = info
+        return resolve(info)
+      })
+    }
+
+    return resolve(threadInfo)
+  })
 }
 
 /**
@@ -93,7 +111,7 @@ function getCredentials() {
   return new Promise((resolve, reject) => {
     if (!configFilePath) {
       // No credentials file specified; prompt for manual entry
-      console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
+      log("Enter your Facebook credentials - your password will not be visible as you type it in")
       prompt.start()
 
       return prompt.get([{
@@ -119,6 +137,7 @@ function getCredentials() {
 module.exports = {
   fetchCurrentUser,
   fetchUser,
+  fetchThreadInfo,
   getUserByID,
   getFriendByName,
   getCredentials,

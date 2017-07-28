@@ -42,7 +42,10 @@ const commands = {
       return this.api.sendMessage(message, receiver.userID, (err) => {
         if (err) return reject()
 
-        return resolve(`Sent message to ${receiver.fullName}`)
+        return resolve({
+          message: `Sent message to ${receiver.fullName}`,
+          color: this.threadCache[receiver.userID],
+        })
       })
     })
   },
@@ -64,7 +67,7 @@ const commands = {
       return this.api.sendMessage(body, this.lastThread, (err) => {
         if (err) return reject()
 
-        return resolve("✓ - Replied to x")
+        return resolve()
       })
     })
   },
@@ -75,13 +78,16 @@ const commands = {
   [commandEnum.CONTACTS]() {
     return new Promise((resolve) => {
       if (this.user.friendsList.length === 0) {
-        return resolve("You have no friends :cry:")
+        return resolve({
+          message: "You have no friends :cry:",
+        })
       }
 
-      return resolve(this.user.friendsList
-        .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
-      )
+      return resolve({
+        message: this.user.friendsList
+          .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
+          .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
+      })
     })
   },
 
@@ -90,10 +96,11 @@ const commands = {
    */
   [commandEnum.HELP]() {
     return new Promise(resolve =>
-      resolve("Commands:\n" +
-        "\tmessage \"[user]\" [message]\n" +
-        "\tcontacts\n",
-      ),
+      resolve({
+        message: "Commands:\n" +
+          "\tmessage \"[user]\" [message]\n" +
+          "\tcontacts\n",
+      }),
     )
   },
 
@@ -126,17 +133,15 @@ const commands = {
       return this.api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
         if (err) return reject()
 
-        return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`), "")
+        return resolve({
+          message: history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""),
+        })
       })
     })
   },
 }
 
-function getCommandHandler(rawCommandKeyword) {
+module.exports = function getCommandHandler(rawCommandKeyword) {
   const command = commandShortcuts[rawCommandKeyword] || rawCommandKeyword
   return commands[command]
-}
-
-module.exports = {
-  getCommandHandler,
 }

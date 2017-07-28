@@ -78,7 +78,10 @@ const commands = {
         return resolve("You have no friends :cry:")
       }
 
-      return resolve(this.user.friendsList.join("\n"))
+      return resolve(this.user.friendsList
+        .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
+        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
+      )
     })
   },
 
@@ -96,7 +99,7 @@ const commands = {
 
   /**
    * Retrieves last n messages from specified friend
-   * @param {*} rawCommand 
+   * @param {String} rawCommand 
    */
   [commandEnum.READ](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -123,7 +126,7 @@ const commands = {
       return this.api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
         if (err) return reject()
 
-        return resolve(history.reduce((a, b) => `${a}\n${b.senderName}: ${b.body}\n`), "")
+        return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`), "")
       })
     })
   },

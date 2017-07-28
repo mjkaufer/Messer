@@ -47,19 +47,16 @@ Messer.prototype.start = function () {
       console.info(`Successfully logged in as ${this.user.email}`)
 
       this.api.listen((err, message) => {
-        if (err) return
-        this.handleInboundMessage(message)
+        if (err) return null
+        return this.handleInboundMessage(message)
       })
 
       repl.start({
         ignoreUndefined: true,
-        eval: (input, context, filename, cb) => {
-          this.processCommand(input, cb)
-        },
-        // eval: cmd => this.processCommand(cmd),
+        eval: (input, context, filename, cb) => this.processCommand(input, cb),
       })
     })
-    .catch(err => console.error(err))
+    .catch(() => {})
 }
 
 /**

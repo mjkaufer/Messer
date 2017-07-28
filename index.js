@@ -81,13 +81,11 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
 
   return commandHandler.call(this, rawCommand)
     .then((message) => {
-      log(message.content, message.color)
-
+      log(message)
       return callback(null)
     })
     .catch((err) => {
       log(err)
-
       return callback(null)
     })
 }

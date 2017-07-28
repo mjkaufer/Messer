@@ -9,8 +9,7 @@ const fbAssets = require("./fb-assets")
 const eventHandlers = {
   message(message) {
     // TODO: break this up...
-
-    helpers.fetchThreadInfo()
+    helpers.fetchThreadInfo.call(this, message.threadID)
       .then(helpers.getUserByID.call(this, message.senderID))
       .then((user) => {
         let sender = user.fullName || user.name
@@ -49,9 +48,14 @@ const eventHandlers = {
 
         this.lastThread = message.threadID
       })
+      .catch(err => log(err))
   },
-  event() {
-
+  event(ev) {
+    switch (ev.logMessageType) {
+      case "log:thread-color":
+        // update thread color here
+        break
+    }
   },
   typ() {
 

@@ -1,5 +1,6 @@
 const fs = require("fs")
 const prompt = require("prompt")
+const style = require("ansi-styles")
 const log = require("./log")
 
 /**
@@ -85,6 +86,12 @@ function getFriendByName(name) {
   return user
 }
 
+function getRandomColor() {
+  const colors = Object.keys(style.colors)
+
+  return colors[Math.random() * colors.length * 10]
+}
+
 function fetchThreadInfo(threadID) {
   return new Promise((resolve, reject) => {
     const threadInfo = this.threadCache[threadID]
@@ -94,6 +101,7 @@ function fetchThreadInfo(threadID) {
         if (err) return reject(err)
 
         this.threadCache[threadID] = info
+        this.threadCache[threadID].color = this.threadCache[threadID].color || getRandomColor()
         return resolve(info)
       })
     }
@@ -141,4 +149,5 @@ module.exports = {
   getUserByID,
   getFriendByName,
   getCredentials,
+  getRandomColor,
 }

@@ -2,51 +2,65 @@ const log = require("./log")
 const helpers = require("./helpers")
 const fbAssets = require("./fb-assets")
 
+function parseAttachment(attachment) {
+  const attachmentType = attachment.type.replace(/_/g, " ")
+
+  let messageBody = ""
+
+  switch (attachmentType) {
+    case "sticker":
+      messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID]
+      break
+    case "file":
+      messageBody = `${attachment.name}: ${attachment.url}`
+      break
+    case "photo":
+      messageBody = `${attachment.filename}: ${attachment.facebookUrl}`
+      break
+    case "share":
+      messageBody = `${attachment.facebookUrl}`
+      break
+    case "video":
+      messageBody = `${attachment.filename}: ${attachment.url}`
+      break
+    default:
+      messageBody = "only viewable in browser"
+      break
+  }
+
+  return `[${attachmentType}] ${messageBody}`
+}
+
 /**
  * See the facebook-chat-api for detailed description of these events
  * https://github.com/Schmavery/facebook-chat-api/blob/master/DOCS.md#apilistencallback
  */
 const eventHandlers = {
   message(message) {
-    // TODO: break this up...
     helpers.fetchThreadInfo.call(this, message.threadID)
       .then(helpers.getUserByID.call(this, message.senderID))
       .then((user) => {
+        process.stderr.write("\x07") // Terminal notification
+        this.lastThread = message.threadID
         let sender = user.fullName || user.name
+        let messageBody = message.body
+        // if (messageBody !== undefined && messageBody !== "") {
+        //   messageBody = "unrenderable in Messer :("
+        // }
+
         if (!user.isFriend) {
           sender += " [not your friend]"
         }
 
-        if (message.participantNames && message.participantNames.length > 1) {
-          sender = `'${sender}' (${message.senderName})`
+        if (message.isGroup) {
+          sender = `(Group) ${sender}`
         }
 
-        let messageBody = null
-
-        if (message.body !== undefined && message.body !== "") {
-          messageBody = message.body
-        } else {
-          messageBody = "unrenderable in Messer :("
+        if (message.attachments.length > 0) {
+          messageBody = message.attachments.reduce((prev, curr) => `${prev}; ${parseAttachment(curr)}`, "")
         }
 
-        process.stderr.write("\x07") // Terminal notification
-
-        if (message.attachments.length === 0) {
-          log(`New message from ${sender} - ${messageBody}`, this.threadCache[message.threadID].color)
-        } else {
-          const attachment = message.attachments[0] // only first attachment
-          const attachmentType = attachment.type.replace(/_/g, " ")
-
-          if (attachmentType === "sticker") {
-            messageBody =
-              fbAssets.facebookStickers[attachment.packID][attachment.stickerID] ||
-              messageBody
-          }
-
-          log(`New ${attachmentType} from ${sender} - ${messageBody}`, this.threadCache[message.threadID].color)
-        }
-
-        this.lastThread = message.threadID
+        log(`${sender} - ${messageBody}`, this.threadCache[message.threadID].color)
       })
       .catch(err => log(err))
   },

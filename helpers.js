@@ -73,17 +73,10 @@ function getUserByID(userID) {
  * Returns the user info for a given name. Matches on the closest name
  */
 function getFriendByName(name) {
-  const user = this.user.friendsList.find((f) => {
+  return this.user.friendsList.find((f) => {
     const fullName = f.fullName || f.name
     return fullName.toLowerCase().startsWith(name.toLowerCase())
   })
-
-  if (!user) {
-    log(`User '${name}' could not be found in your friends list!`)
-    return null
-  }
-
-  return user
 }
 
 function getRandomColor() {

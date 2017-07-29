@@ -1,12 +1,35 @@
 const helpers = require("./helpers")
 
+const regexps = [
+  /([A-z]+)\s+"(.*?)"\s+(.+)/,
+  /([A-z]+)\s+(.+)/,
+  /([A-z]+)\s+"(.*?)"(?:\s+)?([0-9]+)?/,
+]
+
 /* Command type constants */
 const commandEnum = {
-  MESSAGE: "message",
-  REPLY: "reply",
-  CONTACTS: "contacts",
-  HELP: "help",
-  READ: "read",
+  MESSAGE: {
+    command: "message",
+    regexp: regexps[0],
+  },
+  REPLY: {
+    command: "reply",
+    regexp: regexps[1],
+  },
+  CONTACTS: {
+    command: "contacts",
+  },
+  HELP: {
+    command: "help",
+  },
+  READ: {
+    command: "read",
+    regexp: regexps[2],
+  },
+  COLOR: {
+    command: "color",
+    regexp: regexps[0],
+  },
 }
 
 const commandShortcuts = {
@@ -14,30 +37,30 @@ const commandShortcuts = {
   m: commandEnum.MESSAGE,
 }
 
+function parseCommand(regexp, rawCommand) {
+  if (regexp) return rawCommand.match(regexp)
+
+  return [rawCommand.trim()]
+}
+
 const commands = {
   /**
    * Sends message to given user
    */
-  [commandEnum.MESSAGE](rawCommand) {
+  [commandEnum.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const args = rawCommand.replace("\n", "").split(" ")
-      const cmd = rawCommand.substring(args[0].length).trim()
+      const argv = parseCommand(commandEnum.MESSAGE.regexp, rawCommand)
+      if (!argv) return reject("Invalid message - check your syntax")
 
-      const quoteReg = /(".*?")(.*)/g
-      if (cmd.match(quoteReg) == null) {
-        return reject("Invalid message - check your syntax")
-      }
+      const rawReceiver = argv[1]
+      const message = argv[2]
 
-      const decomposed = quoteReg.exec(cmd)
-      const rawReceiver = decomposed[1].replace(/"/g, "")
-      const message = decomposed[2].trim()
-
-      if (message.length === 0) {
-        return reject("No message to send - check your syntax")
-      }
+      if (message.length === 0) return reject("No message to send - check your syntax")
 
       // Find the given receiver in the users friendlist
       const receiver = helpers.getFriendByName.call(this, rawReceiver)
+
+      if (!receiver) return reject(`User '${rawReceiver}' could not be found in your friends list!`)
 
       return this.api.sendMessage(message, receiver.userID, (err) => {
         if (err) return reject()
@@ -49,18 +72,18 @@ const commands = {
   /**
    * Replies with a given message to the last received thread.
    */
-  [commandEnum.REPLY](rawCommand) {
+  [commandEnum.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
       if (this.lastThread === null) {
-        return reject("Error - you can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
+        return reject("ERROR: you can't reply to messages you haven't yet received! You need to receive a message before using `reply`")
       }
 
-      const args = rawCommand.replace("\n", "").split(" ")
-      const body = rawCommand.substring(args[0].length).trim()
+      const argv = parseCommand(commandEnum.REPLY.regexp, rawCommand)
+      if (!argv) return reject("Invalid command - check your syntax")
 
       // var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
-      return this.api.sendMessage(body, this.lastThread, (err) => {
+      return this.api.sendMessage(argv[1], this.lastThread, (err) => {
         if (err) return reject()
 
         return resolve()
@@ -71,11 +94,9 @@ const commands = {
   /**
    * Displays users friend list
    */
-  [commandEnum.CONTACTS]() {
+  [commandEnum.CONTACTS.command]() {
     return new Promise((resolve) => {
-      if (this.user.friendsList.length === 0) {
-        return resolve("You have no friends :cry:")
-      }
+      if (this.user.friendsList.length === 0) return resolve("You have no friends :cry:")
 
       return resolve(this.user.friendsList
         .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
@@ -87,7 +108,7 @@ const commands = {
   /**
    * Displays usage instructions
    */
-  [commandEnum.HELP]() {
+  [commandEnum.HELP.command]() {
     return new Promise(resolve =>
       resolve("Commands:\n" +
         "\tmessage \"[user]\" [message]\n" +
@@ -100,26 +121,16 @@ const commands = {
    * Retrieves last n messages from specified friend
    * @param {String} rawCommand 
    */
-  [commandEnum.READ](rawCommand) {
+  [commandEnum.READ.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const quoteReg = /(".*?")(.*)/g
-      // to get length of first arg
-      const args = rawCommand.replace("\n", "").split(" ")
-      const cmd = rawCommand.substring(args[0].length).trim()
+      const argv = parseCommand(commandEnum.READ.regexp, rawCommand)
 
-      if (cmd.match(quoteReg) == null) {
-        return reject("Invalid message - check your syntax")
-      }
+      const DEFAULT_COUNT = 5
 
-      const decomposed = quoteReg.exec(cmd)
-      const rawReceiver = decomposed[1].replace(/"/g, "")
-      let messageCount = Number.parseInt(decomposed[2].trim(), 10)
+      const rawReceiver = argv[1]
+      const messageCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
 
-      if (Number.isNaN(messageCount)) {
-        messageCount = 5
-      }
-
-      // Find the given reciever in the users friendlist
+      // Find the given receiver in the users friendlist
       const receiver = helpers.getFriendByName.call(this, rawReceiver)
 
       return this.api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
@@ -128,6 +139,13 @@ const commands = {
         return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
       })
     })
+  },
+  /**
+   * Changes the color of the thread that matches given name
+   * @param {String} rawCommand 
+   */
+  [commandEnum.COLOR.command](rawCommand) {
+
   },
 }
 

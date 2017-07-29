@@ -1,7 +1,7 @@
 const chalk = require("chalk")
 
 function log(content, color) {
-  if (!content) return
+  if (!content) return null
 
   if (color) {
     if (chalk[color]) {

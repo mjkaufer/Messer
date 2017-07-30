@@ -33,6 +33,10 @@ function fetchCurrentUser() {
   })
 }
 
+/**
+ * Fetches a user object and caches the result
+ * @param {Int} userID 
+ */
 function fetchUser(userID) {
   return new Promise((resolve, reject) => {
     this.api.getUserInfo(userID, (err, data) => {
@@ -48,7 +52,8 @@ function fetchUser(userID) {
 }
 
 /**
- * Returns the user info for a given userID.
+ * Returns the user info for a given userID
+ * @param {Int} userID 
  */
 function getUserByID(userID) {
   return new Promise((resolve, reject) => {
@@ -71,6 +76,7 @@ function getUserByID(userID) {
 
 /**
  * Returns the user info for a given name. Matches on the closest name
+ * @param {String} name 
  */
 function getFriendByName(name) {
   return this.user.friendsList.find((f) => {
@@ -85,6 +91,10 @@ function getRandomColor() {
   return colors[Math.random() * colors.length * 10]
 }
 
+/**
+ * Fetches the thread information object and caches the result
+ * @param {Int} threadID 
+ */
 function fetchThreadInfo(threadID) {
   return new Promise((resolve, reject) => {
     const threadInfo = this.threadCache[threadID]

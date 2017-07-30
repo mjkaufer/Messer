@@ -2,6 +2,10 @@ const log = require("./log")
 const helpers = require("./helpers")
 const fbAssets = require("./fb-assets")
 
+/**
+ * Returns the parsed attachment object as a String
+ * @param {Object} attachment 
+ */
 function parseAttachment(attachment) {
   const attachmentType = attachment.type.replace(/_/g, " ")
 
@@ -36,6 +40,10 @@ function parseAttachment(attachment) {
  * https://github.com/Schmavery/facebook-chat-api/blob/master/DOCS.md#apilistencallback
  */
 const eventHandlers = {
+  /**
+   * Handles the "message" event type
+   * @param {Object} message 
+   */
   message(message) {
     helpers.fetchThreadInfo.call(this, message.threadID)
       .then(helpers.getUserByID.call(this, message.senderID))
@@ -64,10 +72,16 @@ const eventHandlers = {
       })
       .catch(err => log(err))
   },
+  /**
+   * Handles the "message" event type
+   * @param {Object} ev 
+   */
   event(ev) {
     switch (ev.logMessageType) {
       case "log:thread-color":
         // update thread color here
+        break
+      default:
         break
     }
   },

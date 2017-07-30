@@ -1,5 +1,6 @@
 const helpers = require("./helpers")
 
+/* Store regexps that match raw commands */
 const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
   /([A-z]+)\s+(.+)/,
@@ -37,15 +38,22 @@ const commandShortcuts = {
   m: commandEnum.MESSAGE,
 }
 
+/**
+ * Matches a raw command on a given regex and returns the available arguments
+ * @param {Regex} regexp 
+ * @param {String} rawCommand 
+ */
 function parseCommand(regexp, rawCommand) {
   if (regexp) return rawCommand.match(regexp)
 
+  // return a 1-item array if no regex i.e. 1 word commands (contacts, etc.)
   return [rawCommand.trim()]
 }
 
 const commands = {
   /**
    * Sends message to given user
+   * @param {String} rawCommand 
    */
   [commandEnum.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -71,12 +79,11 @@ const commands = {
 
   /**
    * Replies with a given message to the last received thread.
+   * @param {String} rawCommand 
    */
   [commandEnum.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      if (this.lastThread === null) {
-        return reject("ERROR: you can't reply to messages you haven't yet received! You need to receive a message before using `reply`")
-      }
+      if (this.lastThread === null) return reject("ERROR: You need to receive a message on Messer before using `reply`")
 
       const argv = parseCommand(commandEnum.REPLY.regexp, rawCommand)
       if (!argv) return reject("Invalid command - check your syntax")
@@ -124,6 +131,7 @@ const commands = {
   [commandEnum.READ.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandEnum.READ.regexp, rawCommand)
+      if (!argv) return reject("Invalid command - check your syntax")
 
       const DEFAULT_COUNT = 5
 
@@ -145,7 +153,14 @@ const commands = {
    * @param {String} rawCommand 
    */
   [commandEnum.COLOR.command](rawCommand) {
+    return new Promise((resolve, reject) => {
+      const argv = parseCommand(commandEnum.COLOR.regexp, rawCommand)
+      if (!argv) return reject("Invalid command - check your syntax")
 
+      // TODO: finish
+
+      return resolve()
+    })
   },
 }
 

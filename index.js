@@ -20,6 +20,10 @@ function Messer() {
   this.userCache = [] // cache non-friends
 }
 
+/**
+ * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
+ * @param {Object} credentials 
+ */
 Messer.prototype.authenticate = function authenticate(credentials) {
   return new Promise((resolve, reject) => {
     facebook(credentials, (err, fbApi) => {
@@ -67,6 +71,8 @@ Messer.prototype.start = function start() {
 
 /**
  * Execute appropriate action for user input commands
+ * @param {String} rawCommand 
+ * @param {Function} callback 
  */
 Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
   // ignore if rawCommand is only spaces

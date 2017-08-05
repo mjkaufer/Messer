@@ -1,8 +1,9 @@
 # Messer
 
-Command-line messaging for Facebook Messenger
+Command-line Messaging for Facebook Messenger
 
 ![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
+
 
 ## Installation
 ```
@@ -15,7 +16,7 @@ npm install -g messer
 3. ...
 4. Profit
 
-## Setup
+## Usage
 
 ### Prerequisites
 * Node.js ^6
@@ -25,7 +26,7 @@ npm install -g messer
 
 The preferred login method is to store your Facebook credentials in a file. Create a file as described below, and start `messer` with 
 ```
-messer <path/to/file>
+messer path/to/file
 ```
 
 ```
@@ -69,6 +70,7 @@ Examples
 - `read "Matthew" 10`
 - `read "Matthew"`
 
+
 ## Todo
 
 * Track received messages from users, and ~~give the user the ability to look at them with a command~~
@@ -77,7 +79,6 @@ Examples
 	* Make an option to use prettier UI vs plain text
 * Be able to send to specific group chats
 	* Maybe something with `getThreadList` - a list of recent conversations with indices, and be able to reply to a conversation by inputting its index
-* Different colors for different chats?
 * Giphy support - send random gif based on text user sends
 
 ## Contributing

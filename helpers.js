@@ -1,5 +1,7 @@
 const fs = require("fs")
 const prompt = require("prompt")
+const style = require("ansi-styles")
+const log = require("./log")
 
 /**
  * Fetches and stores all relevant user details using a promise.
@@ -24,7 +26,6 @@ function fetchCurrentUser() {
 
         // add users' actual friends
         user.friendsList = user.friendsList.concat(data)
-        console.log(user.friendsList)
 
         return resolve(user)
       })
@@ -32,10 +33,14 @@ function fetchCurrentUser() {
   })
 }
 
+/**
+ * Fetches a user object and caches the result
+ * @param {Int} userID 
+ */
 function fetchUser(userID) {
   return new Promise((resolve, reject) => {
     this.api.getUserInfo(userID, (err, data) => {
-      if (err) return reject(console.error(err))
+      if (err) return reject(err)
 
       const user = data[userID]
 
@@ -47,7 +52,8 @@ function fetchUser(userID) {
 }
 
 /**
- * Returns the user info for a given userID.
+ * Returns the user info for a given userID
+ * @param {Int} userID 
  */
 function getUserByID(userID) {
   return new Promise((resolve, reject) => {
@@ -70,19 +76,41 @@ function getUserByID(userID) {
 
 /**
  * Returns the user info for a given name. Matches on the closest name
+ * @param {String} name 
  */
 function getFriendByName(name) {
-  const user = this.user.friendsList.find((f) => {
+  return this.user.friendsList.find((f) => {
     const fullName = f.fullName || f.name
     return fullName.toLowerCase().startsWith(name.toLowerCase())
   })
+}
 
-  if (!user) {
-    console.warn(`User '${name}' could not be found in your friends list!`)
-    return null
-  }
+function getRandomColor() {
+  const colors = Object.keys(style.colors)
 
-  return user
+  return colors[Math.random() * colors.length * 10]
+}
+
+/**
+ * Fetches the thread information object and caches the result
+ * @param {Int} threadID 
+ */
+function fetchThreadInfo(threadID) {
+  return new Promise((resolve, reject) => {
+    const threadInfo = this.threadCache[threadID]
+
+    if (!threadInfo) {
+      return this.api.getThreadInfo(threadID, (err, info) => {
+        if (err) return reject(err)
+
+        this.threadCache[threadID] = info
+        this.threadCache[threadID].color = this.threadCache[threadID].color || getRandomColor()
+        return resolve(info)
+      })
+    }
+
+    return resolve(threadInfo)
+  })
 }
 
 /**
@@ -94,7 +122,7 @@ function getCredentials() {
   return new Promise((resolve, reject) => {
     if (!configFilePath) {
       // No credentials file specified; prompt for manual entry
-      console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
+      log("Enter your Facebook credentials - your password will not be visible as you type it in")
       prompt.start()
 
       return prompt.get([{
@@ -104,7 +132,9 @@ function getCredentials() {
         name: "password",
         hidden: true,
         conform: () => true,
-      }], (err, result) => { resolve(result) })
+      }], (err, result) => {
+        resolve(result)
+      })
     }
 
     return fs.readFile(configFilePath, (err, data) => {
@@ -118,7 +148,9 @@ function getCredentials() {
 module.exports = {
   fetchCurrentUser,
   fetchUser,
+  fetchThreadInfo,
   getUserByID,
   getFriendByName,
   getCredentials,
+  getRandomColor,
 }

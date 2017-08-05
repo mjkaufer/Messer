@@ -1,7 +1,7 @@
 module.exports = {
   /**
-   * `packid`: {
-   *   `stickerid`: value
+   * [packid]: {
+   *   [stickerid]: value
    * }
    */
   facebookStickers: {

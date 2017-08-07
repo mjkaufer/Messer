@@ -2,9 +2,9 @@
 
 Command-line Messaging for Facebook Messenger
 
-  ![Downloads](https://img.shields.io/npm/dm/messer.svg)
-  ![Version](https://img.shields.io/npm/v/messer.svg)
-  ![License](https://img.shields.io/npm/l/messer.svg)
+![Downloads](https://img.shields.io/npm/dm/messer.svg)
+![Version](https://img.shields.io/npm/v/messer.svg)
+![License](https://img.shields.io/npm/l/messer.svg)
 
 ![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
 
@@ -14,34 +14,44 @@ Command-line Messaging for Facebook Messenger
 npm install -g messer
 ```
 
+## Quick Start
+
+1. Install `messer`
+1. Run `messer` and enter your details
+1. ...
+1. Profit
+
 ## Setup
 
-If you want to log in with your credentials stored in a file, do the following - otherwise, you'll log in by typing in your credentials each time you run Messer
+### Prerequisites
+* Node.js ^6
+* Facebook account with *2FA disabled*
 
-Create a `config.json` somewhere. Inside of the `config.json`, add
+### Logging In
 
-```json
-{
-    "email": "email",
-    "password": "password"
-}
+The preferred login method is to store your Facebook credentials in a file. Create a file as described below, and start `messer` with
+
+```
+messer ~/path/to/file
 ```
 
-Fill in the email you use for Facebook, along with your Facebook password
-
-## Getting Started
-
-If you stored your credentials in a json, simply type `messer path/to/config.json`, replacing `path/to/config.json` with the path to your `config.json` Otherwise, type `messer` and input your email and password as you are prompted for them. The password will not be visible as you type it in.
-
-Once you're logged in, you'll see a REPL.
+```json
+// config.json
+{
+	"email": "myfacebook@email.com",
+	"password": "yourS3curePassw0rd"
+}
+```
 
 ## Commands Reference
 
 ### message
 
-`[message | m] "[user]" [message]`
-
 Sends a _message_ to a given _user_
+
+```bash
+[message | m] "[user]" [message]
+```
 
 Examples
 
@@ -54,7 +64,9 @@ When sending a message, Messer picks the closest match to what you type in as `u
 
 Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
 
-`[reply | r] [message]`
+```bash
+[reply | r] [message]
+```
 
 Example
 
@@ -65,13 +77,18 @@ Note: this will only work if you have received at least one message through Mess
 ### contacts
 
 Lists all of your Facebook friends
-`contacts`
+
+```bash
+contacts
+```
 
 ### read
 
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
-`read "[user]" [numMessages]`
+```bash
+read "[user]" [numMessages]
+```
 
 Examples
 

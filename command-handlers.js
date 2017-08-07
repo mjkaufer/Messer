@@ -50,6 +50,10 @@ function parseCommand(regexp, rawCommand) {
   return [rawCommand.trim()]
 }
 
+/**
+ * Command register. All commands get bound to the Messer instance, which allows
+ * the api (and others) to be referenced and used within the functions.
+ */
 const commands = {
   /**
    * Sends message to given user

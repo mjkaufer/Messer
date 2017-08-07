@@ -2,30 +2,35 @@
   "name": "messer",
   "version": "0.1.12",
   "description": "Command-line messaging for Facebook Messenger",
+  "keywords": [],
+  "homepage": "https://github.com/mjkaufer/Messer#readme",
+  "bugs": {
+    "url": "https://github.com/mjkaufer/Messer/issues"
+  },
+  "license": "ISC",
+  "author": "Matthew Kaufer <mjkaufer@gmail.com>",
+  "contributors": [
+    "Matthew Kaufer <mjkaufer@gmail.com>",
+    "Tom Quirk <tomquirkacc@gmail.com>",
+    "Rushi Shah <2016rshah@gmail.com>"
+  ],
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js config.json"
+  "bin": {
+    "messer": "index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
-  "author": "Matthew Kaufer (@mjkaufer)",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mjkaufer/Messer/issues"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js config.json"
   },
-  "homepage": "https://github.com/mjkaufer/Messer#readme",
   "dependencies": {
     "ansi-styles": "^3.2.0",
     "chalk": "^2.0.1",
     "facebook-chat-api": "^1.4.0",
     "prompt": "^0.2.14"
-  },
-  "preferGlobal": true,
-  "bin": {
-    "messer": "index.js"
   },
   "devDependencies": {
     "eslint": "^4.3.0",

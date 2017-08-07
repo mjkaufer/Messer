@@ -6,6 +6,7 @@ const chalk = require("chalk")
  * @param {String} color hexcode
  */
 function log(content, color) {
+  /*eslint-disable */
   if (!content) return null
 
   if (color) {
@@ -16,6 +17,7 @@ function log(content, color) {
   }
 
   return console.log(content)
+  /*eslint-enable */
 }
 
 module.exports = log

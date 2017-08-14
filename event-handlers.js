@@ -48,7 +48,7 @@ const eventHandlers = {
     this.getThreadById(message.threadID)
       .then((thread) => {
         process.stderr.write("\x07") // Terminal notification
-        this.lastThread = thread.threadID
+        this.lastThread = message.threadID
 
         const user = this.userCache[message.senderID]
 

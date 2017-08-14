@@ -123,7 +123,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
 
   if (node.length === 1) return node[0]
 
-  return node.find(t => t.toLowerCase.startsWith(name))
+  return node.find(t => (t.name || t.fullName).toLowerCase().startsWith(name))
 }
 
 /*

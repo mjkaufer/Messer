@@ -83,18 +83,18 @@ Lists all of your Facebook friends
 contacts
 ```
 
-### read
+### history
 
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
 ```bash
-read "[user]" [numMessages]
+[history | h] "[user]" [numMessages]
 ```
 
 Examples
 
-- `read "Matthew" 10`
-- `read "Matthew"`
+- `history "Matthew" 10`
+- `h "Matthew"`
 
 ## Todo
 

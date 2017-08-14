@@ -23,8 +23,8 @@ const commandEnum = {
   HELP: {
     command: "help",
   },
-  READ: {
-    command: "read",
+  HISTORY: {
+    command: "history",
     regexp: regexps[2],
   },
   COLOR: {
@@ -36,6 +36,7 @@ const commandEnum = {
 const commandShortcuts = {
   r: commandEnum.REPLY,
   m: commandEnum.MESSAGE,
+  h: commandEnum.HISTORY,
 }
 
 /**
@@ -64,8 +65,8 @@ const commands = {
       const argv = parseCommand(commandEnum.MESSAGE.regexp, rawCommand)
       if (!argv) return reject("Invalid message - check your syntax")
 
-      const rawReceiver = argv[1]
-      const message = argv[2]
+      const rawReceiver = argv[2]
+      const message = argv[3]
 
       if (message.length === 0) return reject("No message to send - check your syntax")
 
@@ -75,7 +76,8 @@ const commands = {
       if (!receiver) return reject(`User '${rawReceiver}' could not be found in your friends list!`)
 
       return this.api.sendMessage(message, receiver.threadID, (err) => {
-        if (err) return reject()
+        if (err) return reject(err)
+
         return resolve(`Sent message to ${receiver.name}`)
       })
     })
@@ -94,8 +96,8 @@ const commands = {
 
       // var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
-      return this.api.sendMessage(argv[1], this.lastThread, (err) => {
-        if (err) return reject()
+      return this.api.sendMessage(argv[2], this.lastThread, (err) => {
+        if (err) return reject(err)
 
         return resolve()
       })
@@ -133,21 +135,22 @@ const commands = {
    * Retrieves last n messages from specified friend
    * @param {String} rawCommand 
    */
-  [commandEnum.READ.command](rawCommand) {
+  [commandEnum.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandEnum.READ.regexp, rawCommand)
+      const argv = parseCommand(commandEnum.HISTORY.regexp, rawCommand)
       if (!argv) return reject("Invalid command - check your syntax")
 
       const DEFAULT_COUNT = 5
 
-      const rawReceiver = argv[1]
-      const messageCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
+      const rawThreadName = argv[2]
+      const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
 
       // Find the given receiver in the users friendlist
-      const receiver = helpers.getFriendByName.call(this, rawReceiver)
+      const thread = this.getThreadByName(rawThreadName)
+      if (!thread) return reject(`User '${rawThreadName}' could not be found in your friends list!`)
 
-      return this.api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
-        if (err) return reject()
+      return this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
+        if (err) return reject(err)
 
         return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
       })
@@ -170,6 +173,12 @@ const commands = {
 }
 
 module.exports = function getCommandHandler(rawCommandKeyword) {
-  const command = commandShortcuts[rawCommandKeyword] || rawCommandKeyword
+  let command = commandShortcuts[rawCommandKeyword]
+  if (command) {
+    command = command.command
+  } else {
+    command = rawCommandKeyword
+  }
+
   return commands[command]
 }

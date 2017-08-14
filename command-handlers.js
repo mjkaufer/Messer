@@ -1,5 +1,3 @@
-const helpers = require("./helpers")
-
 /* Store regexps that match raw commands */
 const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,

@@ -22,6 +22,38 @@ function Messer() {
 }
 
 /**
+ * Fetches and stores all relevant user details using a promise.
+ */
+Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
+  const user = {}
+
+  return new Promise((resolve, reject) => {
+    user.userID = this.api.getCurrentUserID()
+
+    this.api.getUserInfo(user.userID, (err, data) => {
+      if (err) return reject(err)
+
+      Object.assign(user, data[user.userID])
+
+      return this.api.getFriendsList((err, data) => {
+        if (err) return reject(err)
+
+        data.forEach((u) => {
+          this.cacheThread({
+            name: u.name || u.fullName,
+            threadID: u.userID,
+          }) // cache all friends as potential "threads"
+
+          this.userCache[u.userID] = u
+        })
+
+        return resolve(user)
+      })
+    })
+  })
+}
+
+/**
  * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
  * @param {Object} credentials 
  */
@@ -37,7 +69,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 
       log("Fetching your details...")
 
-      return helpers.fetchCurrentUser.call(this)
+      return this.fetchCurrentUser()
         .then((user) => {
           this.user = user
           this.user.email = credentials.email

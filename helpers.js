@@ -17,15 +17,17 @@ function fetchCurrentUser() {
 
       Object.assign(user, data[user.userID])
 
-      // user is a friend of themselves (to make things easier)
-      user.friendsList = [data[user.userID]]
-
-      // fetch and cache user's friends list
       return this.api.getFriendsList((err, data) => {
         if (err) return reject(err)
 
-        // add users' actual friends
-        user.friendsList = user.friendsList.concat(data)
+        data.forEach((u) => {
+          this.cacheThread({
+            name: u.name || u.fullName,
+            threadID: u.userID,
+          }) // cache all friends as potential "threads"
+
+          this.userCache[u.userID] = u
+        })
 
         return resolve(user)
       })
@@ -45,7 +47,7 @@ function fetchUser(userID) {
       const user = data[userID]
 
       user.userID = Object.keys(data)[0]
-      this.userCache.push(user)
+      this.userCache[userID] = user
       return resolve(user)
     })
   })
@@ -57,12 +59,7 @@ function fetchUser(userID) {
  */
 function getUserByID(userID) {
   return new Promise((resolve, reject) => {
-    // is the current user
-    if (userID === this.user.userID) return resolve(this.user)
-
-    const user =
-      this.user.friendsList.find(f => f.userID === userID) ||
-      this.userCache.find(u => u.userID === userID)
+    const user = this.userCache[userID]
 
     if (!user) {
       fetchUser.call(this, userID)
@@ -79,7 +76,7 @@ function getUserByID(userID) {
  * @param {String} name 
  */
 function getFriendByName(name) {
-  return this.user.friendsList.find((f) => {
+  return this.user.friendsList[name[0].toLowerCase()].find((f) => {
     const fullName = f.fullName || f.name
     return fullName.toLowerCase().startsWith(name.toLowerCase())
   })
@@ -89,28 +86,6 @@ function getRandomColor() {
   const colors = Object.keys(style.colors)
 
   return colors[Math.random() * colors.length * 10]
-}
-
-/**
- * Fetches the thread information object and caches the result
- * @param {Int} threadID 
- */
-function fetchThreadInfo(threadID) {
-  return new Promise((resolve, reject) => {
-    const threadInfo = this.threadCache[threadID]
-
-    if (!threadInfo) {
-      return this.api.getThreadInfo(threadID, (err, info) => {
-        if (err) return reject(err)
-
-        this.threadCache[threadID] = info
-        this.threadCache[threadID].color = this.threadCache[threadID].color || getRandomColor()
-        return resolve(info)
-      })
-    }
-
-    return resolve(threadInfo)
-  })
 }
 
 /**
@@ -148,7 +123,6 @@ function getCredentials() {
 module.exports = {
   fetchCurrentUser,
   fetchUser,
-  fetchThreadInfo,
   getUserByID,
   getFriendByName,
   getCredentials,

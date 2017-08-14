@@ -24,6 +24,7 @@ npm install -g messer
 ## Setup
 
 ### Prerequisites
+
 * Node.js ^6
 * Facebook account with *2FA disabled*
 
@@ -31,15 +32,15 @@ npm install -g messer
 
 The preferred login method is to store your Facebook credentials in a file. Create a file as described below, and start `messer` with
 
-```
+```bash
 messer ~/path/to/file
 ```
 
 ```json
 // config.json
 {
-	"email": "myfacebook@email.com",
-	"password": "yourS3curePassw0rd"
+  "email": "myfacebook@email.com",
+  "password": "yourS3curePassw0rd"
 }
 ```
 

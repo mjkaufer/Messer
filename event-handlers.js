@@ -45,19 +45,18 @@ const eventHandlers = {
    * @param {Object} message 
    */
   message(message) {
-    helpers.fetchThreadInfo.call(this, message.threadID)
-      .then(helpers.getUserByID.call(this, message.senderID))
-      .then((user) => {
+    this.getThreadById(message.threadID)
+      .then((thread) => {
         process.stderr.write("\x07") // Terminal notification
-        this.lastThread = message.threadID
+        this.lastThread = thread.threadID
+
+        const user = this.userCache[message.senderID]
+
         let sender = user.fullName || user.name
         let messageBody = message.body
-        // if (messageBody !== undefined && messageBody !== "") {
-        //   messageBody = "unrenderable in Messer :("
-        // }
 
         if (!user.isFriend) {
-          sender += " [not your friend]"
+          sender = `${sender} [not your friend]`
         }
 
         if (message.isGroup) {
@@ -68,7 +67,7 @@ const eventHandlers = {
           messageBody = message.attachments.reduce((prev, curr) => `${prev}; ${parseAttachment(curr)}`, "")
         }
 
-        log(`${sender} - ${messageBody}`, this.threadCache[message.threadID].color)
+        log(`${sender} - ${messageBody}`, thread.color)
       })
       .catch(err => log(err))
   },

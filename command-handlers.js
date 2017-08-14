@@ -69,14 +69,14 @@ const commands = {
 
       if (message.length === 0) return reject("No message to send - check your syntax")
 
-      // Find the given receiver in the users friendlist
-      const receiver = helpers.getFriendByName.call(this, rawReceiver)
+      // Find the thread to send to
+      const receiver = this.getThreadByName(rawReceiver)
 
       if (!receiver) return reject(`User '${rawReceiver}' could not be found in your friends list!`)
 
-      return this.api.sendMessage(message, receiver.userID, (err) => {
+      return this.api.sendMessage(message, receiver.threadID, (err) => {
         if (err) return reject()
-        return resolve(`Sent message to ${receiver.fullName}`)
+        return resolve(`Sent message to ${receiver.name}`)
       })
     })
   },
@@ -107,9 +107,10 @@ const commands = {
    */
   [commandEnum.CONTACTS.command]() {
     return new Promise((resolve) => {
-      if (this.user.friendsList.length === 0) return resolve("You have no friends :cry:")
+      const friendsList = Object.values(this.userCache).filter(u => u.isFriend)
+      if (friendsList.length === 0) return resolve("You have no friends :cry:")
 
-      return resolve(this.user.friendsList
+      return resolve(friendsList
         .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
         .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
       )

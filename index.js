@@ -15,9 +15,10 @@ const log = require("./log")
 function Messer() {
   this.api = null
   this.user = null
-  this.threadCache = []
+  this.userCache = {} // cached by userID
+  this.threadCache = {} // cached by name (quasi linked list)
+  this.threadMap = {} // maps a thread id to a thread name
   this.lastThread = null
-  this.userCache = [] // cache non-friends
 }
 
 /**
@@ -36,12 +37,14 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 
       log("Fetching your details...")
 
-      return helpers.fetchCurrentUser.call(this).then((user) => {
-        this.user = user
-        this.user.email = credentials.email
+      return helpers.fetchCurrentUser.call(this)
+        .then((user) => {
+          this.user = user
+          this.user.email = credentials.email
 
-        return resolve()
-      })
+          return resolve()
+        })
+        .catch(e => reject(e))
     })
   })
 }
@@ -66,7 +69,7 @@ Messer.prototype.start = function start() {
         eval: (input, context, filename, cb) => this.processCommand(input, cb),
       })
     })
-    .catch(() => {})
+    .catch(err => log(err))
 }
 
 /**
@@ -94,6 +97,54 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
       log(err)
       return callback(null)
     })
+}
+
+/*
+ * Adds a thread node to the thread cache
+ */
+Messer.prototype.cacheThread = function cacheThread(thread) {
+  let node = this.threadCache[thread.name[0].toLowerCase()]
+  if (!(node)) node = []
+
+  node.push({
+    name: thread.name,
+    threadID: thread.threadID,
+  }) // only store what we need, threadCache is the source of truth
+
+  this.threadCache[thread.name[0].toLowerCase()] = node
+}
+
+/*
+ * Adds a thread node to the thread cache
+ */
+Messer.prototype.getThreadByName = function getThreadByName(name) {
+  const node = this.threadCache[name[0].toLowerCase()]
+  if (!(node)) return null
+
+  if (node.length === 1) return node[0]
+
+  return node.find(t => t.toLowerCase.startsWith(name))
+}
+
+/*
+ * Adds a thread node to the thread cache
+ */
+Messer.prototype.getThreadById = function getThreadById(threadID) {
+  return new Promise((resolve, reject) => {
+    let thread = this.threadCache[threadID]
+
+    if (thread) return resolve(thread)
+
+    return this.api.getThreadInfo(threadID, (err, data) => {
+      if (err) return reject(err)
+
+      thread = data
+      thread.color = thread.color || helpers.getRandomColor()
+      this.cacheThread(thread)
+
+      return resolve(thread)
+    })
+  })
 }
 
 // create new Messer instance

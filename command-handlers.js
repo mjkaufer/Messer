@@ -1,7 +1,7 @@
 /* Store regexps that match raw commands */
 const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
-  /([A-z]+)\s+(.+)/,
+  /([A-z]+)\s{0,}(.+)/,
   /([A-z]+)\s+"(.*?)"(?:\s+)?([0-9]+)?/,
 ]
 
@@ -28,7 +28,11 @@ const commandEnum = {
   COLOR: {
     command: "color",
     regexp: regexps[0],
-  }
+  },
+  RECENT: {
+    command: "recent",
+    regexp: regexps[1],
+  },
 }
 
 const commandShortcuts = {
@@ -90,7 +94,7 @@ const commands = {
       if (this.lastThread === null) return reject("ERROR: You need to receive a message on Messer before using `reply`")
 
       const argv = parseCommand(commandEnum.REPLY.regexp, rawCommand)
-      if (!argv) return reject("Invalid command - check your syntax")
+      if (!argv || !argv[2]) return reject("Invalid command - check your syntax")
 
       // var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
@@ -182,6 +186,26 @@ const commands = {
         if (err) return reject(err)
 
         return resolve()
+      })
+    })
+  },
+
+  /**
+   * Retrieves last n messages from specified friend
+   * @param {String} rawCommand 
+   */
+  [commandEnum.RECENT.command](rawCommand) {
+    return new Promise((resolve, reject) => {
+      const argv = parseCommand(commandEnum.RECENT.regexp, rawCommand)
+      if (!argv) return reject("Invalid command - check your syntax")
+
+      const DEFAULT_COUNT = 5
+
+      const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
+
+      return this.api.getThreadList(0, threadCount, (err, recentThreads) => {
+        if (err) return reject(err)
+        return resolve(recentThreads.reduce((a, b) => `${a}${b.name}: ${b.unreadCount} unread\n`, ""))
       })
     })
   },

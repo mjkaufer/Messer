@@ -171,7 +171,6 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
       if (err) return reject(err)
 
       thread = data
-      thread.color = thread.color || helpers.getRandomColor()
       this.cacheThread(thread)
 
       return resolve(thread)

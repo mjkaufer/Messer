@@ -46,9 +46,6 @@ const eventHandlers = {
   message(message) {
     this.getThreadById(message.threadID)
       .then((thread) => {
-        process.stderr.write("\x07") // Terminal notification
-        this.lastThread = message.threadID
-
         const user = this.userCache[message.senderID]
 
         let sender = user.fullName || user.name
@@ -59,14 +56,17 @@ const eventHandlers = {
         }
 
         if (message.isGroup) {
-          sender = `(Group) ${sender}`
+          sender = `(${thread.name}) ${sender}`
         }
 
         if (message.attachments.length > 0) {
           messageBody = message.attachments.reduce((prev, curr) => `${prev}; ${parseAttachment(curr)}`, "")
         }
 
-        log(`${sender} - ${messageBody}`, thread.color)
+        log(`${this.lastThread === message.threadID ? "\t" : ""}${sender} - ${messageBody}`, thread.color)
+
+        process.stderr.write("\x07") // Terminal notification
+        this.lastThread = message.threadID
       })
       .catch(err => log(err))
   },

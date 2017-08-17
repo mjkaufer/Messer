@@ -1,13 +1,6 @@
 const fs = require("fs")
 const prompt = require("prompt")
-const style = require("ansi-styles")
 const log = require("./log")
-
-function getRandomColor() {
-  const colors = Object.keys(style.colors)
-
-  return colors[Math.random() * colors.length * 10]
-}
 
 /**
  * Returns a promise resolving with the credentials to log in with
@@ -43,5 +36,4 @@ function getCredentials() {
 
 module.exports = {
   getCredentials,
-  getRandomColor,
 }

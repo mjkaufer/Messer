@@ -28,7 +28,7 @@ const commandEnum = {
   COLOR: {
     command: "color",
     regexp: regexps[0],
-  },
+  }
 }
 
 const commandShortcuts = {
@@ -154,6 +154,7 @@ const commands = {
       })
     })
   },
+
   /**
    * Changes the color of the thread that matches given name
    * @param {String} rawCommand 
@@ -163,9 +164,25 @@ const commands = {
       const argv = parseCommand(commandEnum.COLOR.regexp, rawCommand)
       if (!argv) return reject("Invalid command - check your syntax")
 
-      // TODO: finish
+      let color = argv[3]
+      if (!color.startsWith("#")) {
+        color = this.api.threadColors[color]
+        if (!color) return reject(`Color '${argv[3]}' not available`)
+      }
+      // check if hex code is legit (TODO: regex this)
+      if (color.length !== 7) return reject(`Hex code '${argv[3]}' is not valid`)
 
-      return resolve()
+
+      const threadName = argv[2]
+      // Find the thread to send to
+      const thread = this.getThreadByName(threadName)
+
+      if (!thread) return reject(`Thread '${threadName}' couldn't be found!`)
+      return this.api.changeThreadColor(color, thread.theadID, (err) => {
+        if (err) return reject(err)
+
+        return resolve()
+      })
     })
   },
 }

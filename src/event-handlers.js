@@ -51,7 +51,7 @@ const eventHandlers = {
         let sender = user.fullName || user.name
         let messageBody = message.body
 
-        if (!user.isFriend) {
+        if (!user.isFriend && message.senderID !== this.user.userID) {
           sender = `${sender} [not your friend]`
         }
 

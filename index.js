@@ -16,8 +16,9 @@ function Messer() {
   this.api = null
   this.user = null
   this.userCache = {} // cached by userID
-  this.threadCache = {} // cached by name (quasi linked list)
-  this.threadMap = {} // maps a thread id to a thread name
+  this.threadCache = {} // cached by id
+  this.threadMap = {} // maps a thread/user name to a thread id
+  this.threadStack = [] // array of ...
   this.lastThread = null
 }
 
@@ -39,15 +40,19 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
         if (err) return reject(err)
 
         data.forEach((u) => {
-          this.cacheThread({
-            name: u.name || u.fullName,
-            threadID: u.userID,
-          }) // cache all friends as potential "threads"
-
+          this.threadMap[u.name || u.fullName] = u.userID
           this.userCache[u.userID] = u
         })
 
-        return resolve(user)
+        this.api.getThreadList(0, 20, (err, threads) => {
+          if (threads) {
+            threads.forEach((t) => {
+              this.cacheThread(t)
+            })
+          }
+
+          return resolve(user)
+        })
       })
     })
   })
@@ -134,27 +139,28 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
  * Adds a thread node to the thread cache
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
-  let node = this.threadCache[thread.name[0].toLowerCase()]
-  if (!(node)) node = []
+  if (this.threadCache[thread.threadID]) return
 
-  node.push({
+  this.threadCache[thread.threadID] = {
     name: thread.name,
     threadID: thread.threadID,
-  }) // only store what we need, threadCache is the source of truth
-
-  this.threadCache[thread.name[0].toLowerCase()] = node
+  }
 }
 
 /*
  * Adds a thread node to the thread cache
  */
 Messer.prototype.getThreadByName = function getThreadByName(name) {
-  const node = this.threadCache[name[0].toLowerCase()]
-  if (!(node)) return null
+  const threadName = Object.keys(this.threadMap)
+    .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
 
-  if (node.length === 1) return node[0]
+  const threadID = this.threadMap[threadName]
 
-  return node.find(t => (t.name || t.fullName).toLowerCase().startsWith(name))
+  if (this.threadCache[threadID].name.length === 0) {
+    this.threadCache[threadID].name = threadName
+  }
+
+  return this.threadCache[threadID]
 }
 
 /*
@@ -162,7 +168,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {
-    let thread = this.threadCache[this.threadMap[threadID]]
+    let thread = this.threadCache[threadID]
 
     if (thread) return resolve(thread)
 

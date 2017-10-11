@@ -18,7 +18,6 @@ function Messer() {
   this.userCache = {} // cached by userID
   this.threadCache = {} // cached by id
   this.threadMap = {} // maps a thread/user name to a thread id
-  this.threadStack = [] // array of ...
   this.lastThread = null
 }
 
@@ -145,16 +144,19 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
     name: thread.name,
     threadID: thread.threadID,
   }
+
+  if (thread.name.length > 0) this.threadMap[thread.name] = thread.threadID
 }
 
 /*
- * Adds a thread node to the thread cache
+ * Gets thread by thread name
  */
 Messer.prototype.getThreadByName = function getThreadByName(name) {
   const threadName = Object.keys(this.threadMap)
     .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
 
   const threadID = this.threadMap[threadName]
+  if (!threadID) return null
 
   if (this.threadCache[threadID].name.length === 0) {
     this.threadCache[threadID].name = threadName
@@ -164,7 +166,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
 }
 
 /*
- * Adds a thread node to the thread cache
+ * Gets thread by threadID
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {

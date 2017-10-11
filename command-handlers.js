@@ -202,10 +202,10 @@ const commands = {
       const DEFAULT_COUNT = 5
 
       const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
-      console.log(this.threadStack)
-      const threadList = this.threadStack
+
+      const threadList = Object.values(this.threadCache)
         .slice(0, threadCount)
-        .reduce((a, b, i) => `${a}[${i}] ${b}\n`, "")
+        .reduce((a, b, i) => `${a}[${i}] ${b.name}\n`, "")
 
       return resolve(threadList)
     })

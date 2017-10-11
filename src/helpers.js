@@ -1,5 +1,6 @@
 const fs = require("fs")
 const prompt = require("prompt")
+
 const log = require("./log")
 
 const APP_STATE_FILEPATH = "./appstate.json"

@@ -4,10 +4,10 @@
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
 
-const helpers = require("./helpers.js")
-const getCommandHandler = require("./command-handlers")
-const eventHandlers = require("./event-handlers")
-const log = require("./log")
+const helpers = require("./src/helpers.js")
+const getCommandHandler = require("./src/command-handlers")
+const eventHandlers = require("./src/event-handlers")
+const log = require("./src/log")
 
 /**
  * Messer creates a singleton that represents a Messer session 

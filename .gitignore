@@ -1,4 +1,5 @@
 config.json
+appstate.json
 node_modules
 facebook-chat-api
 *.html

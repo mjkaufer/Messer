@@ -3,6 +3,7 @@
 /* Imports */
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
+const fs = require("fs")
 
 const helpers = require("./helpers.js")
 const getCommandHandler = require("./command-handlers")
@@ -65,6 +66,9 @@ Messer.prototype.authenticate = function authenticate(credentials) {
       fbApi.setOptions({
         logLevel: "silent",
       })
+
+      helpers.saveAppState(fbApi.getAppState())
+
       this.api = fbApi
 
       log("Fetching your details...")
@@ -72,7 +76,6 @@ Messer.prototype.authenticate = function authenticate(credentials) {
       return this.fetchCurrentUser()
         .then((user) => {
           this.user = user
-          this.user.email = credentials.email
 
           return resolve()
         })
@@ -88,7 +91,7 @@ Messer.prototype.start = function start() {
   helpers.getCredentials()
     .then(credentials => this.authenticate(credentials))
     .then(() => {
-      log(`Successfully logged in as ${this.user.email}`)
+      log(`Successfully logged in as ${this.user.name}`)
 
       this.api.listen((err, ev) => {
         if (err) return null

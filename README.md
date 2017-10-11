@@ -23,17 +23,12 @@ npm install -g messer
 
 ## Setup
 
-### Prerequisites
-
-* Node.js ^6
-* Facebook account with *2FA disabled*
-
 ### Logging In
 
-The preferred login method is to store your Facebook credentials in a file. Create a file as described below, and start `messer` with
+The preferred login method is to store your Facebook credentials in a file (default filepath is *./config.json*). Create a file as described below, and start `messer` with
 
 ```bash
-messer ~/path/to/file
+messer [~/path/to/file]
 ```
 
 ```json
@@ -43,6 +38,18 @@ messer ~/path/to/file
   "password": "yourS3curePassw0rd"
 }
 ```
+
+### 2-Factor Authentication
+
+Due to some issues with the [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/), there isn't a nice way to log in with 2FA-enabled Facebook account. But, we have a work-around!
+
+1. Disable 2FA on your Facebook account (don't worry, you will be turning it back on soon)
+2. Log in to Messer. Once logged in, Messer generates an `appstate.json` file that is essentially an object of your _facebook.com_ browser cookies.
+3. Terminate your Messer session (i.e. close the terminal session)
+4. Re-enable 2FA on your Facebook account
+5. Log in to Messer
+
+This _should™_ work! Note that this clearly is NOT multi-factor authentication. If you absoultely require it, Messer is unfortunately not for you :cry:
 
 ## Commands Reference
 

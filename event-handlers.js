@@ -60,10 +60,10 @@ const eventHandlers = {
         }
 
         if (message.attachments.length > 0) {
-          messageBody = message.attachments.reduce((prev, curr) => `${prev}; ${parseAttachment(curr)}`, "")
+          messageBody = message.attachments.reduce((prev, curr) => `${prev} ${parseAttachment(curr)};`, "")
         }
 
-        log(`${this.lastThread === message.threadID ? "\t" : ""}${sender} - ${messageBody}`, thread.color)
+        log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
 
         process.stderr.write("\x07") // Terminal notification
         this.lastThread = message.threadID

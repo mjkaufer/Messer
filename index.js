@@ -3,7 +3,6 @@
 /* Imports */
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
-const fs = require("fs")
 
 const helpers = require("./helpers.js")
 const getCommandHandler = require("./command-handlers")
@@ -59,13 +58,10 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
  * @param {Object} credentials 
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
+  log("Logging in...")
   return new Promise((resolve, reject) => {
-    facebook(credentials, (err, fbApi) => {
+    facebook(credentials, { forceLogin: true, logLevel: "silent" }, (err, fbApi) => {
       if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
-
-      fbApi.setOptions({
-        logLevel: "silent",
-      })
 
       helpers.saveAppState(fbApi.getAppState())
 
@@ -166,7 +162,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {
-    let thread = this.threadCache[threadID]
+    let thread = this.threadCache[this.threadMap[threadID]]
 
     if (thread) return resolve(thread)
 

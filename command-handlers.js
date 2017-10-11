@@ -1,19 +1,15 @@
 /* Store regexps that match raw commands */
 const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
-  /([A-z]+)\s{0,}(.+)/,
+  /([A-z]+)\s+(.+){0,}/,
   /([A-z]+)\s+"(.*?)"(?:\s+)?([0-9]+)?/,
 ]
 
 /* Command type constants */
 const commandEnum = {
-  MESSAGE: {
-    command: "message",
+  COLOR: {
+    command: "color",
     regexp: regexps[0],
-  },
-  REPLY: {
-    command: "reply",
-    regexp: regexps[1],
   },
   CONTACTS: {
     command: "contacts",
@@ -25,20 +21,24 @@ const commandEnum = {
     command: "history",
     regexp: regexps[2],
   },
-  COLOR: {
-    command: "color",
+  MESSAGE: {
+    command: "message",
     regexp: regexps[0],
   },
   RECENT: {
     command: "recent",
     regexp: regexps[1],
   },
+  REPLY: {
+    command: "reply",
+    regexp: regexps[1],
+  },
 }
 
 const commandShortcuts = {
-  r: commandEnum.REPLY,
-  m: commandEnum.MESSAGE,
   h: commandEnum.HISTORY,
+  m: commandEnum.MESSAGE,
+  r: commandEnum.REPLY,
 }
 
 /**
@@ -202,11 +202,12 @@ const commands = {
       const DEFAULT_COUNT = 5
 
       const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
+      console.log(this.threadStack)
+      const threadList = this.threadStack
+        .slice(0, threadCount)
+        .reduce((a, b, i) => `${a}[${i}] ${b}\n`, "")
 
-      return this.api.getThreadList(0, threadCount, (err, recentThreads) => {
-        if (err) return reject(err)
-        return resolve(recentThreads.reduce((a, b) => `${a}${b.name}: ${b.unreadCount} unread\n`, ""))
-      })
+      return resolve(threadList)
     })
   },
 }

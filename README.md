@@ -104,12 +104,14 @@ Examples
 - `h "Matthew"`
 
 ### Group Chats
+
 Messages from group chats appear like
+
 ```bash
 (My cool friends) John Smith - hey guys!!$$@@
 ```
-Send a message to a group by using the `message` command. The `name` is the name of the group chat! Reply works as normal
 
+Send a message to a group by using the `message` command. The `name` is the name of the group chat! Reply works as normal
 
 ## Contributing
 

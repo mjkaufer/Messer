@@ -13,6 +13,7 @@ const commandEnum = {
   },
   CONTACTS: {
     command: "contacts",
+    help: "contacts",
   },
   HELP: {
     command: "help",
@@ -20,18 +21,22 @@ const commandEnum = {
   HISTORY: {
     command: "history",
     regexp: regexps[2],
+    help: "history \"[thread name]\" [n]",
   },
   MESSAGE: {
     command: "message",
     regexp: regexps[0],
+    help: "message \"[thread name]\" [message]",
   },
   RECENT: {
     command: "recent",
     regexp: regexps[1],
+    help: "recent [n]",
   },
   REPLY: {
     command: "reply",
     regexp: regexps[1],
+    help: "reply [message]",
   },
 }
 
@@ -125,14 +130,8 @@ const commands = {
    * Displays usage instructions
    */
   [commandEnum.HELP.command]() {
-    return new Promise(resolve =>
-      resolve("Commands:\n" +
-        "\tmessage \"[user]\" [message]\n" +
-        "\tcontacts\n",
-      ),
-    )
+    return new Promise(resolve => resolve(`Commands:\n${Object.values(commandEnum).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
   },
-
   /**
    * Retrieves last n messages from specified friend
    * @param {String} rawCommand 
@@ -212,13 +211,15 @@ const commands = {
   },
 }
 
-module.exports = function getCommandHandler(rawCommandKeyword) {
-  let command = commandShortcuts[rawCommandKeyword]
-  if (command) {
-    command = command.command
-  } else {
-    command = rawCommandKeyword
-  }
+module.exports = {
+  getCommandHandler(rawCommandKeyword) {
+    let command = commandShortcuts[rawCommandKeyword]
+    if (command) {
+      command = command.command
+    } else {
+      command = rawCommandKeyword
+    }
 
-  return commands[command]
+    return commands[command]
+  },
 }

@@ -12,7 +12,7 @@ function parseAttachment(attachment) {
 
   switch (attachmentType) {
     case "sticker":
-      messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID]
+      messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || "sticker - only viewable in browser"
       break
     case "file":
       messageBody = `${attachment.name}: ${attachment.url}`
@@ -27,7 +27,7 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.filename}: ${attachment.url}`
       break
     default:
-      messageBody = "only viewable in browser"
+      messageBody = `${attachmentType} - only viewable in browser`
       break
   }
 
@@ -46,6 +46,8 @@ const eventHandlers = {
   message(message) {
     this.getThreadById(message.threadID)
       .then((thread) => {
+        if (message.senderID === this.user.userID && message.threadID !== this.user.userID) return
+
         const user = this.userCache[message.senderID]
 
         let sender = user.fullName || user.name
@@ -75,13 +77,21 @@ const eventHandlers = {
    * @param {Object} ev 
    */
   event(ev) {
-    switch (ev.logMessageType) {
-      case "log:thread-color":
-        // update thread color here
-        break
-      default:
-        break
-    }
+    this.getThreadById(ev.threadID)
+      .then((thread) => {
+        let logMessage = "An event happened!"
+
+        switch (ev.logMessageType) {
+          case "log:thread-color":
+            thread.color = `#${ev.logMessageData.theme_color.slice(2)}`
+            logMessage = ev.logMessageBody
+            break
+          default:
+            break
+        }
+
+        log(logMessage)
+      })
   },
   typ() {
 

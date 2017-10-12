@@ -55,9 +55,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
           }
 
           // cache myself
-          return this.getThreadById(user.userID).then((thread) => {
-            return resolve(user)
-          })
+          return this.getThreadById(user.userID).then(() => resolve(user))
         })
       })
     })
@@ -71,7 +69,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
   return new Promise((resolve, reject) => {
-    facebook(credentials, { forceLogin: true, logLevel: "silent", selfListen: true }, (err, fbApi) => {
+    facebook(credentials, { forceLogin: true, logLevel: "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
       if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
       helpers.saveAppState(fbApi.getAppState())
@@ -150,7 +148,8 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
   this.threadCache[thread.threadID] = {
     name: thread.name,
     threadID: thread.threadID,
-  }
+    color: thread.color,
+  } // only cache the info we need
 
   if (thread.name.length > 0) this.threadMap[thread.name] = thread.threadID
 }

@@ -1,82 +1,117 @@
 # Messer
 
-Command-line messaging for Facebook Messenger
+Command-line Messaging for Facebook Messenger
+
+![Downloads](https://img.shields.io/npm/dm/messer.svg)
+![Version](https://img.shields.io/npm/v/messer.svg)
+![License](https://img.shields.io/npm/l/messer.svg)
 
 ![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
 
 ## Installation
 
-Install `messer` globally with `npm install messer -g`, so you can use the command in any context.
+```bash
+npm install -g messer
+```
+
+## Quick Start
+
+1. Install `messer`
+1. Run `messer` and enter your details
+1. ...
+1. Profit
 
 ## Setup
 
-Make sure you are running Node 4.x
+### Logging In
 
-If you want to log in with your credentials stored in a file, do the following - otherwise, you'll log in by typing in your credentials each time you run Messer
+The preferred login method is to store your Facebook credentials in a file (default filepath is *./config.json*). Create a file as described below, and start `messer` with
 
-Create a `config.json` somewhere. Inside of the `config.json`, add
-
+```bash
+messer [~/path/to/file]
 ```
+
+```json
+// config.json
 {
-	"email": "email",
-	"password": "password"
+  "email": "myfacebook@email.com",
+  "password": "yourS3curePassw0rd"
 }
 ```
-Fill in the email you use for Facebook, along with your Facebook password
 
-## Usage
+### 2-Factor Authentication
 
-If you stored your credentials in a json, simply type `messer path/to/config.json`, replacing `path/to/config.json` with the path to your `config.json` Otherwise, type `messer` and input your email and password as you are prompted for them. The password will not be visible as you type it in.
+Due to some issues with the [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/), there isn't a nice way to log in with 2FA-enabled Facebook account. But, we have a work-around!
 
-Once you're logged in, you'll see a REPL.
+1. Disable 2FA on your Facebook account (don't worry, you will be turning it back on soon)
+2. Log in to Messer. Once logged in, Messer generates an `appstate.json` file that is essentially an object of your _facebook.com_ browser cookies.
+3. Terminate your Messer session (i.e. close the terminal session)
+4. Re-enable 2FA on your Facebook account
+5. Log in to Messer
 
-### Commands Reference
+This _should™_ work! Note that this clearly is NOT multi-factor authentication. If you absoultely require it, Messer is unfortunately not for you :cry:
 
-#### message
-`[message | m] "[user]" [message]`
+## Commands Reference
+
+### message
+
 Sends a _message_ to a given _user_
 
+```bash
+[message | m] "[user]" [message]
+```
+
 Examples
+
 - `message "Matthew" hello world!`
 - `m "Matthew" hello world!`
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
-#### reply
+### reply
+
 Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
-`[reply | r] [message]`
+
+```bash
+[reply | r] [message]
+```
 
 Example
+
 - `r "hey yo this is my reply"`
 
 Note: this will only work if you have received at least one message through Messer.
 
-#### contacts
-Lists all of your Facebook friends
-`contacts`
+### contacts
 
-#### read
+Lists all of your Facebook friends
+
+```bash
+contacts
+```
+
+### history
+
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
-`read "[user]" [numMessages]`
+
+```bash
+[history | h] "[user]" [numMessages]
+```
 
 Examples
-- `read "Matthew" 10`
-- `read "Matthew"`
 
-## Todo
+- `history "Matthew" 10`
+- `h "Matthew"`
 
-* Track received messages from users, and ~~give the user the ability to look at them with a command~~
-* Make a Messenger-esque UI in the terminal
-	* Using `blessed`
-	* Make an option to use prettier UI vs plain text
-* Be able to send to specific group chats
-	* Maybe something with `getThreadList` - a list of recent conversations with indices, and be able to reply to a conversation by inputting its index
-* Different colors for different chats?
-* Giphy support - send random gif based on text user sends
+### Group Chats
 
-## Warnings
+Messages from group chats appear like
 
-facebook-chat-api@1.0.6 relies on a version of node which requires basic ES6 support - use facebook-chat-api@1.0.5 if you have an older version of node
+```bash
+(My cool friends) John Smith - hey guys!!$$@@
+```
+
+Send a message to a group by using the `message` command. The `name` is the name of the group chat! Reply works as normal
 
 ## Contributing
 

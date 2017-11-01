@@ -1,7 +1,7 @@
 config.json
+appstate.json
 node_modules
 facebook-chat-api
 *.html
 .DS_Store
 npm-debug.log*
-package-lock.json

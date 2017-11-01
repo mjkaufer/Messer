@@ -1,303 +1,196 @@
 #!/usr/bin/env node
-"use strict"
 
 /* Imports */
-const repl = require("repl")
 const facebook = require("facebook-chat-api")
+const repl = require("repl")
 
-/* Globals */
-let api = {}
-let user = {}
-let lastThread = null
+const helpers = require("./src/helpers.js")
+const getCommandHandler = require("./src/command-handlers").getCommandHandler
+const eventHandlers = require("./src/event-handlers")
+const log = require("./src/log")
 
-/* Command type constants */
-const commandEnum = {
-	MESSAGE: "message",
-	REPLY: "reply",
-	CONTACTS: "contacts",
-	HELP: "help",
-	READ: "read"
-}
-
-const commandMap = {
-	"r": commandEnum.REPLY,
-	"m": commandEnum.MESSAGE
-}
-
-const facebookStickers = { //packid -> sticker id
-	"227877430692340": {
-		"369239263222822": ":thumbsup:"
-	}
-}
-
-/* Initialisation */
-if (process.argv.length < 3) {
-	//	User didn't store credentials in JSON, make them manually enter credentials
-	const prompt = require("prompt")
-	console.log("Enter your Facebook credentials - your password will not be visible as you type it in")
-	prompt.start()
-
-	prompt.get([{
-		name: "email",
-		required: true
-	}, {
-		name: "password",
-		hidden: true,
-		conform: () => true
-	}], (err, result) => { authenticate(result) })
-
-} else {
-	const fs = require("fs")
-	fs.readFile(process.argv[2], (err, data) => {
-		if (err) return console.log(err)
-
-		authenticate(JSON.parse(data))
-	})
+/**
+ * Messer creates a singleton that represents a Messer session 
+ */
+function Messer() {
+  this.api = null
+  this.user = null
+  this.userCache = {} // cached by userID
+  this.threadCache = {} // cached by id
+  this.threadMap = {} // maps a thread/user name to a thread id
+  this.lastThread = null
 }
 
 /**
  * Fetches and stores all relevant user details using a promise.
  */
-function getUserDetails() {
-	console.info("Fetching user details...")
-	return new Promise((resolve, reject) => {
-		api.getFriendsList((err, data) => {
-			if (err) {
-				console.error(err)
-				reject(err)
-			}
-			user.friendsList = data
-			resolve()
-		})
-	})
+Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
+  const user = {}
+
+  return new Promise((resolve, reject) => {
+    user.userID = this.api.getCurrentUserID()
+
+    this.api.getUserInfo(user.userID, (err, data) => {
+      if (err) return reject(err)
+
+      Object.assign(user, data[user.userID])
+
+      return this.api.getFriendsList((err, data) => {
+        if (err) return reject(err)
+
+        data.forEach((u) => {
+          this.threadMap[u.name || u.fullName] = u.userID
+          this.userCache[u.userID] = u
+        })
+
+        return this.api.getThreadList(0, 20, (err, threads) => {
+          if (threads) {
+            threads.forEach((t) => {
+              if (t.threadID === user.userID) {
+                t.name = user.fullName || user.name
+                this.userCache[user.userID] = user
+              }
+              this.cacheThread(t)
+            })
+          }
+
+          // cache myself
+          return this.getThreadById(user.userID).then(() => resolve(user))
+        })
+      })
+    })
+  })
 }
 
 /**
- * Returns the user info for a given userID.
+ * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
+ * @param {Object} credentials 
  */
-function getUser(userID) {
-	const _user = user.friendsList.find(f => f.userID === userID)
-	if (!_user) {
-		api.getUserInfo(userID, (err, data) => {
-			if (err) return console.error(err)
+Messer.prototype.authenticate = function authenticate(credentials) {
+  log("Logging in...")
+  return new Promise((resolve, reject) => {
+    facebook(credentials, { forceLogin: true, logLevel: "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
+      if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
-			data[userID].userID = Object.keys(data)[0]
-			user.friendsList.push(data[userID])
-			getUser(userID)
-		})
-	} else {
-		return _user
-	}
+      helpers.saveAppState(fbApi.getAppState())
+
+      this.api = fbApi
+
+      log("Fetching your details...")
+
+      return this.fetchCurrentUser()
+        .then((user) => {
+          this.user = user
+
+          return resolve()
+        })
+        .catch(e => reject(e))
+    })
+  })
 }
 
 /**
- * Handles incoming messages by logging appropriately.
+ * Starts a Messer session
  */
-function handleMessage(message) {
-	// seen message (not sent)
-	if (!message.senderID || message.type !== "message")
-		return
+Messer.prototype.start = function start() {
+  helpers.getCredentials()
+    .then(credentials => this.authenticate(credentials))
+    .then(() => {
+      log(`Successfully logged in as ${this.user.name}`)
 
-	let senderObj = getUser(message.senderID)
-	let sender = senderObj.fullName || senderObj.name || "Unknown User"
-	if (!senderObj.isFriend)
-		sender += " [not your friend]"
+      this.api.listen((err, ev) => {
+        if (err) return null
 
-	if (message.participantNames && message.participantNames.length > 1)
-		sender = `'${sender}' (${message.senderName})`
+        return eventHandlers[ev.type].call(this, ev)
+      })
 
-	process.stderr.write("\x07")	// Terminal notification
-
-	let messageBody = null
-
-	if (message.body !== undefined && message.body != "") {
-		messageBody = message.body
-	} else {
-		messageBody = "unrenderable in Messer :("
-	}
-
-	if (message.attachments.length === 0) {
-		console.log(`New message from ${sender} - ${messageBody}`)
-	} else {
-		const attachment = message.attachments[0] // only first attachment
-		const attachmentType = attachment.type.replace(/\_/g, " ")
-
-		if (attachmentType === "sticker")
-			messageBody = facebookStickers[attachment.packID][attachment.stickerID] || messageBody
-
-		console.log(`New ${attachmentType} from ${sender} - ${messageBody}`)
-	}
-
-	lastThread = message.threadID
-}
-
-/* command handlers */
-const commands = {
-  /**
-   * Sends message to given user
-   */
-	[commandEnum.MESSAGE](rawCommand) {
-		const quoteReg = /(".*?")(.*)/g
-		// to get length of first arg
-		const args = rawCommand.replace("\n", "").split(" ")
-		const cmd = rawCommand.substring(args[0].length).trim()
-
-		if (cmd.match(quoteReg) == null) {
-			console.warn("Invalid message - check your syntax")
-			return processCommand("help")
-		}
-
-		const decomposed = quoteReg.exec(cmd)
-		const rawReceiver = decomposed[1].replace(/"/g, "")
-		const message = decomposed[2].trim()
-
-		if (message.length == 0) {
-			console.warn("No message to send - check your syntax")
-			return processCommand("help")
-		}
-
-		// Find the given receiver in the users friendlist
-		const receiver = user.friendsList.find(f => {
-			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-		})
-
-		if (!receiver) {
-			console.warn(`User '${rawReceiver}' could not be found in your friends list!`)
-			return
-		}
-
-		api.sendMessage(message, receiver.userID, err => {
-			if (err) return console.error("ERROR:", err.error)
-
-			console.log(`Sent message to ${receiver.fullName}`)
-		})
-	},
-
-  /**
-   * Replies with a given message to the last received thread.
-   */
-	[commandEnum.REPLY](rawCommand) {
-		if (lastThread === null) {
-			return console.warn("Error - can't reply to messages you haven't yet received! You need to receive a message before using `reply`!")
-		}
-
-		const args = rawCommand.replace("\n", "").split(" ")
-		const body = rawCommand.substring(args[0].length).trim()
-
-		// var body = rawCommand.substring(commandEnum.REPLY.length).trim()
-
-		api.sendMessage(body, lastThread, err => {
-			if (err) return console.error("ERROR:", err.error)
-
-			console.log("✓")
-		})
-	},
-
-  /**
-   * Displays users friend list
-   */
-	[commandEnum.CONTACTS]() {
-		if (user.friendsList.length === 0) {
-			console.log("You have no friends :cry:")
-		}
-		user.friendsList.forEach(f => { console.log(f.fullName) })
-	},
-	
-	/**
-	 * Displays usage instructions
-	 */
-	[commandEnum.HELP]() {
-		console.log("Commands:\n" +
-			"\tmessage \"[user]\" [message]\n" +
-			"\tcontacts\n" +
-			"\tread \"[user]\" [numMessages]\n"
-		)
-	},
-
-	/**
-	* Retrieves last n messages from specified friend
-	*/
-	[commandEnum.READ](rawCommand) {
-		const quoteReg = /(".*?")(.*)/g
-		// to get length of first arg
-		const args = rawCommand.replace("\n", "").split(" ")
-		const cmd = rawCommand.substring(args[0].length).trim()
-
-		if (cmd.match(quoteReg) == null) {
-			console.warn("Invalid message - check your syntax")
-			return processCommand("help")
-		}
-
-		const decomposed = quoteReg.exec(cmd)
-		const rawReceiver = decomposed[1].replace(/"/g, "")
-		let messageCount = Number.parseInt(decomposed[2].trim())
-
-		if (Number.isNaN(messageCount)) {
-			messageCount = 5
-		}
-
-		// Find the given reciever in the users friendlist
-		const receiver = user.friendsList.find(f => {
-			return f.fullName.toLowerCase().startsWith(rawReceiver.toLowerCase())
-		})
-
-		if (!receiver) {
-			console.warn(`User '${rawReceiver}' could not be found in your friends list!`)
-			return
-		}
-
-		api.getThreadHistory(receiver.userID, messageCount, undefined, (err, history) => {
-			if (err) return console.log("ERROR:", err.error)
-			history.forEach(cv => { console.log(`${cv.senderName}: ${cv.body}`) })
-		})
-	},
-	
+      repl.start({
+        ignoreUndefined: true,
+        eval: (input, context, filename, cb) => this.processCommand(input, cb),
+      })
+    })
+    .catch(err => log(err))
 }
 
 /**
  * Execute appropriate action for user input commands
+ * @param {String} rawCommand 
+ * @param {Function} callback 
  */
-function processCommand(rawCommand) {
-	// skip if command is only spaces
-	if (rawCommand.trim().length === 0) return
+Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
+  // ignore if rawCommand is only spaces
+  if (rawCommand.trim().length === 0) return null
 
-	const args = rawCommand.replace("\n", "").split(" ")
-	const command = commandMap[args[0]] || args[0]
-	const commandHandler = commands[command]
+  const args = rawCommand.replace("\n", "").split(" ")
+  const commandHandler = getCommandHandler(args[0])
 
-	if (!commandHandler) {
-		console.error("Invalid command - check your syntax")
-	} else {
-		commandHandler(rawCommand)
-	}
+  if (!commandHandler) {
+    return log("Invalid command - check your syntax")
+  }
+
+  return commandHandler.call(this, rawCommand)
+    .then((message) => {
+      log(message)
+      return callback(null)
+    })
+    .catch((err) => {
+      log(err)
+      return callback(null)
+    })
 }
 
-function authenticate(credentials) {
-	facebook(credentials, (err, fbApi) => {
-		if (err) return
+/*
+ * Adds a thread node to the thread cache
+ */
+Messer.prototype.cacheThread = function cacheThread(thread) {
+  if (this.threadCache[thread.threadID]) return
 
-		api = fbApi // assign to global variable
-		api.setOptions({ logLevel: "silent" })
+  this.threadCache[thread.threadID] = {
+    name: thread.name,
+    threadID: thread.threadID,
+    color: thread.color,
+  } // only cache the info we need
 
-		console.info(`Logged in as ${credentials.email}`)
-
-		getUserDetails(api, user).then(() => {
-			console.info("Listening for incoming messages...")
-
-			// listen for incoming messages
-			api.listen((err, message) => {
-				if (err) return
-				handleMessage(message)
-			})
-
-			// start REPL
-			repl.start({
-				ignoreUndefined: true,
-				eval(cmd) {
-					processCommand(cmd)
-				}
-			})
-		})
-
-	})
+  if (thread.name.length > 0) this.threadMap[thread.name] = thread.threadID
 }
+
+/*
+ * Gets thread by thread name
+ */
+Messer.prototype.getThreadByName = function getThreadByName(name) {
+  const threadName = Object.keys(this.threadMap)
+    .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
+
+  const threadID = this.threadMap[threadName]
+  if (!threadID) return null
+
+  if (this.threadCache[threadID].name.length === 0) {
+    this.threadCache[threadID].name = threadName
+  }
+
+  return this.threadCache[threadID]
+}
+
+/*
+ * Gets thread by threadID
+ */
+Messer.prototype.getThreadById = function getThreadById(threadID) {
+  return new Promise((resolve, reject) => {
+    let thread = this.threadCache[threadID]
+
+    if (thread) return resolve(thread)
+
+    return this.api.getThreadInfo(threadID, (err, data) => {
+      if (err) return reject(err)
+      thread = data
+
+      this.cacheThread(thread)
+
+      return resolve(thread)
+    })
+  })
+}
+
+// create new Messer instance
+const messer = new Messer()
+messer.start()

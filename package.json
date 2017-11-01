@@ -1,31 +1,39 @@
 {
   "name": "messer",
-  "version": "0.1.13",
+  "version": "0.2.0",
   "description": "Command-line messaging for Facebook Messenger",
+  "keywords": [],
+  "homepage": "https://github.com/mjkaufer/Messer#readme",
+  "bugs": {
+    "url": "https://github.com/mjkaufer/Messer/issues"
+  },
+  "license": "ISC",
+  "author": "Matthew Kaufer <mjkaufer@gmail.com>",
+  "contributors": [
+    "Matthew Kaufer <mjkaufer@gmail.com>",
+    "Tom Quirk <tomquirkacc@gmail.com>",
+    "Rushi Shah <2016rshah@gmail.com>"
+  ],
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js config.json"
+  "bin": {
+    "messer": "index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
-  "author": "Matthew Kaufer (@mjkaufer)",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mjkaufer/Messer/issues"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js config.json"
   },
-  "homepage": "https://github.com/mjkaufer/Messer#readme",
   "dependencies": {
-    "facebook-chat-api": "^1.4.0",
+    "chalk": "^2.1.0",
+    "facebook-chat-api": "Schmavery/facebook-chat-api",
     "prompt": "^0.2.14"
   },
-  "preferGlobal": true,
-  "bin": {
-    "messer": "index.js"
-  },
   "devDependencies": {
-    "eslint": "^3.11.1"
+    "eslint": "^4.8.0",
+    "eslint-config-airbnb-base": "^11.3.2",
+    "eslint-plugin-import": "^2.7.0"
   }
 }

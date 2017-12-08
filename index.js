@@ -12,13 +12,14 @@ const log = require("./src/log")
 /**
  * Messer creates a singleton that represents a Messer session 
  */
-function Messer() {
+function Messer(options = {}) {
   this.api = null
   this.user = null
   this.userCache = {} // cached by userID
   this.threadCache = {} // cached by id
   this.threadMap = {} // maps a thread/user name to a thread id
   this.lastThread = null
+  this.debug = options.debug || false
 }
 
 /**
@@ -55,7 +56,8 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
           }
 
           // cache myself
-          return this.getThreadById(user.userID).then(() => resolve(user))
+          return resolve(user)
+          // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
         })
       })
     })
@@ -69,7 +71,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
   return new Promise((resolve, reject) => {
-    facebook(credentials, { forceLogin: true, logLevel: "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
+    facebook(credentials, { forceLogin: true, logLevel: this.debug ? "" : "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
       if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
 
       helpers.saveAppState(fbApi.getAppState())
@@ -192,5 +194,5 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
 }
 
 // create new Messer instance
-const messer = new Messer()
+const messer = new Messer({ debug: true })
 messer.start()

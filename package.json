@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "chalk": "^2.1.0",
-    "facebook-chat-api": "Schmavery/facebook-chat-api",
+    "facebook-chat-api": "github:Schmavery/facebook-chat-api",
     "prompt": "^0.2.14"
   },
   "devDependencies": {

@@ -3,17 +3,11 @@
 /* Imports */
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
-const readline = require("readline")
 
 const helpers = require("./src/helpers.js")
 const getCommandHandler = require("./src/command-handlers").getCommandHandler
 const eventHandlers = require("./src/event-handlers")
 const log = require("./src/log")
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-})
 
 /**
  * Messer creates a singleton that represents a Messer session 
@@ -76,20 +70,25 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
+
+  const config = {
+    forceLogin: true,
+    logLevel: this.debug ? "info" : "silent",
+    selfListen: true,
+    listenEvents: true,
+  }
+
   return new Promise((resolve, reject) => {
-    facebook(credentials, { logLevel: this.debug ? "" : "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
+    facebook(credentials, config, (err, fbApi) => {
       if (err) {
         switch (err.error) {
           case "login-approval":
-            log("Enter code > ")
-            rl.on("line", (line) => {
-              err.continue(line)
-              rl.close()
-            })
+            helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${credentials.email}] - ${err}`)
+            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
         }
+        return null
       }
 
       helpers.saveAppState(fbApi.getAppState())
@@ -212,5 +211,5 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
 }
 
 // create new Messer instance
-const messer = new Messer({ debug: true })
+const messer = new Messer()
 messer.start()

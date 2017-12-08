@@ -35,19 +35,19 @@ function promptCredentials() {
 function getCredentials() {
   return new Promise((resolve, reject) => {
     fs.readFile(APP_STATE_FILEPATH, (errA, appstate) => {
-      if (errA) {
-        fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
-          if (errB) {
-            return promptCredentials()
-              .then(data => resolve(data))
-              .catch(errC => reject(errC))
-          }
-
-          return resolve(JSON.parse(creds))
-        })
+      if (appstate) {
+        return resolve({ appState: JSON.parse(appstate) })
       }
 
-      return resolve({ appState: JSON.parse(appstate) })
+      fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
+        if (errB) {
+          return promptCredentials()
+            .then(data => resolve(data))
+            .catch(errC => reject(errC))
+        }
+
+        return resolve(JSON.parse(creds))
+      })
     })
   })
 }

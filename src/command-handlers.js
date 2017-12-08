@@ -121,7 +121,7 @@ const commands = {
 
       return resolve(friendsList
         .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
+        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, "")
       )
     })
   },

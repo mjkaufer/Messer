@@ -1,5 +1,6 @@
 const fs = require("fs")
 const prompt = require("prompt")
+const readline = require("readline")
 
 const log = require("./log")
 
@@ -24,6 +25,24 @@ function promptCredentials() {
     }], (err, result) => {
       if (err) return reject(err)
       return resolve(result)
+    })
+  })
+}
+
+/**
+ * Prompts the user for a 2-factor authentication code
+ */
+function promptCode() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  return new Promise((resolve) => {
+    log("Enter code > ")
+    return rl.on("line", (line) => {
+      resolve(line)
+      rl.close()
     })
   })
 }
@@ -63,4 +82,5 @@ function saveAppState(appstate) {
 module.exports = {
   getCredentials,
   saveAppState,
+  promptCode,
 }

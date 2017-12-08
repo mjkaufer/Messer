@@ -41,15 +41,17 @@ messer [~/path/to/file]
 
 ### 2-Factor Authentication
 
-Due to some issues with the [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/), there isn't a nice way to log in with 2FA-enabled Facebook account. But, we have a work-around!
+1. Start Messer and wait for "Enter Code" prompt
+2. Enter a 2FA code generated from your 2FA app
 
-1. Disable 2FA on your Facebook account (don't worry, you will be turning it back on soon)
-2. Log in to Messer. Once logged in, Messer generates an `appstate.json` file that is essentially an object of your _facebook.com_ browser cookies.
-3. Terminate your Messer session (i.e. close the terminal session)
-4. Re-enable 2FA on your Facebook account
-5. Log in to Messer
+If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
 
-This _should™_ work! Note that this clearly is NOT multi-factor authentication. If you absoultely require it, Messer is unfortunately not for you :cry:
+3. Approve the browser/device (i.e. approve Messer)
+4. Retry from Step 1
+
+After you've successfully logged in, an `appstate.json` file is created which should allow you to skip this process every time you log in. If you wish to "start over", just delete that file.
+
+This _should™_ work! Please let us know if it doesn't: we've had a number of issues with it in the past.
 
 ## Commands Reference
 

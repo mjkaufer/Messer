@@ -70,9 +70,26 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
+
+  const config = {
+    forceLogin: true,
+    logLevel: this.debug ? "info" : "silent",
+    selfListen: true,
+    listenEvents: true,
+  }
+
   return new Promise((resolve, reject) => {
-    facebook(credentials, { forceLogin: true, logLevel: this.debug ? "" : "silent", selfListen: true, listenEvents: true }, (err, fbApi) => {
-      if (err) return reject(`Failed to login as [${credentials.email}] - ${err}`)
+    facebook(credentials, config, (err, fbApi) => {
+      if (err) {
+        switch (err.error) {
+          case "login-approval":
+            helpers.promptCode().then(code => err.continue(code))
+            break
+          default:
+            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
+        }
+        return null
+      }
 
       helpers.saveAppState(fbApi.getAppState())
 
@@ -194,5 +211,5 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
 }
 
 // create new Messer instance
-const messer = new Messer({ debug: true })
+const messer = new Messer()
 messer.start()

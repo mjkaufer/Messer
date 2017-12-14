@@ -1,3 +1,5 @@
+const helpers = require("./helpers.js")
+
 /* Store regexps that match raw commands */
 const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
@@ -116,7 +118,7 @@ const commands = {
    */
   [commandEnum.CONTACTS.command]() {
     return new Promise((resolve) => {
-      const friendsList = Object.values(this.userCache).filter(u => u.isFriend)
+      const friendsList = helpers.objectValues(this.userCache).filter(u => u.isFriend)
       if (friendsList.length === 0) return resolve("You have no friends :cry:")
 
       return resolve(friendsList
@@ -130,7 +132,7 @@ const commands = {
    * Displays usage instructions
    */
   [commandEnum.HELP.command]() {
-    return new Promise(resolve => resolve(`Commands:\n${Object.values(commandEnum).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
+    return new Promise(resolve => resolve(`Commands:\n${helpers.objectValues(commandEnum).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
   },
   /**
    * Retrieves last n messages from specified friend
@@ -202,7 +204,7 @@ const commands = {
 
       const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
 
-      const threadList = Object.values(this.threadCache)
+      const threadList = helpers.objectValues(this.threadCache)
         .slice(0, threadCount)
         .reduce((a, b, i) => `${a}[${i}] ${b.name}\n`, "")
 

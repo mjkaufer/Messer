@@ -79,8 +79,17 @@ function saveAppState(appstate) {
   fs.writeFileSync(APP_STATE_FILEPATH, JSON.stringify(appstate))
 }
 
+/**
+ * Substitute for Object.values
+ * @param {object} dict to extract values from
+ */
+function objectValues(dict) {
+  return Object.keys(dict).map(key => dict[key])
+}
+
 module.exports = {
   getCredentials,
   saveAppState,
   promptCode,
+  objectValues
 }

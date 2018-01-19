@@ -72,22 +72,34 @@ const commands = {
   [commandEnum.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandEnum.MESSAGE.regexp, rawCommand)
-      if (!argv) return reject("Invalid message - check your syntax")
+      if (!argv) {
+        reject("Invalid message - check your syntax")
+        return
+      }
 
       const rawReceiver = argv[2]
       const message = argv[3]
 
-      if (message.length === 0) return reject("No message to send - check your syntax")
+      if (message.length === 0) {
+        reject("No message to send - check your syntax")
+        return
+      }
 
       // Find the thread to send to
       const receiver = this.getThreadByName(rawReceiver)
 
-      if (!receiver) return reject(`User '${rawReceiver}' could not be found in your friends list!`)
+      if (!receiver) {
+        reject(`User '${rawReceiver}' could not be found in your friends list!`)
+        return
+      }
 
-      return this.api.sendMessage(message, receiver.threadID, (err) => {
-        if (err) return reject(err)
+      this.api.sendMessage(message, receiver.threadID, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
 
-        return resolve(`Sent message to ${receiver.name}`)
+        resolve(`Sent message to ${receiver.name}`)
       })
     })
   },
@@ -98,17 +110,26 @@ const commands = {
    */
   [commandEnum.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      if (this.lastThread === null) return reject("ERROR: You need to receive a message on Messer before using `reply`")
+      if (this.lastThread === null) {
+        reject("ERROR: You need to receive a message on Messer before using `reply`")
+        return
+      }
 
       const argv = parseCommand(commandEnum.REPLY.regexp, rawCommand)
-      if (!argv || !argv[2]) return reject("Invalid command - check your syntax")
+      if (!argv || !argv[2]) {
+        reject("Invalid command - check your syntax")
+        return
+      }
 
       // var body = rawCommand.substring(commandEnum.REPLY.length).trim()
 
-      return this.api.sendMessage(argv[2], this.lastThread, (err) => {
-        if (err) return reject(err)
+      this.api.sendMessage(argv[2], this.lastThread, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
 
-        return resolve()
+        resolve()
       })
     })
   },
@@ -119,11 +140,11 @@ const commands = {
   [commandEnum.CONTACTS.command]() {
     return new Promise((resolve) => {
       const friendsList = helpers.objectValues(this.userCache).filter(u => u.isFriend)
-      if (friendsList.length === 0) return resolve("You have no friends :cry:")
+      if (friendsList.length === 0) resolve("You have no friends :cry:")
 
-      return resolve(friendsList
+      resolve(friendsList
         .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, "")
+        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""),
       )
     })
   },
@@ -132,7 +153,7 @@ const commands = {
    * Displays usage instructions
    */
   [commandEnum.HELP.command]() {
-    return new Promise(resolve => resolve(`Commands:\n${helpers.objectValues(commandEnum).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
+    return Promise.resolve(`Commands:\n${helpers.objectValues(commandEnum).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`)
   },
   /**
    * Retrieves last n messages from specified friend
@@ -141,7 +162,10 @@ const commands = {
   [commandEnum.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandEnum.HISTORY.regexp, rawCommand)
-      if (!argv) return reject("Invalid command - check your syntax")
+      if (!argv) {
+        reject("Invalid command - check your syntax")
+        return
+      }
 
       const DEFAULT_COUNT = 5
 
@@ -150,12 +174,18 @@ const commands = {
 
       // Find the given receiver in the users friendlist
       const thread = this.getThreadByName(rawThreadName)
-      if (!thread) return reject(`User '${rawThreadName}' could not be found in your friends list!`)
+      if (!thread) {
+        reject(`User '${rawThreadName}' could not be found in your friends list!`)
+        return
+      }
 
-      return this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
-        if (err) return reject(err)
+      this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
+        if (err) {
+          reject(err)
+          return
+        }
 
-        return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
+        resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
       })
     })
   },
@@ -167,26 +197,41 @@ const commands = {
   [commandEnum.COLOR.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandEnum.COLOR.regexp, rawCommand)
-      if (!argv) return reject("Invalid command - check your syntax")
+      if (!argv) {
+        reject("Invalid command - check your syntax")
+        return
+      }
 
       let color = argv[3]
       if (!color.startsWith("#")) {
         color = this.api.threadColors[color]
-        if (!color) return reject(`Color '${argv[3]}' not available`)
+        if (!color) {
+          reject(`Color '${argv[3]}' not available`)
+          return
+        }
       }
       // check if hex code is legit (TODO: regex this)
-      if (color.length !== 7) return reject(`Hex code '${argv[3]}' is not valid`)
+      if (color.length !== 7) {
+        reject(`Hex code '${argv[3]}' is not valid`)
+        return
+      }
 
 
       const threadName = argv[2]
       // Find the thread to send to
       const thread = this.getThreadByName(threadName)
 
-      if (!thread) return reject(`Thread '${threadName}' couldn't be found!`)
-      return this.api.changeThreadColor(color, thread.theadID, (err) => {
-        if (err) return reject(err)
+      if (!thread) {
+        reject(`Thread '${threadName}' couldn't be found!`)
+        return
+      }
+      this.api.changeThreadColor(color, thread.theadID, (err) => {
+        if (err) {
+          reject(err)
+          return
+        }
 
-        return resolve()
+        resolve()
       })
     })
   },
@@ -198,7 +243,10 @@ const commands = {
   [commandEnum.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandEnum.RECENT.regexp, rawCommand)
-      if (!argv) return reject("Invalid command - check your syntax")
+      if (!argv) {
+        reject("Invalid command - check your syntax")
+        return
+      }
 
       const DEFAULT_COUNT = 5
 
@@ -208,7 +256,7 @@ const commands = {
         .slice(0, threadCount)
         .reduce((a, b, i) => `${a}[${i}] ${b.name}\n`, "")
 
-      return resolve(threadList)
+      resolve(threadList)
     })
   },
 }

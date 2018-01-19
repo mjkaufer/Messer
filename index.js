@@ -32,19 +32,25 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
     user.userID = this.api.getCurrentUserID()
 
     this.api.getUserInfo(user.userID, (userInfoError, userData) => {
-      if (userInfoError) return reject(userInfoError)
+      if (userInfoError) {
+        reject(userInfoError)
+        return
+      }
 
       Object.assign(user, userData[user.userID])
 
-      return this.api.getFriendsList((friendListError, friendList) => {
-        if (friendListError) return reject(friendListError)
+      this.api.getFriendsList((friendListError, friendList) => {
+        if (friendListError) {
+          reject(friendListError)
+          return
+        }
 
         friendList.forEach((friend) => {
           this.threadMap[friend.name || friend.fullName] = friend.userID
           this.userCache[friend.userID] = friend
         })
 
-        return this.api.getThreadList(0, 20, (err, threads) => {
+        this.api.getThreadList(0, 20, (err, threads) => {
           if (threads) {
             threads.forEach((thread) => {
               if (thread.threadID === user.userID) {
@@ -56,7 +62,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
           }
 
           // cache myself
-          return resolve(user)
+          resolve(user)
           // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
         })
       })
@@ -86,9 +92,9 @@ Messer.prototype.authenticate = function authenticate(credentials) {
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
+            reject(`Failed to login as [${credentials.email}] - ${err.error}`)
         }
-        return null
+        return
       }
 
       helpers.saveAppState(fbApi.getAppState())
@@ -97,11 +103,11 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 
       log("Fetching your details...")
 
-      return this.fetchCurrentUser()
+      this.fetchCurrentUser()
         .then((user) => {
           this.user = user
 
-          return resolve()
+          resolve()
         })
         .catch(e => reject(e))
     })
@@ -118,9 +124,9 @@ Messer.prototype.start = function start() {
       log(`Successfully logged in as ${this.user.name}`)
 
       this.api.listen((err, ev) => {
-        if (err) return null
+        if (err) return
 
-        return eventHandlers[ev.type].call(this, ev)
+        eventHandlers[ev.type].call(this, ev)
       })
 
       repl.start({
@@ -150,11 +156,11 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
   return commandHandler.call(this, rawCommand)
     .then((message) => {
       log(message)
-      return callback(null)
+      callback(null)
     })
     .catch((err) => {
       log(err)
-      return callback(null)
+      callback(null)
     })
 }
 
@@ -197,15 +203,21 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {
     let thread = this.threadCache[threadID]
 
-    if (thread) return resolve(thread)
+    if (thread) {
+      resolve(thread)
+      return
+    }
 
-    return this.api.getThreadInfo(threadID, (err, data) => {
-      if (err) return reject(err)
+    this.api.getThreadInfo(threadID, (err, data) => {
+      if (err) {
+        reject(err)
+        return
+      }
       thread = data
 
       this.cacheThread(thread)
 
-      return resolve(thread)
+      resolve(thread)
     })
   })
 }

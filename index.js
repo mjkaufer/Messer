@@ -10,7 +10,7 @@ const eventHandlers = require("./src/event-handlers")
 const log = require("./src/log")
 
 /**
- * Messer creates a singleton that represents a Messer session 
+ * Messer creates a singleton that represents a Messer session
  */
 function Messer(options = {}) {
   this.api = null
@@ -66,7 +66,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 
 /**
  * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
- * @param {Object} credentials 
+ * @param {Object} credentials
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
@@ -133,8 +133,8 @@ Messer.prototype.start = function start() {
 
 /**
  * Execute appropriate action for user input commands
- * @param {String} rawCommand 
- * @param {Function} callback 
+ * @param {String} rawCommand
+ * @param {Function} callback
  */
 Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
   // ignore if rawCommand is only spaces

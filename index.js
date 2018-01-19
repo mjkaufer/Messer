@@ -31,27 +31,27 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
   return new Promise((resolve, reject) => {
     user.userID = this.api.getCurrentUserID()
 
-    this.api.getUserInfo(user.userID, (err, data) => {
-      if (err) return reject(err)
+    this.api.getUserInfo(user.userID, (userInfoError, userData) => {
+      if (userInfoError) return reject(userInfoError)
 
-      Object.assign(user, data[user.userID])
+      Object.assign(user, userData[user.userID])
 
-      return this.api.getFriendsList((err, data) => {
-        if (err) return reject(err)
+      return this.api.getFriendsList((friendListError, friendList) => {
+        if (friendListError) return reject(friendListError)
 
-        data.forEach((u) => {
-          this.threadMap[u.name || u.fullName] = u.userID
-          this.userCache[u.userID] = u
+        friendList.forEach((friend) => {
+          this.threadMap[friend.name || friend.fullName] = friend.userID
+          this.userCache[friend.userID] = friend
         })
 
         return this.api.getThreadList(0, 20, (err, threads) => {
           if (threads) {
-            threads.forEach((t) => {
-              if (t.threadID === user.userID) {
-                t.name = user.fullName || user.name
+            threads.forEach((thread) => {
+              if (thread.threadID === user.userID) {
+                thread.name = user.fullName || user.name
                 this.userCache[user.userID] = user
               }
-              this.cacheThread(t)
+              this.cacheThread(thread)
             })
           }
 

@@ -52,7 +52,8 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 
         this.api.getThreadList(0, 20, (err, threads) => {
           if (threads) {
-            threads.forEach((thread) => {
+            threads.forEach((rawThread) => {
+              const thread = Object.assign({}, rawThread)
               if (thread.threadID === user.userID) {
                 thread.name = user.fullName || user.name
                 this.userCache[user.userID] = user

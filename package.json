@@ -24,7 +24,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js config.json"
+    "start": "node index.js config.json",
+    "lint": "eslint ."
   },
   "dependencies": {
     "chalk": "^2.1.0",

@@ -50,8 +50,8 @@ const commandShortcuts = {
 
 /**
  * Matches a raw command on a given regex and returns the available arguments
- * @param {Regex} regexp 
- * @param {String} rawCommand 
+ * @param {Regex} regexp
+ * @param {String} rawCommand
  */
 function parseCommand(regexp, rawCommand) {
   if (regexp) return rawCommand.match(regexp)
@@ -67,7 +67,7 @@ function parseCommand(regexp, rawCommand) {
 const commands = {
   /**
    * Sends message to given user
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
    */
   [commandEnum.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -94,7 +94,7 @@ const commands = {
 
   /**
    * Replies with a given message to the last received thread.
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
    */
   [commandEnum.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -136,7 +136,7 @@ const commands = {
   },
   /**
    * Retrieves last n messages from specified friend
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
    */
   [commandEnum.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -162,7 +162,7 @@ const commands = {
 
   /**
    * Changes the color of the thread that matches given name
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
    */
   [commandEnum.COLOR.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -193,7 +193,7 @@ const commands = {
 
   /**
    * Retrieves last n messages from specified friend
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
    */
   [commandEnum.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {

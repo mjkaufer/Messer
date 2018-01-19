@@ -91,5 +91,5 @@ module.exports = {
   getCredentials,
   saveAppState,
   promptCode,
-  objectValues
+  objectValues,
 }

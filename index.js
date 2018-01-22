@@ -190,8 +190,10 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
   const threadID = this.threadMap[threadName]
   if (!threadID) return null
 
-  if (this.threadCache[threadID].name.length === 0) {
-    this.threadCache[threadID].name = threadName
+  const thread = this.threadCache[threadID] || {}
+
+  if (thread.name.length === 0) {
+    thread.name = threadName
   }
 
   return this.threadCache[threadID]

@@ -23,8 +23,11 @@ function promptCredentials() {
       required: true,
       hidden: true,
     }], (err, result) => {
-      if (err) return reject(err)
-      return resolve(result)
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(result)
     })
   })
 }
@@ -40,7 +43,7 @@ function promptCode() {
 
   return new Promise((resolve) => {
     log("Enter code > ")
-    return rl.on("line", (line) => {
+    rl.on("line", (line) => {
       resolve(line)
       rl.close()
     })
@@ -55,17 +58,20 @@ function getCredentials() {
   return new Promise((resolve, reject) => {
     fs.readFile(APP_STATE_FILEPATH, (errA, appstate) => {
       if (appstate) {
-        return resolve({ appState: JSON.parse(appstate) })
+        resolve({ appState: JSON.parse(appstate) })
+        return
       }
 
       fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
         if (errB) {
-          return promptCredentials()
+          promptCredentials()
             .then(data => resolve(data))
             .catch(errC => reject(errC))
+
+          return
         }
 
-        return resolve(JSON.parse(creds))
+        resolve(JSON.parse(creds))
       })
     })
   })
@@ -91,5 +97,5 @@ module.exports = {
   getCredentials,
   saveAppState,
   promptCode,
-  objectValues
+  objectValues,
 }

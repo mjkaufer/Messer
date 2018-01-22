@@ -3,7 +3,7 @@ const fbAssets = require("./fb-assets")
 
 /**
  * Returns the parsed attachment object as a String
- * @param {Object} attachment 
+ * @param {Object} attachment
  */
 function parseAttachment(attachment) {
   const attachmentType = attachment.type.replace(/_/g, " ")
@@ -41,7 +41,7 @@ function parseAttachment(attachment) {
 const eventHandlers = {
   /**
    * Handles the "message" event type
-   * @param {Object} message 
+   * @param {Object} message
    */
   message(message) {
     this.getThreadById(message.threadID)
@@ -74,7 +74,7 @@ const eventHandlers = {
   },
   /**
    * Handles the "message" event type
-   * @param {Object} ev 
+   * @param {Object} ev
    */
   event(ev) {
     this.getThreadById(ev.threadID)
@@ -83,7 +83,7 @@ const eventHandlers = {
 
         switch (ev.logMessageType) {
           case "log:thread-color":
-            thread.color = `#${ev.logMessageData.theme_color.slice(2)}`
+            Object.assign(thread, { color: `#${ev.logMessageData.theme_color.slice(2)}` })
             logMessage = ev.logMessageBody
             break
           default:

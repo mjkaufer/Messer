@@ -10,7 +10,7 @@ const eventHandlers = require("./src/event-handlers")
 const log = require("./src/log")
 
 /**
- * Messer creates a singleton that represents a Messer session 
+ * Messer creates a singleton that represents a Messer session
  */
 function Messer(options = {}) {
   this.api = null
@@ -31,32 +31,39 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
   return new Promise((resolve, reject) => {
     user.userID = this.api.getCurrentUserID()
 
-    this.api.getUserInfo(user.userID, (err, data) => {
-      if (err) return reject(err)
+    this.api.getUserInfo(user.userID, (userInfoError, userData) => {
+      if (userInfoError) {
+        reject(userInfoError)
+        return
+      }
 
-      Object.assign(user, data[user.userID])
+      Object.assign(user, userData[user.userID])
 
-      return this.api.getFriendsList((err, data) => {
-        if (err) return reject(err)
+      this.api.getFriendsList((friendListError, friendList) => {
+        if (friendListError) {
+          reject(friendListError)
+          return
+        }
 
-        data.forEach((u) => {
-          this.threadMap[u.name || u.fullName] = u.userID
-          this.userCache[u.userID] = u
+        friendList.forEach((friend) => {
+          this.threadMap[friend.name || friend.fullName] = friend.userID
+          this.userCache[friend.userID] = friend
         })
 
-        return this.api.getThreadList(0, 20, (err, threads) => {
+        this.api.getThreadList(0, 20, (err, threads) => {
           if (threads) {
-            threads.forEach((t) => {
-              if (t.threadID === user.userID) {
-                t.name = user.fullName || user.name
+            threads.forEach((rawThread) => {
+              const thread = Object.assign({}, rawThread)
+              if (thread.threadID === user.userID) {
+                thread.name = user.fullName || user.name
                 this.userCache[user.userID] = user
               }
-              this.cacheThread(t)
+              this.cacheThread(thread)
             })
           }
 
           // cache myself
-          return resolve(user)
+          resolve(user)
           // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
         })
       })
@@ -66,7 +73,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 
 /**
  * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
- * @param {Object} credentials 
+ * @param {Object} credentials
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
@@ -86,9 +93,9 @@ Messer.prototype.authenticate = function authenticate(credentials) {
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
+            reject(`Failed to login as [${credentials.email}] - ${err.error}`)
         }
-        return null
+        return
       }
 
       helpers.saveAppState(fbApi.getAppState())
@@ -97,11 +104,11 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 
       log("Fetching your details...")
 
-      return this.fetchCurrentUser()
+      this.fetchCurrentUser()
         .then((user) => {
           this.user = user
 
-          return resolve()
+          resolve()
         })
         .catch(e => reject(e))
     })
@@ -118,9 +125,9 @@ Messer.prototype.start = function start() {
       log(`Successfully logged in as ${this.user.name}`)
 
       this.api.listen((err, ev) => {
-        if (err) return null
+        if (err) return
 
-        return eventHandlers[ev.type].call(this, ev)
+        eventHandlers[ev.type].call(this, ev)
       })
 
       repl.start({
@@ -133,8 +140,8 @@ Messer.prototype.start = function start() {
 
 /**
  * Execute appropriate action for user input commands
- * @param {String} rawCommand 
- * @param {Function} callback 
+ * @param {String} rawCommand
+ * @param {Function} callback
  */
 Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
   // ignore if rawCommand is only spaces
@@ -150,11 +157,11 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
   return commandHandler.call(this, rawCommand)
     .then((message) => {
       log(message)
-      return callback(null)
+      callback(null)
     })
     .catch((err) => {
       log(err)
-      return callback(null)
+      callback(null)
     })
 }
 
@@ -197,15 +204,21 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {
     let thread = this.threadCache[threadID]
 
-    if (thread) return resolve(thread)
+    if (thread) {
+      resolve(thread)
+      return
+    }
 
-    return this.api.getThreadInfo(threadID, (err, data) => {
-      if (err) return reject(err)
+    this.api.getThreadInfo(threadID, (err, data) => {
+      if (err) {
+        reject(err)
+        return
+      }
       thread = data
 
       this.cacheThread(thread)
 
-      return resolve(thread)
+      resolve(thread)
     })
   })
 }

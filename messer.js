@@ -155,8 +155,9 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
     })
 }
 
-/*
+/**
  * Adds a thread node to the thread cache
+ * @param {Object} thread 
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
   if (this.threadCache[thread.threadID]) return
@@ -167,13 +168,14 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
     color: thread.color,
   } // only cache the info we need
 
-  if (thread.name.length > 0) {
+  if (thread.name) {
     this.threadMap[thread.name] = thread.threadID
   }
 }
 
-/*
+/**
  * Gets thread by thread name
+ * @param {String} name 
  */
 Messer.prototype.getThreadByName = function getThreadByName(name) {
   return new Promise((resolve, reject) => {
@@ -185,7 +187,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
 
     return this.getThreadById(threadID)
       .then((thread) => {
-        if (thread.name.length === 0) {
+        if (!thread.name) {
           Object.assign(thread, { name: threadName })
         }
 
@@ -195,8 +197,9 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
   })
 }
 
-/*
+/**
  * Gets thread by threadID
+ * @param {String} threadID
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {
   return new Promise((resolve, reject) => {

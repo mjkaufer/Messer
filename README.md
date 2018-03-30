@@ -118,3 +118,19 @@ Send a message to a group by using the `message` command. The `name` is the name
 ## Contributing
 
 Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. In the future, only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
+
+### Before you submit your PR, ask yourself...
+
+1. Have I written tests? (where appropriate)
+
+2. Have I run the linter?
+
+```bash
+npm run lint
+```
+
+3. Have I made sure the tests pass?
+
+```bash
+npm test
+```

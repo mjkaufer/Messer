@@ -23,8 +23,9 @@
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
   "scripts": {
+    "start": "node index.js config.json",
     "test": "mocha",
-    "start": "node index.js config.json"
+    "lint": "./node_modules/eslint/bin/eslint.js ."
   },
   "dependencies": {
     "chalk": "^2.1.0",

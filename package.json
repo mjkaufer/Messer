@@ -23,17 +23,19 @@
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js config.json"
+    "start": "node index.js config.json",
+    "test": "mocha",
+    "lint": "./node_modules/eslint/bin/eslint.js ."
   },
   "dependencies": {
     "chalk": "^2.1.0",
-    "facebook-chat-api": "github:Schmavery/facebook-chat-api",
+    "facebook-chat-api": "^1.5.0",
     "prompt": "^0.2.14"
   },
   "devDependencies": {
     "eslint": "^4.8.0",
     "eslint-config-airbnb-base": "^11.3.2",
-    "eslint-plugin-import": "^2.7.0"
+    "eslint-plugin-import": "^2.7.0",
+    "mocha": "^5.0.5"
   }
 }

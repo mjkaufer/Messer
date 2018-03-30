@@ -58,7 +58,7 @@ function getCredentials() {
         return resolve({ appState: JSON.parse(appstate) })
       }
 
-      fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
+      return fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
         if (errB) {
           return promptCredentials()
             .then(data => resolve(data))
@@ -91,5 +91,5 @@ module.exports = {
   getCredentials,
   saveAppState,
   promptCode,
-  objectValues
+  objectValues,
 }

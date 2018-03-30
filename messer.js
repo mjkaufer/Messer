@@ -176,17 +176,23 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
  * Gets thread by thread name
  */
 Messer.prototype.getThreadByName = function getThreadByName(name) {
-  const threadName = Object.keys(this.threadMap)
-    .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
+  return new Promise((resolve, reject) => {
+    const threadName = Object.keys(this.threadMap)
+      .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
 
-  const threadID = this.threadMap[threadName]
-  if (!threadID) return null
+    const threadID = this.threadMap[threadName]
+    if (!threadID) return reject("no thread with that name found")
 
-  if (this.threadCache[threadID].name.length === 0) {
-    this.threadCache[threadID].name = threadName
-  }
+    return this.getThreadById(threadID)
+      .then((thread) => {
+        if (thread.name.length === 0) {
+          Object.assign(thread, { name: threadName })
+        }
 
-  return this.threadCache[threadID]
+        return resolve(thread)
+      })
+      .catch(err => reject(err))
+  })
 }
 
 /*

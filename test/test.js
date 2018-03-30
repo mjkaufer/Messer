@@ -61,15 +61,17 @@ describe("Messer", () => {
 
     messer.cacheThread(thread)
 
-    it("should retrieve thread by exact name", () => {
-      const threadByName = messer.getThreadByName(thread.name)
-      assert.deepEqual(thread, threadByName)
-    })
+    it("should retrieve thread by exact name", () =>
+      messer.getThreadByName(thread.name)
+        .then(res => assert.deepEqual(res, thread)))
 
-    it("should retrieve thread by fuzzy name", () => {
-      const threadByName = messer.getThreadByName("mark")
-      assert.deepEqual(thread, threadByName)
-    })
+    it("should retrieve thread by fuzzy name", () =>
+      messer.getThreadByName("mark")
+        .then(res => assert.deepEqual(res, thread)))
+
+    it("should fail to retrieve thread by name that is not cached", () =>
+      messer.getThreadByName("bill")
+        .catch(e => assert(e != null)))
   })
 })
 

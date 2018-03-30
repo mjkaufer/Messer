@@ -39,16 +39,14 @@ const commands = {
 
       if (message.length === 0) return reject("No message to send - check your syntax")
 
-      // Find the thread to send to
-      const receiver = this.getThreadByName(rawReceiver)
+      this.getThreadByName(rawReceiver)
+        .then(receiver =>
+          this.api.sendMessage(message, receiver.threadID, (err) => {
+            if (err) return reject(err)
 
-      if (!receiver) return reject(`User '${rawReceiver}' could not be found in your friends list!`)
-
-      return this.api.sendMessage(message, receiver.threadID, (err) => {
-        if (err) return reject(err)
-
-        return resolve(`Sent message to ${receiver.name}`)
-      })
+            return resolve(`Sent message to ${receiver.name}`)
+          }))
+        .catch(() => reject(`User '${rawReceiver}' could not be found in your friends list!`))
     })
   },
 
@@ -108,14 +106,14 @@ const commands = {
       const rawThreadName = argv[2]
       const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
       // Find the given receiver in the users friendlist
-      const thread = this.getThreadByName(rawThreadName)
-      if (!thread) return reject(`User '${rawThreadName}' could not be found in your friends list!`)
+      this.getThreadByName(rawThreadName)
+        .then(thread =>
+          this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
+            if (err) return reject(err)
 
-      return this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
-        if (err) return reject(err)
-
-        return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
-      })
+            return resolve(history.reduce((a, b) => `${a}${b.senderName}: ${b.body}\n`, ""))
+          }))
+        .catch(() => reject(`User '${rawThreadName}' could not be found in your friends list!`))
     })
   },
 
@@ -139,14 +137,15 @@ const commands = {
 
       const threadName = argv[2]
       // Find the thread to send to
-      const thread = this.getThreadByName(threadName)
 
-      if (!thread) return reject(`Thread '${threadName}' couldn't be found!`)
-      return this.api.changeThreadColor(color, thread.theadID, (err) => {
-        if (err) return reject(err)
+      this.getThreadByName(threadName)
+        .then(thread =>
+          this.api.changeThreadColor(color, thread.theadID, (err) => {
+            if (err) return reject(err)
 
-        return resolve()
-      })
+            return resolve()
+          }))
+        .catch(() => reject(`Thread '${threadName}' couldn't be found!`))
     })
   },
 

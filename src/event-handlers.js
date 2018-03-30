@@ -83,7 +83,7 @@ const eventHandlers = {
 
         switch (ev.logMessageType) {
           case "log:thread-color":
-            thread.color = `#${ev.logMessageData.theme_color.slice(2)}`
+            Object.assign(thread, { color: `#${ev.logMessageData.theme_color.slice(2)}` })
             logMessage = ev.logMessageBody
             break
           default:

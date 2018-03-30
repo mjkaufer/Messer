@@ -1,6 +1,7 @@
 {
     "env": {
-        "node": true
+        "node": true,
+        "mocha": true
     },
     "extends": "airbnb-base",
     "rules": {
@@ -12,8 +13,5 @@
             "error",
             "never"
         ]
-        // "no-console": 0,
-        // "no-unused-vars": 2,
-        // "no-var": 2
     }
 }

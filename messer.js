@@ -28,34 +28,40 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
   return new Promise((resolve, reject) => {
     user.userID = this.api.getCurrentUserID()
 
-    this.api.getUserInfo(user.userID, (err, data) => {
-      if (err) return reject(err)
+    this.api.getUserInfo(user.userID, (userInfoErr, userInfoData) => {
+      if (userInfoErr) return reject(userInfoErr)
 
-      Object.assign(user, data[user.userID])
+      Object.assign(user, userInfoData[user.userID])
 
-      return this.api.getFriendsList((err, data) => {
-        if (err) return reject(err)
+      return this.api.getFriendsList((friendsListErr, friendsListData) => {
+        if (friendsListErr) return reject(friendsListErr)
 
-        data.forEach((u) => {
+        friendsListData.forEach((u) => {
           this.threadMap[u.name || u.fullName] = u.userID
           this.userCache[u.userID] = u
         })
 
-        return this.api.getThreadList(0, 20, (err, threads) => {
-          if (threads) {
-            threads.forEach((t) => {
-              if (t.threadID === user.userID) {
-                t.name = user.fullName || user.name
-                this.userCache[user.userID] = user
-              }
-              this.cacheThread(t)
-            })
-          }
+        // facebook-chat-api is broken here, for the mean time...
+        // return this.api.getThreadList(0, 20, (err, threads) => {
+        //   console.log(threads)
+        //   if (threads) {
+        //     threads.forEach((t) => {
+        //       if (t.threadID === user.userID) {
+        //         t.name = user.fullName || user.name
+        //         this.userCache[user.userID] = user
+        //         console.log(user.userID)
+        //       }
+        //       this.cacheThread(t)
+        //     })
+        //   }
 
-          // cache myself
-          return resolve(user)
-          // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
-        })
+        //   // cache myself
+        //   // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
+        // })
+
+        // cache myself
+        this.userCache[user.userID] = user
+        return resolve(user)
       })
     })
   })

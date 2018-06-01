@@ -13,8 +13,10 @@ const log = require("./util/log")
 function Messer(options = {}) {
   this.api = null
   this.user = null
+
   this.threadCache = {} // cached by id
   this.threadNameToIdMap = {} // maps a thread name to a thread id
+
   this.lastThread = null
   this.debug = options.debug || false
 }
@@ -31,6 +33,8 @@ Messer.prototype.getOrRefreshUserInfo = function getOrRefreshUserInfo() {
       if (err) return reject(err)
 
       Object.assign(this.user, data[userId])
+      this.user.userID = userId // set userId, because the api doesn't
+
       return resolve(this.user)
     })
   })
@@ -180,8 +184,8 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
 }
 
 /**
- * Gets thread by thread name.
- * @param {String} _threadName 
+ * Gets thread by thread name. Will select the thread with name starting with the given name.
+ * @param {String} _threadName.
  */
 Messer.prototype.getThreadByName = function getThreadByName(_threadName) {
   return new Promise((resolve, reject) => {

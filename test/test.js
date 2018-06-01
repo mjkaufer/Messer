@@ -47,9 +47,9 @@ describe("Messer", () => {
       assert.deepEqual(thread, messer.threadCache[thread.threadID])
     })
 
-    it("should populate threadMap as expected", () => {
+    it("should populate threadNameToIdMap as expected", () => {
       messer.cacheThread(thread)
-      assert.equal(thread.threadID, messer.threadMap[thread.name])
+      assert.equal(thread.threadID, messer.threadNameToIdMap[thread.name])
     })
   })
 

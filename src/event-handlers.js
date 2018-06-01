@@ -14,7 +14,11 @@ function parseAttachment(attachment) {
 
   switch (attachmentType) {
     case "sticker":
-      messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || "sticker - only viewable in browser"
+      try {
+        messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID]
+      } catch (e) {
+        messageBody = "sent a sticker (only viewable in browser)"
+      }
       break
     case "file":
       messageBody = `${attachment.name}: ${attachment.url}`
@@ -29,7 +33,7 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.filename}: ${attachment.url}`
       break
     default:
-      messageBody = `${attachmentType} - only viewable in browser`
+      messageBody = `sent [${attachmentType}] - only viewable in browser`
       break
   }
 

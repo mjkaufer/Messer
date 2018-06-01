@@ -1,9 +1,11 @@
-const log = require("./log")
+const log = require("./util/log")
 const fbAssets = require("./fb-assets")
 
 /**
  * Returns the parsed attachment object as a String
- * @param {Object} attachment 
+ * @param {Object} attachment
+ * 
+ * @return {String}
  */
 function parseAttachment(attachment) {
   const attachmentType = attachment.type.replace(/_/g, " ")
@@ -12,7 +14,11 @@ function parseAttachment(attachment) {
 
   switch (attachmentType) {
     case "sticker":
-      messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID] || "sticker - only viewable in browser"
+      try {
+        messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID]
+      } catch (e) {
+        messageBody = "sent a sticker (only viewable in browser)"
+      }
       break
     case "file":
       messageBody = `${attachment.name}: ${attachment.url}`
@@ -27,7 +33,7 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.filename}: ${attachment.url}`
       break
     default:
-      messageBody = `${attachmentType} - only viewable in browser`
+      messageBody = `sent [${attachmentType}] - only viewable in browser`
       break
   }
 
@@ -48,14 +54,8 @@ const eventHandlers = {
       .then((thread) => {
         if (message.senderID === this.user.userID && message.threadID !== this.user.userID) return
 
-        const user = this.userCache[message.senderID]
-
-        let sender = user.fullName || user.name
+        let sender = thread.name
         let messageBody = message.body
-
-        if (!user.isFriend && message.senderID !== this.user.userID) {
-          sender = `${sender} [not your friend]`
-        }
 
         if (message.isGroup) {
           sender = `(${thread.name}) ${sender}`

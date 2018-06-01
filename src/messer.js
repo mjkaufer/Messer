@@ -1,69 +1,87 @@
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
 
-const helpers = require("./src/helpers.js")
-const getCommandHandler = require("./src/commands/command-handlers").getCommandHandler
-const eventHandlers = require("./src/event-handlers")
-const log = require("./src/log")
+const helpers = require("./util/helpers.js")
+const getCommandHandler = require("./commands/command-handlers").getCommandHandler
+const eventHandlers = require("./event-handlers")
+const log = require("./util/log")
 
 /**
- * Messer creates a singleton that represents a Messer session 
+ * Creates a singleton that represents a Messer session.
+ * @class
  */
 function Messer(options = {}) {
   this.api = null
   this.user = null
-  this.userCache = {} // cached by userID
+
   this.threadCache = {} // cached by id
-  this.threadMap = {} // maps a thread/user name to a thread id
+  this.threadNameToIdMap = {} // maps a thread name to a thread id
+
   this.lastThread = null
   this.debug = options.debug || false
 }
 
 /**
- * Fetches and stores all relevant user details using a promise.
+ * Perform inital load of, or refresh, user info.
  */
-Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
-  const user = {}
-
+Messer.prototype.getOrRefreshUserInfo = function getOrRefreshUserInfo() {
   return new Promise((resolve, reject) => {
-    user.userID = this.api.getCurrentUserID()
+    const userId = this.api.getCurrentUserID()
+    if (this.user === null) this.user = {}
 
-    this.api.getUserInfo(user.userID, (err, data) => {
+    return this.api.getUserInfo(userId, (err, data) => {
       if (err) return reject(err)
 
-      Object.assign(user, data[user.userID])
+      Object.assign(this.user, data[userId])
+      this.user.userID = userId // set userId, because the api doesn't
 
-      return this.api.getFriendsList((err, data) => {
-        if (err) return reject(err)
-
-        data.forEach((u) => {
-          this.threadMap[u.name || u.fullName] = u.userID
-          this.userCache[u.userID] = u
-        })
-
-        return this.api.getThreadList(0, 20, (err, threads) => {
-          if (threads) {
-            threads.forEach((t) => {
-              if (t.threadID === user.userID) {
-                t.name = user.fullName || user.name
-                this.userCache[user.userID] = user
-              }
-              this.cacheThread(t)
-            })
-          }
-
-          // cache myself
-          return resolve(user)
-          // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
-        })
-      })
+      return resolve(this.user)
     })
   })
 }
 
 /**
- * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
- * @param {Object} credentials 
+ * Refresh user's friends list
+ */
+Messer.prototype.refreshFriendsList = function refreshFriendsList() {
+  return new Promise((resolve, reject) =>
+    this.api.getFriendsList((err, data) => {
+      if (err) return reject(err)
+
+      this.user.friendsList = data
+      return resolve(this.user)
+    }),
+  )
+}
+
+/**
+ * Refresh the thread list.
+ */
+Messer.prototype.refreshThreadList = function refreshThreadList() {
+  return new Promise((resolve, reject) =>
+    this.api.getThreadList(20, null, ["INBOX"], (err, threads) => {
+      if (!threads) return reject("Nothing returned from getThreadList")
+
+      threads.forEach(thread => this.cacheThread(thread))
+      return resolve()
+    }))
+}
+
+Messer.prototype.fetchUser = function fetchUser() {
+  return Promise.all([
+    this.getOrRefreshUserInfo(),
+    this.refreshFriendsList(),
+    this.refreshThreadList(),
+  ])
+}
+
+/**
+ * Authenticates a user with Facebook. Prompts for credentials if argument is undefined.
+ * @param {Object} credentials - The Facebook credentials of the user
+ * @param {string} email - The user's Facebook email
+ * @param {string} credentials.password - The user's Facebook password
+ * 
+ * @return {Promise<null>}
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
@@ -92,25 +110,19 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 
       this.api = fbApi
 
-      log("Fetching your details...")
-
-      return this.fetchCurrentUser()
-        .then((user) => {
-          this.user = user
-
-          return resolve()
-        })
-        .catch(e => reject(e))
+      return resolve()
     })
   })
 }
 
 /**
- * Starts a Messer session
+ * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
   helpers.getCredentials()
     .then(credentials => this.authenticate(credentials))
+    .then(() => this.getOrRefreshUserInfo())
+    .then(() => this.fetchUser())
     .then(() => {
       log(`Successfully logged in as ${this.user.name}`)
 
@@ -129,8 +141,8 @@ Messer.prototype.start = function start() {
 }
 
 /**
- * Execute appropriate action for user input commands
- * @param {String} rawCommand 
+ * Execute appropriate action for user input commands.
+ * @param {String} rawCommand
  * @param {Function} callback 
  */
 Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
@@ -156,12 +168,10 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
 }
 
 /**
- * Adds a thread node to the thread cache
+ * Adds a thread node to the thread cache.
  * @param {Object} thread 
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
-  if (this.threadCache[thread.threadID]) return
-
   this.threadCache[thread.threadID] = {
     name: thread.name,
     threadID: thread.threadID,
@@ -169,20 +179,20 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
   } // only cache the info we need
 
   if (thread.name) {
-    this.threadMap[thread.name] = thread.threadID
+    this.threadNameToIdMap[thread.name] = thread.threadID
   }
 }
 
 /**
- * Gets thread by thread name
- * @param {String} name 
+ * Gets thread by thread name. Will select the thread with name starting with the given name.
+ * @param {String} _threadName.
  */
-Messer.prototype.getThreadByName = function getThreadByName(name) {
+Messer.prototype.getThreadByName = function getThreadByName(_threadName) {
   return new Promise((resolve, reject) => {
-    const threadName = Object.keys(this.threadMap)
-      .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
+    const threadName = Object.keys(this.threadNameToIdMap)
+      .find(n => n.toLowerCase().startsWith(_threadName.toLowerCase()))
 
-    const threadID = this.threadMap[threadName]
+    const threadID = this.threadNameToIdMap[threadName]
     if (!threadID) return reject("no thread with that name found")
 
     return this.getThreadById(threadID)
@@ -198,7 +208,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
 }
 
 /**
- * Gets thread by threadID
+ * Gets thread by threadID.
  * @param {String} threadID
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {

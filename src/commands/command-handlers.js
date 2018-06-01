@@ -1,4 +1,4 @@
-const helpers = require("../helpers")
+const helpers = require("../util/helpers")
 const commandTypes = require("./command-types")
 /* Store regexps that match raw commands */
 
@@ -12,6 +12,8 @@ const commandShortcuts = {
  * Matches a raw command on a given regex and returns the available arguments
  * @param {Regex} regexp 
  * @param {String} rawCommand 
+ * 
+ * @return {Array<String>}
  */
 function parseCommand(regexp, rawCommand) {
   if (regexp) return rawCommand.match(regexp)
@@ -28,6 +30,8 @@ const commands = {
   /**
    * Sends message to given user
    * @param {String} rawCommand 
+   * 
+   * @return {Promise<String>}
    */
   [commandTypes.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -52,7 +56,9 @@ const commands = {
 
   /**
    * Replies with a given message to the last received thread.
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
+   * 
+   * @return {Promise<null>}
    */
   [commandTypes.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -73,10 +79,12 @@ const commands = {
 
   /**
    * Displays users friend list
+   * 
+   * @return {Promise<String>}
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise((resolve) => {
-      const friendsList = helpers.objectValues(this.userCache).filter(u => u.isFriend)
+      const friendsList = this.user.friendsList
       if (friendsList.length === 0) return resolve("You have no friends :cry:")
 
       return resolve(friendsList
@@ -87,6 +95,7 @@ const commands = {
 
   /**
    * Displays usage instructions
+   * @return {Promise<String>}
    */
   [commandTypes.HELP.command]() {
     return new Promise(resolve => resolve(`Commands:\n${helpers.objectValues(commandTypes).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
@@ -94,7 +103,9 @@ const commands = {
 
   /**
    * Retrieves last n messages from specified friend
-   * @param {String} rawCommand 
+   * @param {String} rawCommand
+   * 
+   * @return {Promise<String>}
    */
   [commandTypes.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -105,6 +116,7 @@ const commands = {
 
       const rawThreadName = argv[2]
       const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
+
       // Find the given receiver in the users friendlist
       return this.getThreadByName(rawThreadName)
         .then(thread =>
@@ -126,6 +138,8 @@ const commands = {
   /**
    * Changes the color of the thread that matches given name
    * @param {String} rawCommand 
+   * 
+   * @return {Promise<null>}
    */
   [commandTypes.COLOR.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -140,10 +154,9 @@ const commands = {
       // check if hex code is legit (TODO: regex this)
       if (color.length !== 7) return reject(`Hex code '${argv[3]}' is not valid`)
 
-
       const threadName = argv[2]
-      // Find the thread to send to
 
+      // Find the thread to send to
       return this.getThreadByName(threadName)
         .then(thread =>
           this.api.changeThreadColor(color, thread.theadID, (err) => {

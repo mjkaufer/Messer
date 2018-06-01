@@ -1,13 +1,14 @@
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
 
-const helpers = require("./src/helpers.js")
-const getCommandHandler = require("./src/commands/command-handlers").getCommandHandler
-const eventHandlers = require("./src/event-handlers")
-const log = require("./src/log")
+const helpers = require("./util/helpers.js")
+const getCommandHandler = require("./commands/command-handlers").getCommandHandler
+const eventHandlers = require("./event-handlers")
+const log = require("./util/log")
 
 /**
- * Messer creates a singleton that represents a Messer session 
+ * Creates a singleton that represents a Messer session.
+ * @class
  */
 function Messer(options = {}) {
   this.api = null
@@ -21,6 +22,7 @@ function Messer(options = {}) {
 
 /**
  * Fetches and stores all relevant user details using a promise.
+ * @return {Promise<Object>}
  */
 Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
   const user = {}
@@ -62,10 +64,14 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
 }
 
 /**
- * Authenticates a user with Facebook. Prompts for credentials if argument is undefined
- * @param {Object} credentials 
+ * Authenticates a user with Facebook. Prompts for credentials if argument is undefined.
+ * @param {Object} credentials - The Facebook credentials of the user
+ * @param {string} email - The user's Facebook email
+ * @param {string} credentials.password - The user's Facebook password
+ * 
+ * @return {Promise<null>}
  */
-Messer.prototype.authenticate = function authenticate(credentials) {
+Messer.prototype.authenticate = function authenticate({ email, password }) {
   log("Logging in...")
 
   const config = {
@@ -76,14 +82,14 @@ Messer.prototype.authenticate = function authenticate(credentials) {
   }
 
   return new Promise((resolve, reject) => {
-    facebook(credentials, config, (err, fbApi) => {
+    facebook({ email, password }, config, (err, fbApi) => {
       if (err) {
         switch (err.error) {
           case "login-approval":
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
+            return reject(`Failed to login as [${email}] - ${err.error}`)
         }
         return null
       }
@@ -106,7 +112,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
 }
 
 /**
- * Starts a Messer session
+ * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
   helpers.getCredentials()
@@ -129,8 +135,8 @@ Messer.prototype.start = function start() {
 }
 
 /**
- * Execute appropriate action for user input commands
- * @param {String} rawCommand 
+ * Execute appropriate action for user input commands.
+ * @param {String} rawCommand
  * @param {Function} callback 
  */
 Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
@@ -156,7 +162,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
 }
 
 /**
- * Adds a thread node to the thread cache
+ * Adds a thread node to the thread cache.
  * @param {Object} thread 
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
@@ -174,7 +180,7 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
 }
 
 /**
- * Gets thread by thread name
+ * Gets thread by thread name.
  * @param {String} name 
  */
 Messer.prototype.getThreadByName = function getThreadByName(name) {
@@ -198,7 +204,7 @@ Messer.prototype.getThreadByName = function getThreadByName(name) {
 }
 
 /**
- * Gets thread by threadID
+ * Gets thread by threadID.
  * @param {String} threadID
  */
 Messer.prototype.getThreadById = function getThreadById(threadID) {

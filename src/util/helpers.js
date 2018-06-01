@@ -50,6 +50,7 @@ function promptCode() {
 /**
  * Returns a promise resolving with the credentials to log in with.
  * First tries App State file, then Credentials file, and finally prompts user for username/password
+ * @return {Promise<{email: string, password: string}>}
  */
 function getCredentials() {
   return new Promise((resolve, reject) => {
@@ -81,7 +82,7 @@ function saveAppState(appstate) {
 
 /**
  * Substitute for Object.values
- * @param {object} dict to extract values from
+ * @param {object} dict - to extract values from
  */
 function objectValues(dict) {
   return Object.keys(dict).map(key => dict[key])

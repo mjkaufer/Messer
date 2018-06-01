@@ -1,7 +1,8 @@
 const assert = require("assert")
+
 const commandTypes = require("../src/commands/command-types")
 const getCommandHandler = require("../src/commands/command-handlers").getCommandHandler
-const Messer = require("../messer")
+const Messer = require("../src/messer")
 
 /**
  * Return a thread as given by facebook-chat-api

@@ -50,14 +50,8 @@ const eventHandlers = {
       .then((thread) => {
         if (message.senderID === this.user.userID && message.threadID !== this.user.userID) return
 
-        const user = this.userCache[message.senderID]
-
-        let sender = user.fullName || user.name
+        let sender = thread.name
         let messageBody = message.body
-
-        if (!user.isFriend && message.senderID !== this.user.userID) {
-          sender = `${sender} [not your friend]`
-        }
 
         if (message.isGroup) {
           sender = `(${thread.name}) ${sender}`

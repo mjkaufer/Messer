@@ -13,60 +13,62 @@ const log = require("./util/log")
 function Messer(options = {}) {
   this.api = null
   this.user = null
-  this.userCache = {} // cached by userID
   this.threadCache = {} // cached by id
-  this.threadMap = {} // maps a thread/user name to a thread id
+  this.threadNameToIdMap = {} // maps a thread name to a thread id
   this.lastThread = null
   this.debug = options.debug || false
 }
 
 /**
- * Fetches and stores all relevant user details using a promise.
- * @return {Promise<Object>}
+ * Perform inital load of, or refresh, user info.
  */
-Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
-  const user = {}
-
+Messer.prototype.getOrRefreshUserInfo = function getOrRefreshUserInfo() {
   return new Promise((resolve, reject) => {
-    user.userID = this.api.getCurrentUserID()
+    const userId = this.api.getCurrentUserID()
+    if (this.user === null) this.user = {}
 
-    this.api.getUserInfo(user.userID, (userInfoErr, userInfoData) => {
-      if (userInfoErr) return reject(userInfoErr)
+    return this.api.getUserInfo(userId, (err, data) => {
+      if (err) return reject(err)
 
-      Object.assign(user, userInfoData[user.userID])
-
-      return this.api.getFriendsList((friendsListErr, friendsListData) => {
-        if (friendsListErr) return reject(friendsListErr)
-
-        friendsListData.forEach((u) => {
-          this.threadMap[u.name || u.fullName] = u.userID
-          this.userCache[u.userID] = u
-        })
-
-        // facebook-chat-api is broken here, for the mean time...
-        // return this.api.getThreadList(0, 20, (err, threads) => {
-        //   console.log(threads)
-        //   if (threads) {
-        //     threads.forEach((t) => {
-        //       if (t.threadID === user.userID) {
-        //         t.name = user.fullName || user.name
-        //         this.userCache[user.userID] = user
-        //         console.log(user.userID)
-        //       }
-        //       this.cacheThread(t)
-        //     })
-        //   }
-
-        //   // cache myself
-        //   // TODO: return this.getThreadById(user.userID).then(() => resolve(user))
-        // })
-
-        // cache myself
-        this.userCache[user.userID] = user
-        return resolve(user)
-      })
+      Object.assign(this.user, data[userId])
+      return resolve(this.user)
     })
   })
+}
+
+/**
+ * Refresh user's friends list
+ */
+Messer.prototype.refreshFriendsList = function refreshFriendsList() {
+  return new Promise((resolve, reject) =>
+    this.api.getFriendsList((err, data) => {
+      if (err) return reject(err)
+
+      this.user.friendsList = data
+      return resolve(this.user)
+    }),
+  )
+}
+
+/**
+ * Refresh the thread list.
+ */
+Messer.prototype.refreshThreadList = function refreshThreadList() {
+  return new Promise((resolve, reject) =>
+    this.api.getThreadList(20, null, ["INBOX"], (err, threads) => {
+      if (!threads) return reject("Nothing returned from getThreadList")
+
+      threads.forEach(thread => this.cacheThread(thread))
+      return resolve()
+    }))
+}
+
+Messer.prototype.fetchUser = function fetchUser() {
+  return Promise.all([
+    this.getOrRefreshUserInfo(),
+    this.refreshFriendsList(),
+    this.refreshThreadList(),
+  ])
 }
 
 /**
@@ -77,7 +79,7 @@ Messer.prototype.fetchCurrentUser = function fetchCurrentUser() {
  * 
  * @return {Promise<null>}
  */
-Messer.prototype.authenticate = function authenticate({ email, password }) {
+Messer.prototype.authenticate = function authenticate(credentials) {
   log("Logging in...")
 
   const config = {
@@ -88,14 +90,14 @@ Messer.prototype.authenticate = function authenticate({ email, password }) {
   }
 
   return new Promise((resolve, reject) => {
-    facebook({ email, password }, config, (err, fbApi) => {
+    facebook(credentials, config, (err, fbApi) => {
       if (err) {
         switch (err.error) {
           case "login-approval":
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${email}] - ${err.error}`)
+            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
         }
         return null
       }
@@ -104,15 +106,7 @@ Messer.prototype.authenticate = function authenticate({ email, password }) {
 
       this.api = fbApi
 
-      log("Fetching your details...")
-
-      return this.fetchCurrentUser()
-        .then((user) => {
-          this.user = user
-
-          return resolve()
-        })
-        .catch(e => reject(e))
+      return resolve()
     })
   })
 }
@@ -123,6 +117,8 @@ Messer.prototype.authenticate = function authenticate({ email, password }) {
 Messer.prototype.start = function start() {
   helpers.getCredentials()
     .then(credentials => this.authenticate(credentials))
+    .then(() => this.getOrRefreshUserInfo())
+    .then(() => this.fetchUser())
     .then(() => {
       log(`Successfully logged in as ${this.user.name}`)
 
@@ -172,8 +168,6 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
  * @param {Object} thread 
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
-  if (this.threadCache[thread.threadID]) return
-
   this.threadCache[thread.threadID] = {
     name: thread.name,
     threadID: thread.threadID,
@@ -181,20 +175,20 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
   } // only cache the info we need
 
   if (thread.name) {
-    this.threadMap[thread.name] = thread.threadID
+    this.threadNameToIdMap[thread.name] = thread.threadID
   }
 }
 
 /**
  * Gets thread by thread name.
- * @param {String} name 
+ * @param {String} _threadName 
  */
-Messer.prototype.getThreadByName = function getThreadByName(name) {
+Messer.prototype.getThreadByName = function getThreadByName(_threadName) {
   return new Promise((resolve, reject) => {
-    const threadName = Object.keys(this.threadMap)
-      .find(n => n.toLowerCase().startsWith(name.toLowerCase()))
+    const threadName = Object.keys(this.threadNameToIdMap)
+      .find(n => n.toLowerCase().startsWith(_threadName.toLowerCase()))
 
-    const threadID = this.threadMap[threadName]
+    const threadID = this.threadNameToIdMap[threadName]
     if (!threadID) return reject("no thread with that name found")
 
     return this.getThreadById(threadID)

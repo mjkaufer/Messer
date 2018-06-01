@@ -84,7 +84,7 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise((resolve) => {
-      const friendsList = helpers.objectValues(this.userCache).filter(u => u.isFriend)
+      const friendsList = this.user.friendsList
       if (friendsList.length === 0) return resolve("You have no friends :cry:")
 
       return resolve(friendsList

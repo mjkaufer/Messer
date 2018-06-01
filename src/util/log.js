@@ -3,7 +3,7 @@ const chalk = require("chalk")
 /**
  * Wrapper around console.log
  * @param {String} content 
- * @param {String} color hexcode
+ * @param {String} color - hexcode
  */
 function log(content, color) {
   /* eslint-disable */

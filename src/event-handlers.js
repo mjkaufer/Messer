@@ -1,9 +1,11 @@
-const log = require("./log")
+const log = require("./util/log")
 const fbAssets = require("./fb-assets")
 
 /**
  * Returns the parsed attachment object as a String
- * @param {Object} attachment 
+ * @param {Object} attachment
+ * 
+ * @return {String}
  */
 function parseAttachment(attachment) {
   const attachmentType = attachment.type.replace(/_/g, " ")

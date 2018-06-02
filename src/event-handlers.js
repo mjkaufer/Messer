@@ -4,7 +4,6 @@ const fbAssets = require("./fb-assets")
 /**
  * Returns the parsed attachment object as a String
  * @param {Object} attachment
- * 
  * @return {String}
  */
 function parseAttachment(attachment) {
@@ -47,7 +46,7 @@ function parseAttachment(attachment) {
 const eventHandlers = {
   /**
    * Handles the "message" event type
-   * @param {Object} message 
+   * @param {Object} message - message to handle
    */
   message(message) {
     this.getThreadById(message.threadID)
@@ -73,8 +72,8 @@ const eventHandlers = {
       .catch(err => log(err))
   },
   /**
-   * Handles the "message" event type
-   * @param {Object} ev 
+   * Handles the "event" event type
+   * @param {Object} ev - event to handle
    */
   event(ev) {
     this.getThreadById(ev.threadID)

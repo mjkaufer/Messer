@@ -86,7 +86,6 @@ Messer.prototype.fetchUser = function fetchUser() {
  * @param {Object} credentials - The Facebook credentials of the user
  * @param {string} email - The user's Facebook email
  * @param {string} credentials.password - The user's Facebook password
- * 
  * @return {Promise<null>}
  */
 Messer.prototype.authenticate = function authenticate(credentials) {
@@ -150,9 +149,7 @@ Messer.prototype.start = function start() {
 
 /**
  * Execute appropriate action for user input commands.
- * @param {String} rawCommand
- * @param {Function} callback 
- * 
+ * @param {String} rawCommand - command to proces
  * @return {Promise}
  */
 Messer.prototype.processCommand = function processCommand(rawCommand) {
@@ -171,7 +168,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
 
 /**
  * Adds a thread node to the thread cache.
- * @param {Object} thread 
+ * @param {Object} thread - thread object to cache
  */
 Messer.prototype.cacheThread = function cacheThread(thread) {
   this.threadCache[thread.threadID] = {

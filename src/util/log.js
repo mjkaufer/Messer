@@ -2,7 +2,7 @@ const chalk = require("chalk")
 
 /**
  * Wrapper around console.log
- * @param {String} content 
+ * @param {String} content - content to log
  * @param {String} color - hexcode
  */
 function log(content, color) {

@@ -24,8 +24,8 @@
   },
   "scripts": {
     "start": "node index.js config.json",
-    "test": "mocha",
-    "lint": "./node_modules/eslint/bin/eslint.js ."
+    "lint": "./node_modules/eslint/bin/eslint.js .",
+    "test": "npm run lint && mocha"
   },
   "dependencies": {
     "chalk": "^2.1.0",

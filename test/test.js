@@ -1,11 +1,10 @@
 const assert = require("assert")
 
 const commandTypes = require("../src/commands/command-types")
-const getCommandHandler = require("../src/commands/command-handlers").getCommandHandler
 const Messer = require("../src/messer")
 
 /**
- * Return a thread as given by facebook-chat-api
+ * Return a minimal thread as given by facebook-chat-api
  */
 function getThread() {
   return {
@@ -15,11 +14,17 @@ function getThread() {
   }
 }
 
+/**
+ * Factory to mock an instance of the facebook-chat-api
+ */
 function MockApi() {
   return {
     getThreadHistory(threadID, messageCount, x, cb) {
       const data = []
       return cb(null, data)
+    },
+    sendMessage(message, threadID, cb) {
+      return cb(null)
     },
   }
 }
@@ -29,11 +34,28 @@ function MockApi() {
  */
 function MockMesser() {
   const messer = new Messer()
+
   messer.api = MockApi()
   messer.cacheThread(getThread())
+  messer.user = {
+    friendsList: {
+      "Waylon Smithers": {
+        fullName: "Waylon Smithers",
+        userID: 1,
+      },
+      "Keniff Kaniff": {
+        fullName: "Keniff Kaniff",
+        userID: 2,
+      },
+    },
+  }
+
   return messer
 }
 
+/**
+ * Test Messer-related functionality
+ */
 describe("Messer", () => {
   /**
    * Test cacheThread
@@ -74,30 +96,127 @@ describe("Messer", () => {
       messer.getThreadByName("bill")
         .catch(e => assert(e != null)))
   })
+
+  /**
+   * Test processCommand
+   */
+  describe("#processCommand(command)", () => {
+    const messer = MockMesser()
+
+    it("should process and handle a valid command", () =>
+      messer.processCommand("message \"waylon\" hey dude")
+        .then(res => assert.ok(res)))
+  })
 })
 
+/**
+ * Test the command handlers
+ */
 describe("Command Handlers", () => {
   const messer = MockMesser()
 
   /**
-   * Test the history command
+   * Test the "message" command
+   */
+  describe(`#${commandTypes.MESSAGE.command}`, () => {
+    it("should send message to valid threadname", () =>
+      messer.processCommand("message \"waylon\" hey dude")
+        .then((res) => {
+          assert.ok(res)
+        }))
+
+    it("should send message to valid threadname using abbreviated command", () =>
+      messer.processCommand("m \"waylon\" hey dude")
+        .then((res) => {
+          assert.ok(res)
+        }))
+
+    it("should send message to valid thread that isn't a friend", () =>
+      messer.processCommand("message \"mark\" hey dude")
+        .then((res) => {
+          assert.ok(res)
+        }))
+
+    it("should fail to send message to invalid threadname", () =>
+      messer.processCommand("m \"rick\" hey dude")
+        .catch((err) => {
+          assert.equal(err, "User 'rick' could not be found in your friends list!")
+        }))
+  })
+
+  /**
+   * Test the "reply" command
+   */
+  describe(`#${commandTypes.REPLY.command}`, () => {
+    const messerCanReply = MockMesser()
+    messerCanReply.lastThread = getThread()
+
+    it("should fail if no message has been recieved", () =>
+      messer.processCommand("reply hey dude")
+        .catch((err) => {
+          assert.ok(err)
+        }))
+
+    it("should reply", () =>
+      messerCanReply.processCommand("reply yea i agree")
+        .then(() => {
+          assert.ok(true)
+        }))
+
+    it("should reply using abbreviated command", () =>
+      messerCanReply.processCommand("r yea i agree")
+        .then(() => {
+          assert.ok(true)
+        }))
+  })
+
+
+  /**
+   * Test the "history" command
    */
   describe(`#${commandTypes.HISTORY.command}`, () => {
-    // set up
-    const rawCommand = "history \"mark\""
-    const args = rawCommand.replace("\n", "").split(" ")
-    const commandHandler = getCommandHandler(args[0])
-
     it("should return 'user not found in friends list' if friend doesn't exist", () =>
-      commandHandler.call(messer, "history \"bill\"")
+      messer.processCommand("history \"bill\"")
         .catch((err) => {
           assert.equal(err, "User 'bill' could not be found in your friends list!")
         }))
 
     it("should return something for a known user", () =>
-      commandHandler.call(messer, "history \"mark\"")
+      messer.processCommand("history \"mark\"")
         .then((res) => {
           assert.equal(res, "")
+        }))
+  })
+
+  /**
+   * Test the "contacts" command
+   */
+  describe(`#${commandTypes.CONTACTS.command}`, () => {
+    it("should return list of friends sep. by newline", () =>
+      messer.processCommand("contacts")
+        .then((res) => {
+          assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n")
+        }))
+
+    it("should gracefully handle user with no friends", () => {
+      const messerNoFriends = MockMesser()
+      messerNoFriends.user.friendsList = []
+
+      return messerNoFriends.processCommand("contacts")
+        .then((res) => {
+          assert.ok(res)
+        })
+    })
+  })
+
+  /**
+   * Test the "help" command
+   */
+  describe(`#${commandTypes.HELP.command}`, () => {
+    it("should return some truthy value", () =>
+      messer.processCommand("help")
+        .then((res) => {
+          assert.ok(res)
         }))
   })
 })

@@ -48,7 +48,13 @@ Messer.prototype.refreshFriendsList = function refreshFriendsList() {
     this.api.getFriendsList((err, data) => {
       if (err) return reject(err)
 
-      this.user.friendsList = data
+      this.user.friendsList = {}
+
+      // store friends by name
+      data.forEach((friend) => {
+        this.user.friendsList[friend.fullName] = friend
+      })
+
       return resolve(this.user)
     }),
   )
@@ -134,7 +140,9 @@ Messer.prototype.start = function start() {
 
       repl.start({
         ignoreUndefined: true,
-        eval: (input, context, filename, cb) => this.processCommand(input, cb),
+        eval: (input, context, filename, cb) => this.processCommand(input)
+          .then((res) => { log(res); cb(null) })
+          .catch((err) => { log(err); cb(null) }),
       })
     })
     .catch(err => log(err))
@@ -144,8 +152,10 @@ Messer.prototype.start = function start() {
  * Execute appropriate action for user input commands.
  * @param {String} rawCommand
  * @param {Function} callback 
+ * 
+ * @return {Promise}
  */
-Messer.prototype.processCommand = function processCommand(rawCommand, callback) {
+Messer.prototype.processCommand = function processCommand(rawCommand) {
   // ignore if rawCommand is only spaces
   if (rawCommand.trim().length === 0) return null
 
@@ -157,14 +167,6 @@ Messer.prototype.processCommand = function processCommand(rawCommand, callback) 
   }
 
   return commandHandler.call(this, rawCommand)
-    .then((message) => {
-      log(message)
-      return callback(null)
-    })
-    .catch((err) => {
-      log(err)
-      return callback(null)
-    })
 }
 
 /**
@@ -185,15 +187,32 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
 
 /**
  * Gets thread by thread name. Will select the thread with name starting with the given name.
- * @param {String} _threadName.
+ * @param {String} _threadName
  */
-Messer.prototype.getThreadByName = function getThreadByName(_threadName) {
+Messer.prototype.getThreadByName = function getThreadByName(threadName) {
   return new Promise((resolve, reject) => {
-    const threadName = Object.keys(this.threadNameToIdMap)
-      .find(n => n.toLowerCase().startsWith(_threadName.toLowerCase()))
+    const fullThreadName = Object.keys(this.threadNameToIdMap)
+      .find(n => n.toLowerCase().startsWith(threadName.toLowerCase()))
 
-    const threadID = this.threadNameToIdMap[threadName]
-    if (!threadID) return reject("no thread with that name found")
+    const threadID = this.threadNameToIdMap[fullThreadName]
+
+    // if thread not cached, try the friends list
+    if (!threadID) {
+      const friendName = Object.keys(this.user.friendsList)
+        .find(n => n.toLowerCase().startsWith(threadName.toLowerCase()))
+
+      // create a fake thread based off friend info
+      const friendThread = {
+        name: friendName,
+        threadID: this.user.friendsList[friendName].userID,
+      }
+
+      if (!friendThread) {
+        return reject("No threadID could be found.")
+      }
+
+      return resolve(friendThread)
+    }
 
     return this.getThreadById(threadID)
       .then((thread) => {

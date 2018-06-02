@@ -84,12 +84,14 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise((resolve) => {
-      const friendsList = this.user.friendsList
-      if (friendsList.length === 0) return resolve("You have no friends :cry:")
+      const friendsList = Object.keys(this.user.friendsList)
 
-      return resolve(friendsList
-        .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""))
+      if (friendsList.length === 0) return resolve("You have no friends 😢")
+
+      return resolve(
+        friendsList
+          .sort((a, b) => ((a) > (b) ? 1 : -1))
+          .reduce((a, b) => `${a}${b}\n`, ""))
     })
   },
 

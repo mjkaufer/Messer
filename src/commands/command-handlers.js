@@ -10,9 +10,8 @@ const commandShortcuts = {
 
 /**
  * Matches a raw command on a given regex and returns the available arguments
- * @param {Regex} regexp 
- * @param {String} rawCommand 
- * 
+ * @param {Regex} regexp - regex to use to parse command
+ * @param {String} rawCommand - command to parse
  * @return {Array<String>}
  */
 function parseCommand(regexp, rawCommand) {
@@ -29,8 +28,7 @@ function parseCommand(regexp, rawCommand) {
 const commands = {
   /**
    * Sends message to given user
-   * @param {String} rawCommand 
-   * 
+   * @param {String} rawCommand - command to handle
    * @return {Promise<String>}
    */
   [commandTypes.MESSAGE.command](rawCommand) {
@@ -56,8 +54,7 @@ const commands = {
 
   /**
    * Replies with a given message to the last received thread.
-   * @param {String} rawCommand
-   * 
+   * @param {String} rawCommand - command to handle
    * @return {Promise<null>}
    */
   [commandTypes.REPLY.command](rawCommand) {
@@ -79,17 +76,18 @@ const commands = {
 
   /**
    * Displays users friend list
-   * 
    * @return {Promise<String>}
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise((resolve) => {
-      const friendsList = this.user.friendsList
-      if (friendsList.length === 0) return resolve("You have no friends :cry:")
+      const friendsList = Object.keys(this.user.friendsList)
 
-      return resolve(friendsList
-        .sort((a, b) => ((a.fullName || a.name) > (b.fullName || b.name) ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName || b.name}\n`, ""))
+      if (friendsList.length === 0) return resolve("You have no friends 😢")
+
+      return resolve(
+        friendsList
+          .sort((a, b) => ((a) > (b) ? 1 : -1))
+          .reduce((a, b) => `${a}${b}\n`, ""))
     })
   },
 
@@ -103,8 +101,7 @@ const commands = {
 
   /**
    * Retrieves last n messages from specified friend
-   * @param {String} rawCommand
-   * 
+   * @param {String} rawCommand - command to handle
    * @return {Promise<String>}
    */
   [commandTypes.HISTORY.command](rawCommand) {
@@ -137,8 +134,7 @@ const commands = {
 
   /**
    * Changes the color of the thread that matches given name
-   * @param {String} rawCommand 
-   * 
+   * @param {String} rawCommand - command to handle
    * @return {Promise<null>}
    */
   [commandTypes.COLOR.command](rawCommand) {
@@ -170,7 +166,7 @@ const commands = {
 
   /**
    * Retrieves last n messages from specified friend
-   * @param {String} rawCommand 
+   * @param {String} rawCommand - command to handle
    */
   [commandTypes.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {

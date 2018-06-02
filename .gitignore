@@ -1,7 +1,9 @@
+# Messer-specific
 config.json
 appstate.json
+
+# misc
 node_modules
-facebook-chat-api
-*.html
 .DS_Store
 npm-debug.log*
+.vscode

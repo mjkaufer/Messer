@@ -102,7 +102,7 @@ const commands = {
       `Commands:\n${helpers
         .objectValues(commandTypes)
         .filter(command => command.help)
-        .reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`),
+        .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`),
     )
   },
 

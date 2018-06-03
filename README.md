@@ -138,7 +138,7 @@ Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to
 
 1. Does this PR resolve a particular issue? (if not, then why is this PR necessary)?
 
-1. Have I written tests? (where appropriate)
+2. Have I written tests? (where appropriate)
 
 3. Have I made sure the tests pass?
 

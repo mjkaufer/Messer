@@ -11,6 +11,8 @@ function getThread() {
     name: "Mark Zuckerberg",
     threadID: "111",
     color: "#000000",
+    unreadCount: 0,
+    lastMessageTimestamp: "123456789",
   }
 }
 

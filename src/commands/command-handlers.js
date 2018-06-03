@@ -141,8 +141,7 @@ const commands = {
 
                     return `${a}${logText}\n`
                   }, ""),
-                ),
-            )
+                ))
           }))
         .catch(() => reject(`We couldn't find a thread for '${rawThreadName}'!`))
     })

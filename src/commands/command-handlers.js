@@ -1,3 +1,5 @@
+const chalk = require("chalk")
+
 const helpers = require("../util/helpers")
 const commandTypes = require("./command-types")
 /* Store regexps that match raw commands */
@@ -96,7 +98,12 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.HELP.command]() {
-    return new Promise(resolve => resolve(`Commands:\n${helpers.objectValues(commandTypes).reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`))
+    return new Promise(resolve => resolve(
+      `Commands:\n${helpers
+        .objectValues(commandTypes)
+        .filter(command => command.help)
+        .reduce((a, b) => `${a}\t${b.command}: ${b.help}\n`, "")}`),
+    )
   },
 
   /**
@@ -106,29 +113,38 @@ const commands = {
    */
   [commandTypes.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand)
-      if (!argv) return reject("Invalid command - check your syntax")
-
       const DEFAULT_COUNT = 5
 
+      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand)
+      if (!argv) return reject("Invalid command - check your syntax")
       const rawThreadName = argv[2]
       const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
 
-      // Find the given receiver in the users friendlist
       return this.getThreadByName(rawThreadName)
         .then(thread =>
-          this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, history) => {
+          this.api.getThreadHistory(thread.threadID, messageCount, undefined, (err, data) => {
             if (err) return reject(err)
 
-            if (history.length === 0) return resolve("")
+            if (data.length === 0) return resolve("You haven't started a conversation!")
 
-            // make sure we have all the senders cached
-            const senderIds = Array.from(new Set(history.map(message => message.senderID)))
+            const senderIds = Array.from(new Set(data.map(message => message.senderID)))
 
             return Promise.all(senderIds.map(id => this.getThreadById(id)))
-              .then(() => resolve(history.reduce((a, b) => `${a}${b.name}: ${b.body}\n`, "")))
+              .then(threads =>
+                resolve(
+                  data.reduce((a, message) => {
+                    const sender = threads.find(t => t.threadID === message.senderID)
+
+                    let logText = `${sender.name}: ${message.body}`
+                    if (message.isUnread) logText = chalk.red(logText)
+                    if (message.senderID === this.user.userID) logText = chalk.dim(logText)
+
+                    return `${a}${logText}\n`
+                  }, ""),
+                ),
+            )
           }))
-        .catch(() => reject(`User '${rawThreadName}' could not be found in your friends list!`))
+        .catch(() => reject(`We couldn't find a thread for '${rawThreadName}'!`))
     })
   },
 
@@ -165,7 +181,7 @@ const commands = {
   },
 
   /**
-   * Retrieves last n messages from specified friend
+   * Displays the most recent n threads
    * @param {String} rawCommand - command to handle
    */
   [commandTypes.RECENT.command](rawCommand) {
@@ -179,7 +195,13 @@ const commands = {
 
       const threadList = helpers.objectValues(this.threadCache)
         .slice(0, threadCount)
-        .reduce((a, b, i) => `${a}[${i}] ${b.name}\n`, "")
+        .sort((a, b) => a.lastMessageTimestamp < b.lastMessageTimestamp)
+        .reduce((a, thread, i) => {
+          let logText = `[${i}] ${thread.name}`
+          if (thread.unreadCount) logText = chalk.red(logText)
+
+          return `${a}${logText}\n`
+        }, "")
 
       return resolve(threadList)
     })

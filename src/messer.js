@@ -175,6 +175,8 @@ Messer.prototype.cacheThread = function cacheThread(thread) {
     name: thread.name,
     threadID: thread.threadID,
     color: thread.color,
+    lastMessageTimestamp: thread.lastMessageTimestamp,
+    unreadCount: thread.unreadCount,
   } // only cache the info we need
 
   if (thread.name) {
@@ -198,14 +200,14 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
       const friendName = Object.keys(this.user.friendsList)
         .find(n => n.toLowerCase().startsWith(threadName.toLowerCase()))
 
+      if (!friendName) {
+        return reject("No threadID could be found.")
+      }
+
       // create a fake thread based off friend info
       const friendThread = {
         name: friendName,
         threadID: this.user.friendsList[friendName].userID,
-      }
-
-      if (!friendThread) {
-        return reject("No threadID could be found.")
       }
 
       return resolve(friendThread)

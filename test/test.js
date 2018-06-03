@@ -9,8 +9,10 @@ const Messer = require("../src/messer")
 function getThread() {
   return {
     name: "Mark Zuckerberg",
-    threadID: 111,
+    threadID: "111",
     color: "#000000",
+    unreadCount: 0,
+    lastMessageTimestamp: "123456789",
   }
 }
 
@@ -38,14 +40,16 @@ function MockMesser() {
   messer.api = MockApi()
   messer.cacheThread(getThread())
   messer.user = {
+    userID: "666",
+    name: "Tom Quirk",
     friendsList: {
       "Waylon Smithers": {
         fullName: "Waylon Smithers",
-        userID: 1,
+        userID: "1",
       },
       "Keniff Kaniff": {
         fullName: "Keniff Kaniff",
-        userID: 2,
+        userID: "2",
       },
     },
   }
@@ -175,16 +179,69 @@ describe("Command Handlers", () => {
    * Test the "history" command
    */
   describe(`#${commandTypes.HISTORY.command}`, () => {
-    it("should return 'user not found in friends list' if friend doesn't exist", () =>
+    const messerWithHistory = MockMesser()
+
+    it("should gracefully fail if no thread found", () =>
       messer.processCommand("history \"bill\"")
         .catch((err) => {
-          assert.equal(err, "User 'bill' could not be found in your friends list!")
+          assert.ok(err)
         }))
 
-    it("should return something for a known user", () =>
-      messer.processCommand("history \"mark\"")
+    it("should return something for a thread with some history", () => {
+      messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [{ senderID: "111", body: "hey dude", type: "message" }]
+        return cb(null, data)
+      }
+      return messerWithHistory.processCommand("history \"mark\"")
         .then((res) => {
-          assert.equal(res, "")
+          assert.ok(res.trim().split("\n"))
+          assert.ok(!res.includes("undefined"))
+          assert.ok(!res.includes("null"))
+          assert.ok(res.includes("Mark"))
+        })
+    })
+
+    it("should handle messages where the sender is the current user", () => {
+      messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [
+          { senderID: "111", body: "hey dude", type: "message" },
+          { senderID: messer.user.userID, body: "hey marn", type: "message" },
+        ]
+        return cb(null, data)
+      }
+
+      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
+        cb(null, { threadID, name: "Tom Quirk" })
+
+      return messerWithHistory.processCommand("history \"mark\"")
+        .then((res) => {
+          assert.ok(res.includes(messer.user.name))
+        })
+    })
+
+    it("should return history for thread that isn't cached", () => {
+      messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [{ senderID: "1", body: "hey im waylon", type: "message" }]
+        return cb(null, data)
+      }
+
+      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
+        cb(null, { threadID, name: "Waylon Smithers" })
+
+      return messerWithHistory.processCommand("history \"waylon\"")
+        .then((res) => {
+          assert.ok(res.trim().split("\n"))
+          assert.ok(!res.includes("undefined"))
+          assert.ok(!res.includes("null"))
+          assert.ok(res.includes("Waylon"))
+        })
+    })
+
+    it("should return truthy value when no history exists in thread", () =>
+      messer.processCommand("history \"waylon\"")
+        .then((res) => {
+          assert.ok(res)
+          assert.ok(!res.includes("waylon"))
         }))
   })
 

@@ -105,6 +105,21 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
+### recent
+
+Displays the _n_ most recent conversations. The number of threads is optional (default is 5).
+
+```bash
+[recent] [numThreads]
+```
+
+Examples
+
+- `history "Matthew" 10`
+- `h "Matthew"`
+
+## FAQ
+
 ### Group Chats
 
 Messages from group chats appear like
@@ -121,13 +136,9 @@ Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to
 
 ### Before you submit your PR, ask yourself...
 
-1. Have I written tests? (where appropriate)
+1. Does this PR resolve a particular issue? (if not, then why is this PR necessary)?
 
-2. Have I run the linter?
-
-```bash
-npm run lint
-```
+2. Have I written tests? (where appropriate)
 
 3. Have I made sure the tests pass?
 

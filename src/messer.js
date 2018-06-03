@@ -227,9 +227,10 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
 
 /**
  * Gets thread by threadID.
- * @param {String} threadID
+ * @param {String} threadID - threadID of desired thread
+ * @param {Boolean} requireName - specifies if the thread name is absolutely necessary
  */
-Messer.prototype.getThreadById = function getThreadById(threadID) {
+Messer.prototype.getThreadById = function getThreadById(threadID, requireName = false) {
   return new Promise((resolve, reject) => {
     let thread = this.threadCache[threadID]
 
@@ -238,6 +239,14 @@ Messer.prototype.getThreadById = function getThreadById(threadID) {
     return this.api.getThreadInfo(threadID, (err, data) => {
       if (err) return reject(err)
       thread = data
+
+      // try to get thread name from friends list
+      if (!thread.name && requireName) {
+        const friend = helpers.objectValues(this.user.friendsList)
+          .find(user => user.userID === threadID)
+
+        thread.name = friend.fullName
+      }
 
       this.cacheThread(thread)
 

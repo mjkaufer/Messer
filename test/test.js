@@ -189,13 +189,14 @@ describe("Command Handlers", () => {
 
     it("should return something for a thread with some history", () => {
       messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
-        const data = [{ senderID: "111", body: "hey dude" }]
+        const data = [{ senderID: "111", body: "hey dude", type: "message" }]
         return cb(null, data)
       }
       return messerWithHistory.processCommand("history \"mark\"")
         .then((res) => {
           assert.ok(res.trim().split("\n"))
           assert.ok(!res.includes("undefined"))
+          assert.ok(!res.includes("null"))
           assert.ok(res.includes("Mark"))
         })
     })
@@ -203,8 +204,8 @@ describe("Command Handlers", () => {
     it("should handle messages where the sender is the current user", () => {
       messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
         const data = [
-          { senderID: "111", body: "hey dude" },
-          { senderID: messer.user.userID, body: "hey marn" },
+          { senderID: "111", body: "hey dude", type: "message" },
+          { senderID: messer.user.userID, body: "hey marn", type: "message" },
         ]
         return cb(null, data)
       }
@@ -215,6 +216,24 @@ describe("Command Handlers", () => {
       return messerWithHistory.processCommand("history \"mark\"")
         .then((res) => {
           assert.ok(res.includes(messer.user.name))
+        })
+    })
+
+    it("should return history for thread that isn't cached", () => {
+      messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [{ senderID: "1", body: "hey im waylon", type: "message" }]
+        return cb(null, data)
+      }
+
+      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
+        cb(null, { threadID, name: "Waylon Smithers" })
+
+      return messerWithHistory.processCommand("history \"waylon\"")
+        .then((res) => {
+          assert.ok(res.trim().split("\n"))
+          assert.ok(!res.includes("undefined"))
+          assert.ok(!res.includes("null"))
+          assert.ok(res.includes("Waylon"))
         })
     })
 

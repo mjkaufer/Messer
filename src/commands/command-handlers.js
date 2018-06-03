@@ -129,18 +129,20 @@ const commands = {
 
             const senderIds = Array.from(new Set(data.map(message => message.senderID)))
 
-            return Promise.all(senderIds.map(id => this.getThreadById(id)))
+            return Promise.all(senderIds.map(id => this.getThreadById(id, true)))
               .then(threads =>
                 resolve(
-                  data.reduce((a, message) => {
-                    const sender = threads.find(t => t.threadID === message.senderID)
+                  data
+                    .filter(event => event.type === "message")
+                    .reduce((a, message) => {
+                      const sender = threads.find(t => t.threadID === message.senderID)
 
-                    let logText = `${sender.name}: ${message.body}`
-                    if (message.isUnread) logText = chalk.red(logText)
-                    if (message.senderID === this.user.userID) logText = chalk.dim(logText)
+                      let logText = `${sender.name}: ${message.body}`
+                      if (message.isUnread) logText = chalk.red(logText)
+                      if (message.senderID === this.user.userID) logText = chalk.dim(logText)
 
-                    return `${a}${logText}\n`
-                  }, ""),
+                      return `${a}${logText}\n`
+                    }, ""),
                 ))
           }))
         .catch(() => reject(`We couldn't find a thread for '${rawThreadName}'!`))

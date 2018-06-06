@@ -21,6 +21,8 @@ npm install -g messer
 1. ...
 1. Profit
 
+For a list of commands, jump to the [Commands Reference](https://github.com/mjkaufer/Messer#commands-reference)
+
 ## Setup
 
 ### Logging In
@@ -55,12 +57,12 @@ This _should™_ work! Please let us know if it doesn't: we've had a number of i
 
 ## Commands Reference
 
-### message
+### `message`
 
 Sends a _message_ to a given _user_
 
 ```bash
-[message | m] "[user]" [message]
+(message | m) "<user>" <message>
 ```
 
 Examples
@@ -70,12 +72,12 @@ Examples
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
-### reply
+### `reply`
 
 Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
 
 ```bash
-[reply | r] [message]
+(reply | r) <message>
 ```
 
 Example
@@ -84,7 +86,7 @@ Example
 
 Note: this will only work if you have received at least one message through Messer.
 
-### contacts
+### `contacts`
 
 Lists all of your Facebook friends
 
@@ -92,12 +94,12 @@ Lists all of your Facebook friends
 contacts
 ```
 
-### history
+### `history`
 
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
 ```bash
-[history | h] "[user]" [numMessages]
+(history | h] "<user>" [<numMessages>]
 ```
 
 Examples
@@ -105,12 +107,12 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
-### recent
+### `recent`
 
 Displays the _n_ most recent conversations. The number of threads is optional (default is 5).
 
 ```bash
-[recent] [numThreads]
+recent [<numThreads>]
 ```
 
 Examples
@@ -132,7 +134,7 @@ Send a message to a group by using the `message` command. The `name` is the name
 
 ## Contributing
 
-Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. In the future, only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
+Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. Only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
 
 ### Before you submit your PR, ask yourself...
 

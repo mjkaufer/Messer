@@ -1,18 +1,18 @@
-const fs = require("fs")
-const prompt = require("prompt")
-const readline = require("readline")
+const fs = require("fs");
+const prompt = require("prompt");
+const readline = require("readline");
 
-const log = require("./log")
+const log = require("./log");
 
-const APP_STATE_FILEPATH = "./appstate.json"
-const CREDS_FILEPATH = "./config.json"
+const APP_STATE_FILEPATH = "./appstate.json";
+const CREDS_FILEPATH = "./config.json";
 
 /**
  * Prompts the user for their username and password in the terminal
  */
 function promptCredentials() {
-  log("Enter your Facebook credentials - your password will not be visible as you type it in")
-  prompt.start()
+  log("Enter your Facebook credentials - your password will not be visible as you type it in");
+  prompt.start();
 
   return new Promise((resolve, reject) => {
     prompt.get([{
@@ -23,10 +23,10 @@ function promptCredentials() {
       required: true,
       hidden: true,
     }], (err, result) => {
-      if (err) return reject(err)
-      return resolve(result)
-    })
-  })
+      if (err) return reject(err);
+      return resolve(result);
+    });
+  });
 }
 
 /**
@@ -36,15 +36,15 @@ function promptCode() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-  })
+  });
 
   return new Promise((resolve) => {
-    log("Enter code > ")
+    log("Enter code > ");
     return rl.on("line", (line) => {
-      resolve(line)
-      rl.close()
-    })
-  })
+      resolve(line);
+      rl.close();
+    });
+  });
 }
 
 /**
@@ -56,20 +56,20 @@ function getCredentials() {
   return new Promise((resolve, reject) => {
     fs.readFile(APP_STATE_FILEPATH, (errA, appstate) => {
       if (appstate) {
-        return resolve({ appState: JSON.parse(appstate) })
+        return resolve({ appState: JSON.parse(appstate) });
       }
 
       return fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
         if (errB) {
           return promptCredentials()
             .then(data => resolve(data))
-            .catch(errC => reject(errC))
+            .catch(errC => reject(errC));
         }
 
-        return resolve(JSON.parse(creds))
-      })
-    })
-  })
+        return resolve(JSON.parse(creds));
+      });
+    });
+  });
 }
 
 /**
@@ -77,7 +77,7 @@ function getCredentials() {
  * @param {*} appstate object generated from fbApi.getAppState() method
  */
 function saveAppState(appstate) {
-  fs.writeFileSync(APP_STATE_FILEPATH, JSON.stringify(appstate))
+  fs.writeFileSync(APP_STATE_FILEPATH, JSON.stringify(appstate));
 }
 
 /**
@@ -85,7 +85,7 @@ function saveAppState(appstate) {
  * @param {object} dict - to extract values from
  */
 function objectValues(dict) {
-  return Object.keys(dict).map(key => dict[key])
+  return Object.keys(dict).map(key => dict[key]);
 }
 
 module.exports = {
@@ -93,4 +93,4 @@ module.exports = {
   saveAppState,
   promptCode,
   objectValues,
-}
+};

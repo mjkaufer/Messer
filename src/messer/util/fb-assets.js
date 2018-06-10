@@ -9,4 +9,4 @@ module.exports = {
       369239263222822: ":thumbsup:",
     },
   },
-}
+};

@@ -243,6 +243,25 @@ describe("Command Handlers", () => {
           assert.ok(res)
           assert.ok(!res.includes("waylon"))
         }))
+
+    it("should act appropriately when [messageCount] given", () => {
+      messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [
+          { senderID: "111", body: "hey dude", type: "message" },
+          { senderID: "111", body: "hey dude", type: "message" },
+          { senderID: "111", body: "hey dude", type: "message" },
+          { senderID: "111", body: "hey dude", type: "message" },
+        ].slice(0, messageCount)
+        return cb(null, data)
+      }
+      return messerWithHistory.processCommand("history \"mark\" 2")
+        .then((res) => {
+          assert.equal(res.trim().split("\n").length, 2)
+          assert.ok(!res.includes("undefined"))
+          assert.ok(!res.includes("null"))
+          assert.ok(res.includes("Mark"))
+        })
+    })
   })
 
   /**

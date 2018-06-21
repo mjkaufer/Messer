@@ -56,7 +56,7 @@ Messer.prototype.refreshFriendsList = function refreshFriendsList() {
       })
 
       return resolve(this.user)
-    }),
+    })
   )
 }
 

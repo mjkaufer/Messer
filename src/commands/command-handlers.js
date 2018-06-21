@@ -102,7 +102,7 @@ const commands = {
       `Commands:\n${helpers
         .objectValues(commandTypes)
         .filter(command => command.help)
-        .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`),
+        .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`)
     )
   },
 
@@ -142,7 +142,7 @@ const commands = {
                       if (message.senderID === this.user.userID) logText = chalk.dim(logText)
 
                       return `${a}${logText}\n`
-                    }, ""),
+                    }, "")
                 ))
           }))
         .catch(() => reject(`We couldn't find a thread for '${rawThreadName}'!`))

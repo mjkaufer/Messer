@@ -146,7 +146,9 @@ Messer.prototype.start = function start() {
     })
     .catch(err => log(err))
 }
-
+/**
+ * Starts Messer and executes a single command
+ */
 Messer.prototype.startSingle = function startSingle(rawCommand) {
   helpers.getCredentials()
     .then(credentials => this.authenticate(credentials))

@@ -56,7 +56,7 @@ Messer.prototype.refreshFriendsList = function refreshFriendsList() {
       })
 
       return resolve(this.user)
-    })
+    }),
   )
 }
 
@@ -147,6 +147,14 @@ Messer.prototype.start = function start() {
     .catch(err => log(err))
 }
 
+Messer.prototype.startSingle = function startSingle(rawCommand) {
+  helpers.getCredentials()
+    .then(credentials => this.authenticate(credentials))
+    .then(() => this.getOrRefreshUserInfo())
+    .then(() => this.fetchUser())
+    .then(() => this.processCommand(rawCommand))
+    .catch(err => log(err))
+}
 /**
  * Execute appropriate action for user input commands.
  * @param {String} rawCommand - command to proces

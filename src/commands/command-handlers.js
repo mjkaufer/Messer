@@ -87,11 +87,11 @@ const commands = {
 
       if (friendsList.length === 0) return resolve("You have no friends 😢")
 
-      return resolve(
-        friendsList
-          .sort((a, b) => ((a) > (b) ? 1 : -1))
-          .reduce((a, b) => `${a}${b}\n`, ""),
-      )
+      const friendsListPretty = friendsList
+        .sort((a, b) => ((a) > (b) ? 1 : -1))
+        .reduce((a, b) => `${a}${b}\n`, "")
+
+      return resolve(friendsListPretty)
     })
   },
 
@@ -100,12 +100,12 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.HELP.command]() {
-    return new Promise(resolve => resolve(
-      `Commands:\n${helpers
-        .objectValues(commandTypes)
-        .filter(command => command.help)
-        .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`,
-    ))
+    const helpPretty = `Commands:\n${helpers
+      .objectValues(commandTypes)
+      .filter(command => command.help)
+      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`
+
+    return new Promise(resolve => resolve(helpPretty))
   },
 
   /**
@@ -131,10 +131,7 @@ const commands = {
       const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
 
       return this.getThreadByName(rawThreadName)
-        .then(thread => this.api.getThreadHistory(
-          thread.threadID,
-          messageCount,
-          undefined,
+        .then(thread => this.api.getThreadHistory(thread.threadID, messageCount, undefined,
           (err, data) => {
             if (err) return reject(err)
 
@@ -143,21 +140,18 @@ const commands = {
             const senderIds = Array.from(new Set(data.map(message => message.senderID)))
 
             return Promise.all(senderIds.map(id => this.getThreadById(id, true)))
-              .then(threads => resolve(
-                data
-                  .filter(event => event.type === "message")
-                  .reduce((a, message) => {
-                    const sender = threads.find(t => t.threadID === message.senderID)
+              .then(threads => resolve(data
+                .filter(event => event.type === "message")
+                .reduce((a, message) => {
+                  const sender = threads.find(t => t.threadID === message.senderID)
 
-                    let logText = `${sender.name}: ${message.body}`
-                    if (message.isUnread) logText = chalk.red(logText)
-                    if (message.senderID === this.user.userID) logText = chalk.dim(logText)
+                  let logText = `${sender.name}: ${message.body}`
+                  if (message.isUnread) logText = chalk.red(logText)
+                  if (message.senderID === this.user.userID) logText = chalk.dim(logText)
 
-                    return `${a}${logText}\n`
-                  }, ""),
-              ))
-          },
-        ))
+                  return `${a}${logText}\n`
+                }, "")))
+          }))
         .catch(() => reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)))
     })
   },

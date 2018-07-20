@@ -120,6 +120,24 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
+## Non-interactive Mode
+
+Messer can be run in non-interactive mode with command line arguments to execute a single command. Special characters have to be escaped.  
+
+
+```bash
+messer [command]
+```
+
+Login will be prompted if this is the first time logging in.  
+
+
+Examples
+
+- `messer m \"John Smith\" Hey, John`
+- `messer r Hey, John`
+
+
 ## FAQ
 
 ### Group Chats

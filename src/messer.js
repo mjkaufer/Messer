@@ -2,7 +2,7 @@ const facebook = require("facebook-chat-api")
 const repl = require("repl")
 
 const helpers = require("./util/helpers.js")
-const getCommandHandler = require("./commands/command-handlers").getCommandHandler
+const { getCommandHandler } = require("./commands/command-handlers")
 const eventHandlers = require("./event-handlers")
 const log = require("./util/log")
 
@@ -44,33 +44,30 @@ Messer.prototype.getOrRefreshUserInfo = function getOrRefreshUserInfo() {
  * Refresh user's friends list
  */
 Messer.prototype.refreshFriendsList = function refreshFriendsList() {
-  return new Promise((resolve, reject) =>
-    this.api.getFriendsList((err, data) => {
-      if (err) return reject(err)
+  return new Promise((resolve, reject) => this.api.getFriendsList((err, data) => {
+    if (err) return reject(err)
 
-      this.user.friendsList = {}
+    this.user.friendsList = {}
 
-      // store friends by name
-      data.forEach((friend) => {
-        this.user.friendsList[friend.fullName] = friend
-      })
-
-      return resolve(this.user)
+    // store friends by name
+    data.forEach((friend) => {
+      this.user.friendsList[friend.fullName] = friend
     })
-  )
+
+    return resolve(this.user)
+  }))
 }
 
 /**
  * Refresh the thread list.
  */
 Messer.prototype.refreshThreadList = function refreshThreadList() {
-  return new Promise((resolve, reject) =>
-    this.api.getThreadList(20, null, ["INBOX"], (err, threads) => {
-      if (!threads) return reject("Nothing returned from getThreadList")
+  return new Promise((resolve, reject) => this.api.getThreadList(20, null, ["INBOX"], (err, threads) => {
+    if (!threads) return reject(Error("Nothing returned from getThreadList"))
 
-      threads.forEach(thread => this.cacheThread(thread))
-      return resolve()
-    }))
+    threads.forEach(thread => this.cacheThread(thread))
+    return resolve()
+  }))
 }
 
 Messer.prototype.fetchUser = function fetchUser() {
@@ -106,7 +103,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(`Failed to login as [${credentials.email}] - ${err.error}`)
+            return reject(Error(`Failed to login as [${credentials.email}] - ${err.error}`))
         }
         return null
       }
@@ -141,7 +138,7 @@ Messer.prototype.start = function start() {
         ignoreUndefined: true,
         eval: (input, context, filename, cb) => this.processCommand(input)
           .then((res) => { log(res); cb(null) })
-          .catch((err) => { log(err); cb(null) }),
+          .catch((err) => { log(err.message); cb(null) }),
       })
     })
     .catch(err => log(err))
@@ -201,7 +198,7 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
         .find(n => n.toLowerCase().startsWith(threadName.toLowerCase()))
 
       if (!friendName) {
-        return reject("No threadID could be found.")
+        return reject(Error("No threadID could be found."))
       }
 
       // create a fake thread based off friend info

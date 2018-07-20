@@ -2,7 +2,7 @@
   "name": "messer",
   "version": "0.3.4",
   "description": "Command-line messaging for Facebook Messenger",
-  "keywords": [],
+  "keywords": ["facebook", "messenger", "repl", "node"],
   "homepage": "https://github.com/mjkaufer/Messer#readme",
   "bugs": {
     "url": "https://github.com/mjkaufer/Messer/issues"
@@ -23,7 +23,7 @@
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
   "scripts": {
-    "start": "node index.js config.json",
+    "start": "node index.js",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "test": "npm run lint && mocha"
   },

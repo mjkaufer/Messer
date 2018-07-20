@@ -1,10 +1,14 @@
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
+const fs = require("fs")
+const path = require("path")
 
 const helpers = require("./util/helpers.js")
 const getCommandHandler = require("./commands/command-handlers").getCommandHandler
 const eventHandlers = require("./event-handlers")
 const log = require("./util/log")
+
+const APPSTATE_FILE_PATH = path.resolve(__dirname, "tmp/appstate.json")
 
 /**
  * Creates a singleton that represents a Messer session.
@@ -56,7 +60,7 @@ Messer.prototype.refreshFriendsList = function refreshFriendsList() {
       })
 
       return resolve(this.user)
-    })
+    }),
   )
 }
 
@@ -111,7 +115,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
         return null
       }
 
-      helpers.saveAppState(fbApi.getAppState())
+      helpers.saveAppState(fbApi.getAppState(), APPSTATE_FILE_PATH)
 
       this.api = fbApi
 
@@ -124,7 +128,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
-  helpers.getCredentials()
+  helpers.getCredentials(APPSTATE_FILE_PATH)
     .then(credentials => this.authenticate(credentials))
     .then(() => this.getOrRefreshUserInfo())
     .then(() => this.fetchUser())
@@ -252,6 +256,17 @@ Messer.prototype.getThreadById = function getThreadById(threadID, requireName = 
 
       return resolve(thread)
     })
+  })
+}
+
+/**
+ * Terminates the Messer session and removes all relevent files.
+ */
+Messer.prototype.logout = function logout() {
+  fs.unlink(APPSTATE_FILE_PATH, (err) => {
+    if (err) throw err
+
+    process.exit()
   })
 }
 

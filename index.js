@@ -1,9 +1,12 @@
 #!/usr/bin/env node
+const parseArgs = require("minimist")
 const Messer = require("./src/messer")
 
+const argv = parseArgs(process.argv.slice(2))
 const messer = new Messer()
-if (process.argv.length > 3) {
-  messer.startSingle(process.argv.slice(3, process.argv.length).join(" "))
+
+if (argv.command) {
+  messer.startSingle(argv.command)
 } else {
   messer.start()
 }

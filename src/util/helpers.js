@@ -52,11 +52,7 @@ function promptCode() {
 function getCredentials(appstateFilePath) {
   return new Promise((resolve, reject) => {
     fs.readFile(appstateFilePath, (appStateErr, appstate) => {
-      if (appStateErr) {
-        return reject(appStateErr)
-      }
-
-      if (appstate) {
+      if (!appStateErr && appstate) {
         return resolve({ appState: JSON.parse(appstate) })
       }
 

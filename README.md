@@ -119,11 +119,10 @@ logout
 
 ## Non-interactive Mode
 
-Messer can be run in non-interactive mode with command line arguments to execute a single command. Special characters have to be escaped.  
-
+Messer can be run in non-interactive mode with command line arguments to execute a single command.
 
 ```bash
-messer [command]
+messer --command='[command]'
 ```
 
 Login will be prompted if this is the first time logging in.  
@@ -131,8 +130,8 @@ Login will be prompted if this is the first time logging in.
 
 Examples
 
-- `messer m \"John Smith\" Hey, John`
-- `messer r Hey, John`
+- `messer --command='m "John Smith" Hey, John'`
+- `messer --command='r Hey, John'`
 
 
 ## FAQ

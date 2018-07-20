@@ -1,8 +1,14 @@
 {
   "name": "messer",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Command-line messaging for Facebook Messenger",
-  "keywords": ["facebook", "messenger", "repl", "node"],
+  "keywords": [
+    "facebook",
+    "messenger",
+    "repl",
+    "chat",
+    "node"
+  ],
   "homepage": "https://github.com/mjkaufer/Messer#readme",
   "bugs": {
     "url": "https://github.com/mjkaufer/Messer/issues"
@@ -11,8 +17,7 @@
   "author": "Matthew Kaufer <mjkaufer@gmail.com>",
   "contributors": [
     "Matthew Kaufer <mjkaufer@gmail.com>",
-    "Tom Quirk <tomquirkacc@gmail.com>",
-    "Rushi Shah <2016rshah@gmail.com>"
+    "Tom Quirk <tomquirkacc@gmail.com>"
   ],
   "main": "index.js",
   "bin": {
@@ -28,14 +33,14 @@
     "test": "npm run lint && mocha"
   },
   "dependencies": {
-    "chalk": "^2.1.0",
+    "chalk": "^2.4.1",
     "facebook-chat-api": "github:Schmavery/facebook-chat-api",
-    "prompt": "^0.2.14"
+    "prompt": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "^11.3.2",
-    "eslint-plugin-import": "^2.7.0",
-    "mocha": "^5.0.5"
+    "eslint": "^5.1.0",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "mocha": "^5.2.0"
   }
 }

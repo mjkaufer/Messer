@@ -2,4 +2,8 @@
 const Messer = require("./src/messer")
 
 const messer = new Messer()
-messer.start()
+if (process.argv.length > 3) {
+  messer.startSingle(process.argv.slice(3, process.argv.length).join(" "))
+} else {
+  messer.start()
+}

@@ -88,17 +88,14 @@ describe("Messer", () => {
 
     messer.cacheThread(thread)
 
-    it("should retrieve thread by exact name", () =>
-      messer.getThreadByName(thread.name)
-        .then(res => assert.deepEqual(res, thread)))
+    it("should retrieve thread by exact name", () => messer.getThreadByName(thread.name)
+      .then(res => assert.deepEqual(res, thread)))
 
-    it("should retrieve thread by fuzzy name", () =>
-      messer.getThreadByName("mark")
-        .then(res => assert.deepEqual(res, thread)))
+    it("should retrieve thread by fuzzy name", () => messer.getThreadByName("mark")
+      .then(res => assert.deepEqual(res, thread)))
 
-    it("should fail to retrieve thread by name that is not cached", () =>
-      messer.getThreadByName("bill")
-        .catch(e => assert(e != null)))
+    it("should fail to retrieve thread by name that is not cached", () => messer.getThreadByName("bill")
+      .catch(e => assert(e != null)))
   })
 
   /**
@@ -107,9 +104,7 @@ describe("Messer", () => {
   describe("#processCommand(command)", () => {
     const messer = MockMesser()
 
-    it("should process and handle a valid command", () =>
-      messer.processCommand("message \"waylon\" hey dude")
-        .then(res => assert.ok(res)))
+    it("should process and handle a valid command", () => messer.processCommand("message \"waylon\" hey dude").then(res => assert.ok(res)))
   })
 })
 
@@ -123,29 +118,25 @@ describe("Command Handlers", () => {
    * Test the "message" command
    */
   describe(`#${commandTypes.MESSAGE.command}`, () => {
-    it("should send message to valid threadname", () =>
-      messer.processCommand("message \"waylon\" hey dude")
-        .then((res) => {
-          assert.ok(res)
-        }))
+    it("should send message to valid threadname", () => messer.processCommand("message \"waylon\" hey dude")
+      .then((res) => {
+        assert.ok(res)
+      }))
 
-    it("should send message to valid threadname using abbreviated command", () =>
-      messer.processCommand("m \"waylon\" hey dude")
-        .then((res) => {
-          assert.ok(res)
-        }))
+    it("should send message to valid threadname using abbreviated command", () => messer.processCommand("m \"waylon\" hey dude")
+      .then((res) => {
+        assert.ok(res)
+      }))
 
-    it("should send message to valid thread that isn't a friend", () =>
-      messer.processCommand("message \"mark\" hey dude")
-        .then((res) => {
-          assert.ok(res)
-        }))
+    it("should send message to valid thread that isn't a friend", () => messer.processCommand("message \"mark\" hey dude")
+      .then((res) => {
+        assert.ok(res)
+      }))
 
-    it("should fail to send message to invalid threadname", () =>
-      messer.processCommand("m \"rick\" hey dude")
-        .catch((err) => {
-          assert.equal(err, "User 'rick' could not be found in your friends list!")
-        }))
+    it("should fail to send message to invalid threadname", () => messer.processCommand("m \"rick\" hey dude")
+      .catch((err) => {
+        assert.equal(err, "Error: User 'rick' could not be found in your friends list!")
+      }))
   })
 
   /**
@@ -155,23 +146,20 @@ describe("Command Handlers", () => {
     const messerCanReply = MockMesser()
     messerCanReply.lastThread = getThread()
 
-    it("should fail if no message has been recieved", () =>
-      messer.processCommand("reply hey dude")
-        .catch((err) => {
-          assert.ok(err)
-        }))
+    it("should fail if no message has been recieved", () => messer.processCommand("reply hey dude")
+      .catch((err) => {
+        assert.ok(err)
+      }))
 
-    it("should reply", () =>
-      messerCanReply.processCommand("reply yea i agree")
-        .then(() => {
-          assert.ok(true)
-        }))
+    it("should reply", () => messerCanReply.processCommand("reply yea i agree")
+      .then(() => {
+        assert.ok(true)
+      }))
 
-    it("should reply using abbreviated command", () =>
-      messerCanReply.processCommand("r yea i agree")
-        .then(() => {
-          assert.ok(true)
-        }))
+    it("should reply using abbreviated command", () => messerCanReply.processCommand("r yea i agree")
+      .then(() => {
+        assert.ok(true)
+      }))
   })
 
 
@@ -181,11 +169,10 @@ describe("Command Handlers", () => {
   describe(`#${commandTypes.HISTORY.command}`, () => {
     const messerWithHistory = MockMesser()
 
-    it("should gracefully fail if no thread found", () =>
-      messer.processCommand("history \"bill\"")
-        .catch((err) => {
-          assert.ok(err)
-        }))
+    it("should gracefully fail if no thread found", () => messer.processCommand("history \"bill\"")
+      .catch((err) => {
+        assert.ok(err)
+      }))
 
     it("should return something for a thread with some history", () => {
       messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
@@ -210,8 +197,7 @@ describe("Command Handlers", () => {
         return cb(null, data)
       }
 
-      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: "Tom Quirk" })
+      messerWithHistory.api.getThreadInfo = (threadID, cb) => cb(null, { threadID, name: "Tom Quirk" })
 
       return messerWithHistory.processCommand("history \"mark\"")
         .then((res) => {
@@ -225,8 +211,7 @@ describe("Command Handlers", () => {
         return cb(null, data)
       }
 
-      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: "Waylon Smithers" })
+      messerWithHistory.api.getThreadInfo = (threadID, cb) => cb(null, { threadID, name: "Waylon Smithers" })
 
       return messerWithHistory.processCommand("history \"waylon\"")
         .then((res) => {
@@ -237,12 +222,11 @@ describe("Command Handlers", () => {
         })
     })
 
-    it("should return truthy value when no history exists in thread", () =>
-      messer.processCommand("history \"waylon\"")
-        .then((res) => {
-          assert.ok(res)
-          assert.ok(!res.includes("waylon"))
-        }))
+    it("should return truthy value when no history exists in thread", () => messer.processCommand("history \"waylon\"")
+      .then((res) => {
+        assert.ok(res)
+        assert.ok(!res.includes("waylon"))
+      }))
 
     it("should act appropriately when [messageCount] given", () => {
       messerWithHistory.api.getThreadHistory = (threadID, messageCount, x, cb) => {
@@ -268,11 +252,10 @@ describe("Command Handlers", () => {
    * Test the "contacts" command
    */
   describe(`#${commandTypes.CONTACTS.command}`, () => {
-    it("should return list of friends sep. by newline", () =>
-      messer.processCommand("contacts")
-        .then((res) => {
-          assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n")
-        }))
+    it("should return list of friends sep. by newline", () => messer.processCommand("contacts")
+      .then((res) => {
+        assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n")
+      }))
 
     it("should gracefully handle user with no friends", () => {
       const messerNoFriends = MockMesser()
@@ -289,10 +272,9 @@ describe("Command Handlers", () => {
    * Test the "help" command
    */
   describe(`#${commandTypes.HELP.command}`, () => {
-    it("should return some truthy value", () =>
-      messer.processCommand("help")
-        .then((res) => {
-          assert.ok(res)
-        }))
+    it("should return some truthy value", () => messer.processCommand("help")
+      .then((res) => {
+        assert.ok(res)
+      }))
   })
 })

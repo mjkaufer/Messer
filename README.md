@@ -17,36 +17,24 @@ npm install -g messer
 ## Quick Start
 
 1. Install `messer`
-1. Run `messer` and enter your details
-1. ...
-1. Profit
+2. Run `messer`
+    ```bash
+    $ messer
+    ```
+3. Enter your details
+4. ...
+5. Profit
 
 For a list of commands, jump to the [Commands Reference](https://github.com/mjkaufer/Messer#commands-reference)
 
 ## Setup
-
-### Logging In
-
-The preferred login method is to store your Facebook credentials in a file (default filepath is *./config.json*). Create a file as described below, and start `messer` with
-
-```bash
-messer [~/path/to/file]
-```
-
-```json
-// config.json
-{
-  "email": "myfacebook@email.com",
-  "password": "yourS3curePassw0rd"
-}
-```
 
 ### 2-Factor Authentication
 
 1. Start Messer and wait for "Enter Code" prompt
 2. Enter a 2FA code generated from your 2FA app
 
-If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
+    If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
 
 3. Approve the browser/device (i.e. approve Messer)
 4. Retry from Step 1
@@ -119,6 +107,15 @@ Examples
 
 - `history "Matthew" 10`
 - `h "Matthew"`
+
+### `logout`
+
+Logs you out
+
+```bash
+logout
+```
+
 
 ## Non-interactive Mode
 

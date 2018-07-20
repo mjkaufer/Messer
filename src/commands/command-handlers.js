@@ -109,6 +109,14 @@ const commands = {
   },
 
   /**
+   * Logs the user out of Messer
+   * @return {Promise<String>}
+   */
+  [commandTypes.LOGOUT.command]() {
+    return new Promise(() => this.logout())
+  },
+
+  /**
    * Retrieves last n messages from specified friend
    * @param {String} rawCommand - command to handle
    * @return {Promise<String>}

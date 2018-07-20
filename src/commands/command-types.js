@@ -17,6 +17,9 @@ const commandTypes = {
   HELP: {
     command: "help",
   },
+  LOGOUT: {
+    command: "logout",
+  },
   HISTORY: {
     command: "history",
     regexp: regexps[2],

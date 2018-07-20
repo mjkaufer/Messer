@@ -28,7 +28,7 @@
     "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
   },
   "scripts": {
-    "start": "node index.js config.json",
+    "start": "node index.js",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "test": "npm run lint && mocha"
   },

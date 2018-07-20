@@ -151,7 +151,7 @@ Messer.prototype.start = function start() {
  * Starts Messer and executes a single command
  */
 Messer.prototype.startSingle = function startSingle(rawCommand) {
-  helpers.getCredentials()
+  helpers.getCredentials(APPSTATE_FILE_PATH)
     .then(credentials => this.authenticate(credentials))
     .then(() => this.getOrRefreshUserInfo())
     .then(() => this.fetchUser())

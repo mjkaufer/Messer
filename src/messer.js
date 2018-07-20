@@ -143,7 +143,17 @@ Messer.prototype.start = function start() {
     })
     .catch(err => log(err))
 }
-
+/**
+ * Starts Messer and executes a single command
+ */
+Messer.prototype.startSingle = function startSingle(rawCommand) {
+  helpers.getCredentials()
+    .then(credentials => this.authenticate(credentials))
+    .then(() => this.getOrRefreshUserInfo())
+    .then(() => this.fetchUser())
+    .then(() => this.processCommand(rawCommand))
+    .catch(err => log(err))
+}
 /**
  * Execute appropriate action for user input commands.
  * @param {String} rawCommand - command to proces

@@ -1,11 +1,9 @@
 const fs = require("fs")
+const path = require("path")
 const prompt = require("prompt")
 const readline = require("readline")
 
 const log = require("./log")
-
-const APP_STATE_FILEPATH = "./appstate.json"
-const CREDS_FILEPATH = "./config.json"
 
 /**
  * Prompts the user for their username and password in the terminal
@@ -49,35 +47,39 @@ function promptCode() {
 
 /**
  * Returns a promise resolving with the credentials to log in with.
- * First tries App State file, then Credentials file, and finally prompts user for username/password
+ * First tries App State file, then prompts user for username/password
  * @return {Promise<{email: string, password: string}>}
  */
-function getCredentials() {
+function getCredentials(appstateFilePath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(APP_STATE_FILEPATH, (errA, appstate) => {
-      if (appstate) {
+    fs.readFile(appstateFilePath, (appStateErr, appstate) => {
+      if (!appStateErr && appstate) {
         return resolve({ appState: JSON.parse(appstate) })
       }
 
-      return fs.readFile(process.argv[2] || CREDS_FILEPATH, (errB, creds) => {
-        if (errB) {
-          return promptCredentials()
-            .then(data => resolve(data))
-            .catch(errC => reject(errC))
-        }
-
-        return resolve(JSON.parse(creds))
-      })
+      return promptCredentials()
+        .then(data => resolve(data))
+        .catch(credsErr => reject(credsErr))
     })
   })
 }
 
+function mkdirSync(dirPath) {
+  try {
+    fs.mkdirSync(dirPath)
+  } catch (err) {
+    if (err.code !== "EEXIST") throw err
+  }
+}
+
 /**
- * Flashes the state of the facebook api to a file
- * @param {*} appstate object generated from fbApi.getAppState() method
+ * Dumps the state of the Facebook API to a file
+ * @param {Object} appstate object generated from fbApi.getAppState() method
+ * @param {string} filepath file to save appstate to
  */
-function saveAppState(appstate) {
-  fs.writeFileSync(APP_STATE_FILEPATH, JSON.stringify(appstate))
+function saveAppState(appstate, filepath) {
+  mkdirSync(path.dirname(filepath))
+  fs.writeFileSync(filepath, JSON.stringify(appstate))
 }
 
 /**

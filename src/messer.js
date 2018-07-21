@@ -1,14 +1,12 @@
 const facebook = require("facebook-chat-api")
 const repl = require("repl")
 const fs = require("fs")
-const path = require("path")
 
 const helpers = require("./util/helpers.js")
 const { getCommandHandler } = require("./commands/command-handlers")
 const eventHandlers = require("./event-handlers")
 const log = require("./util/log")
-
-const APPSTATE_FILE_PATH = path.resolve(__dirname, "tmp/appstate.json")
+const settings = require("./settings")
 
 /**
  * Creates a singleton that represents a Messer session.
@@ -107,13 +105,12 @@ Messer.prototype.authenticate = function authenticate(credentials) {
             helpers.promptCode().then(code => err.continue(code))
             break
           default:
-            return reject(Error(`Failed to login as [${credentials.email}] - ${err.error}`))
+            return reject(Error(`Failed to login as [${credentials.email}] - ${err}`))
         }
         return null
       }
 
-      helpers.saveAppState(fbApi.getAppState(), APPSTATE_FILE_PATH)
-
+      helpers.saveAppState(fbApi.getAppState(), settings.APPSTATE_FILE_PATH)
       this.api = fbApi
 
       return resolve()
@@ -125,7 +122,7 @@ Messer.prototype.authenticate = function authenticate(credentials) {
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
-  helpers.getCredentials(APPSTATE_FILE_PATH)
+  helpers.getCredentials(settings.APPSTATE_FILE_PATH)
     .then(credentials => this.authenticate(credentials))
     .then(() => this.getOrRefreshUserInfo())
     .then(() => this.fetchUser())
@@ -151,7 +148,7 @@ Messer.prototype.start = function start() {
  * Starts Messer and executes a single command
  */
 Messer.prototype.startSingle = function startSingle(rawCommand) {
-  helpers.getCredentials(APPSTATE_FILE_PATH)
+  helpers.getCredentials(settings.APPSTATE_FILE_PATH)
     .then(credentials => this.authenticate(credentials))
     .then(() => this.getOrRefreshUserInfo())
     .then(() => this.fetchUser())
@@ -253,10 +250,22 @@ Messer.prototype.getThreadById = function getThreadById(threadID, requireName = 
 
       // try to get thread name from friends list
       if (!thread.name && requireName) {
-        const friend = helpers.objectValues(this.user.friendsList)
-          .find(user => user.userID === threadID)
+        let friendName = null
 
-        thread.name = friend.fullName
+        if (threadID === this.user.userID) {
+          friendName = this.user.name
+        } else {
+          const friend = helpers.objectValues(this.user.friendsList)
+            .find(user => user.userID === threadID)
+
+          if (!friend) {
+            return reject(Error("Name could not be found for thread"))
+          }
+
+          friendName = friend.fullName
+        }
+
+        thread.name = friendName
       }
 
       this.cacheThread(thread)
@@ -270,9 +279,7 @@ Messer.prototype.getThreadById = function getThreadById(threadID, requireName = 
  * Terminates the Messer session and removes all relevent files.
  */
 Messer.prototype.logout = function logout() {
-  fs.unlink(APPSTATE_FILE_PATH, (err) => {
-    if (err) throw err
-
+  fs.unlink(settings.APPSTATE_FILE_PATH, () => {
     process.exit()
   })
 }

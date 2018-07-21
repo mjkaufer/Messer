@@ -1,5 +1,8 @@
 const assert = require("assert")
+const fs = require("fs")
 
+// TODO: put this s a settings file somewhere...
+const settings = require("../src/settings")
 const commandTypes = require("../src/commands/command-types")
 const Messer = require("../src/messer")
 
@@ -252,7 +255,7 @@ describe("Command Handlers", () => {
    * Test the "contacts" command
    */
   describe(`#${commandTypes.CONTACTS.command}`, () => {
-    it("should return list of friends sep. by newline", () => messer.processCommand("contacts")
+    it("should return list of friends sep. by newline", () => messer.processCommand(commandTypes.CONTACTS.command)
       .then((res) => {
         assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n")
       }))
@@ -272,9 +275,21 @@ describe("Command Handlers", () => {
    * Test the "help" command
    */
   describe(`#${commandTypes.HELP.command}`, () => {
-    it("should return some truthy value", () => messer.processCommand("help")
+    it("should return some truthy value", () => messer.processCommand(commandTypes.HELP.command)
       .then((res) => {
         assert.ok(res)
       }))
+  })
+
+  /**
+   * Test the "logout" command
+   */
+  describe(`#${commandTypes.LOGOUT.command}`, () => {
+    it("should remove appstate file", () => {
+      fs.writeFile(settings.APPSTATE_FILE_PATH, "{}", () => messer.processCommand(commandTypes.LOGOUT.command)
+        .then(() => {
+          assert.ok(!fs.existsSync(settings.APPSTATE_FILE_PATH))
+        }))
+    })
   })
 })

@@ -157,7 +157,7 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
 }
 /**
  * Execute appropriate action for user input commands.
- * @param {String} rawCommand - command to proces
+ * @param {String} rawCommand - command to process
  * @return {Promise}
  */
 Messer.prototype.processCommand = function processCommand(rawCommand) {
@@ -168,7 +168,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   const commandHandler = getCommandHandler(args[0])
 
   if (!commandHandler) {
-    return log("Invalid command - check your syntax")
+    return new Promise(resolve => resolve("Invalid command - check your syntax"))
   }
 
   return commandHandler.call(this, rawCommand)

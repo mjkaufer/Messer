@@ -292,4 +292,48 @@ describe("Command Handlers", () => {
         }))
     })
   })
+
+  /**
+   * Test the "lock" command
+   */
+  describe(`#${commandTypes.LOCK.command}`, () => {
+    it("should lock on to a valid thread name and porcess every input line as a message command", () => messer.processCommand("lock waylon")
+      .then(() => messer.processCommand("hey, dude")
+        .then((res) => {
+          assert.ok(res)
+        })))
+
+    it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", () => messer.processCommand("lock mark")
+      .then(() => messer.processCommand("hey, dude")
+        .then((res) => {
+          assert.ok(res)
+        })))
+
+    it("should fail if no thread name is specified", () => messer.processCommand("lock")
+      .catch((err) => {
+        assert.ok(err)
+      }))
+
+    it("should fail if a non-existant thread name is specified", () => messer.processCommand("lock asd")
+      .catch((err) => {
+        assert.ok(err)
+      }))
+  })
+
+  /**
+   * Test the "unlock" command
+   */
+  describe(`#${commandTypes.UNLOCK.command}`, () => {
+    it("should free up the input to type regular commands", () => messer.processCommand("lock waylon")
+      .then(() => messer.processCommand("unlock")
+        .then(() => messer.processCommand("m \"waylon\" hey, dude")
+          .then((res) => {
+            assert.ok(res)
+          }))))
+
+    it("should fail if no lock command was issued beforehand", () => messer.processCommand("unlock")
+      .catch((err) => {
+        assert.ok(err)
+      }))
+  })
 })

@@ -90,6 +90,7 @@ function objectValues(dict) {
   return Object.keys(dict).map(key => dict[key])
 }
 
+
 module.exports = {
   getCredentials,
   saveAppState,

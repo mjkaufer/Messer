@@ -1,6 +1,7 @@
 const chalk = require("chalk")
 
 const helpers = require("../util/helpers")
+const lock = require("../util/lock")
 const commandTypes = require("./command-types")
 /* Store regexps that match raw commands */
 
@@ -211,6 +212,39 @@ const commands = {
         }, "")
 
       return resolve(threadList)
+    })
+  },
+  /**
+   * Displays the most recent n threads
+   * @param {String} rawCommand - command to handle
+   */
+  [commandTypes.LOCK.command](rawCommand) {
+    return new Promise((resolve, reject) => {
+      const receiver = rawCommand.split(" ")
+        .slice(1)
+        .join(" ")
+        .replace("\n", "")
+      if (!receiver) return reject(Error("Please, specify a user to lock on to"))
+      return this.getThreadByName(receiver)
+        .then(() => {
+          lock.lockOn(receiver)
+          return resolve("Locked on to ".concat(receiver))
+        }).catch(() => reject(Error("Cannot find user ".concat(receiver).concat(" in friends list or active threads"))))
+    })
+  },
+
+  /**
+   * Displays the most recent n threads
+   * @param {String} rawCommand - command to handle
+   */
+  [commandTypes.UNLOCK.command]() {
+    return new Promise((resolve, reject) => {
+      if (lock.isLocked()) {
+        const threadName = lock.getLockedTarget()
+        lock.unlock()
+        return resolve("Unlocked form ".concat(threadName))
+      }
+      return reject(Error("No current locked user"))
     })
   },
 }

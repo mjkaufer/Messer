@@ -1,10 +1,13 @@
 const assert = require("assert")
 const fs = require("fs")
+const path = require("path")
 
-// TODO: put this s a settings file somewhere...
-const settings = require("../src/settings")
 const commandTypes = require("../src/commands/command-types")
 const Messer = require("../src/messer")
+
+const mockSettings = {
+  APPSTATE_FILE_PATH: path.resolve(__dirname, "tmp/appstate.json"),
+}
 
 /**
  * Return a minimal thread as given by facebook-chat-api
@@ -286,9 +289,9 @@ describe("Command Handlers", () => {
    */
   describe(`#${commandTypes.LOGOUT.command}`, () => {
     it("should remove appstate file", () => {
-      fs.writeFile(settings.APPSTATE_FILE_PATH, "{}", () => messer.processCommand(commandTypes.LOGOUT.command)
+      fs.writeFile(mockSettings.APPSTATE_FILE_PATH, "{}", () => messer.processCommand(commandTypes.LOGOUT.command)
         .then(() => {
-          assert.ok(!fs.existsSync(settings.APPSTATE_FILE_PATH))
+          assert.ok(!fs.existsSync(mockSettings.APPSTATE_FILE_PATH))
         }))
     })
   })

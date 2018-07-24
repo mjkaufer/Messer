@@ -1,6 +1,6 @@
 {
   "name": "messer",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Command-line messaging for Facebook Messenger",
   "keywords": [
     "facebook",
@@ -30,12 +30,13 @@
   "scripts": {
     "start": "node index.js",
     "lint": "./node_modules/eslint/bin/eslint.js .",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && mocha --reporter=\"list\""
   },
   "dependencies": {
     "chalk": "^2.4.1",
     "facebook-chat-api": "github:Schmavery/facebook-chat-api",
     "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "prompt": "^1.0.0"
   },
   "devDependencies": {

@@ -110,10 +110,13 @@ Messer.prototype.authenticate = function authenticate(credentials) {
         return null
       }
 
-      helpers.saveAppState(fbApi.getAppState(), settings.APPSTATE_FILE_PATH)
-      this.api = fbApi
+      return helpers.saveAppState(fbApi.getAppState(), settings.APPSTATE_FILE_PATH)
+        .then(() => {
+          this.api = fbApi
 
-      return resolve()
+          return resolve()
+        })
+        .catch(appstateErr => reject(appstateErr))
     })
   })
 }

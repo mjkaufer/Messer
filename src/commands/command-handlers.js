@@ -2,8 +2,8 @@ const chalk = require("chalk")
 
 const helpers = require("../util/helpers")
 const commandTypes = require("./command-types")
-/* Store regexps that match raw commands */
 
+/* Store regexps that match raw commands */
 const commandShortcuts = {
   h: commandTypes.HISTORY,
   m: commandTypes.MESSAGE,
@@ -190,6 +190,7 @@ const commands = {
   /**
    * Displays the most recent n threads
    * @param {String} rawCommand - command to handle
+   * @return {Promise<string>}
    */
   [commandTypes.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -216,11 +217,16 @@ const commands = {
 }
 
 module.exports = {
+  /**
+   * Return the command handler for a given keyword
+   * @param {*} rawCommandKeyword - can be longform or shortcut command i.e. message | m
+   * @return {Promise}
+   */
   getCommandHandler(rawCommandKeyword) {
-    const commandObj = commandShortcuts[rawCommandKeyword]
+    const shortcutCommand = commandShortcuts[rawCommandKeyword]
 
-    if (commandObj) {
-      return commands[commandObj.command]
+    if (shortcutCommand) {
+      return commands[shortcutCommand.command]
     }
 
     return commands[rawCommandKeyword]

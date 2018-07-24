@@ -20,7 +20,12 @@ about: Create a report to help us improve
 
 ### Versions
 
-You can get this information from copy and pasting the output of `node -v` and `npm list | grep messer` from the command line. Also, please include the OS and what version of the OS you're running.
+Run, and copy-paste the results, of the following:
+  - npm -v
+  - node -v
+  - messer -v
+
+Also, please include the OS and what version of the OS you're running.
 
 ### Additional Information
 

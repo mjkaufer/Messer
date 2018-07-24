@@ -2,6 +2,7 @@ const fs = require("fs")
 const path = require("path")
 const prompt = require("prompt")
 const readline = require("readline")
+const mkdirp = require("mkdirp")
 
 const log = require("./log")
 
@@ -64,22 +65,23 @@ function getCredentials(appstateFilePath) {
   })
 }
 
-function mkdirSync(dirPath) {
-  try {
-    fs.mkdirSync(dirPath)
-  } catch (err) {
-    if (err.code !== "EEXIST") throw err
-  }
-}
-
 /**
  * Dumps the state of the Facebook API to a file
  * @param {Object} appstate object generated from fbApi.getAppState() method
  * @param {string} filepath file to save appstate to
+ * @return {Promise}
  */
 function saveAppState(appstate, filepath) {
-  mkdirSync(path.dirname(filepath))
-  fs.writeFileSync(filepath, JSON.stringify(appstate))
+  return new Promise((resolve, reject) => mkdirp(path.dirname(filepath), (mkdirpErr) => {
+    if (mkdirpErr) return reject(mkdirpErr)
+
+    // ...then write the file
+    return fs.writeFile(filepath, JSON.stringify(appstate), (writeErr) => {
+      if (writeErr) return reject(writeErr)
+
+      return resolve(appstate)
+    })
+  }))
 }
 
 /**

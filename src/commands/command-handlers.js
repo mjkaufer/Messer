@@ -8,6 +8,7 @@ const commandShortcuts = {
   h: commandTypes.HISTORY,
   m: commandTypes.MESSAGE,
   r: commandTypes.REPLY,
+  c: commandTypes.CLEAR,
 }
 
 /**
@@ -114,6 +115,14 @@ const commands = {
    */
   [commandTypes.LOGOUT.command]() {
     return new Promise(() => this.logout())
+  },
+
+  /**
+   * Clears the number of unread messages in the terminal title
+   * @return {Promise<String>}
+   */
+  [commandTypes.CLEAR.command]() {
+    return new Promise(() => this.clear())
   },
 
   /**

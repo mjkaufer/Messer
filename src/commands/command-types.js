@@ -40,6 +40,9 @@ const commandTypes = {
     regexp: regexps[1],
     help: "reply [message]",
   },
+  CLEAR: {
+    command: "clear",
+  },
 }
 
 module.exports = commandTypes

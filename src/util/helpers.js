@@ -12,7 +12,6 @@ const log = require("./log")
  */
 function notifyTerminal(unreadMessagesCount) {
   const title = (unreadMessagesCount) ? `messer (${unreadMessagesCount})` : "messer"
-  log(`${String.fromCharCode(27)}]0;${title}${String.fromCharCode(7)}`)
   process.stdout.write(`${String.fromCharCode(27)}]0;${title}${String.fromCharCode(7)}`)
 }
 

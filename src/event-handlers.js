@@ -66,9 +66,9 @@ const eventHandlers = {
         }
 
         log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
-        this.unreadMessagesCount++
+        this.unreadMessagesCount += 1
 
-        helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title
+        helpers.notifyTerminal(this.unreadMessagesCount) // Terminal notification in title
 
         process.stderr.write("\x07") // Terminal notification
         this.lastThread = message.threadID

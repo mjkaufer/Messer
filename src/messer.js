@@ -21,6 +21,7 @@ function Messer(options = {}) {
   this.threadNameToIdMap = {} // maps a thread name to a thread id
 
   this.lastThread = null
+  this.unreadMessagesCount = 0
   this.debug = options.debug || false
 }
 
@@ -126,6 +127,8 @@ Messer.prototype.authenticate = function authenticate(credentials) {
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
+  helpers.notifyTerminal()
+
   helpers.getCredentials(settings.APPSTATE_FILE_PATH)
     .then(credentials => this.authenticate(credentials))
     .then(() => this.getOrRefreshUserInfo())
@@ -165,8 +168,11 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
  * @return {Promise}
  */
 Messer.prototype.processCommand = function processCommand(rawCommand) {
+  this.clear() // If we are typing, new messages have been read
+
   let commandHandler = null
   let localCommand = rawCommand
+
   // ignore if rawCommand is only spaces
   if (localCommand.trim().length === 0) return null
 
@@ -291,6 +297,16 @@ Messer.prototype.getThreadById = function getThreadById(threadID, requireName = 
       return resolve(thread)
     })
   })
+}
+
+/**
+ * Clears the messer notification in the terminal title.
+ */
+Messer.prototype.clear = function clear() {
+  if (this.unreadMessagesCount === 0) return
+
+  this.unreadMessagesCount = 0
+  helpers.notifyTerminal()
 }
 
 /**

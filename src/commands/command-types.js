@@ -40,6 +40,9 @@ const commandTypes = {
     regexp: regexps[1],
     help: "reply [message]",
   },
+  CLEAR: {
+    command: "clear",
+  },
   LOCK: {
     command: "lock",
     help: "lock [thread name]",
@@ -48,7 +51,6 @@ const commandTypes = {
     command: "unlock",
     help: "unlock",
   },
-
 }
 
 module.exports = commandTypes

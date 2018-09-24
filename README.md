@@ -108,6 +108,14 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
+### `clear`
+
+Clears the number of unread messages in the window title. Since we cannot listen on focus events, it has to be done manually.
+
+```bash
+(clear | c)
+```
+
 ### `logout`
 
 Logs you out

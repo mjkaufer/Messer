@@ -1,5 +1,6 @@
 const log = require("./util/log")
 const fbAssets = require("./fb-assets")
+const helpers = require("./util/helpers.js")
 
 /**
  * Returns the parsed attachment object as a String
@@ -65,6 +66,9 @@ const eventHandlers = {
         }
 
         log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+        this.unreadMessagesCount += 1
+
+        helpers.notifyTerminal(this.unreadMessagesCount) // Terminal notification in title
 
         process.stderr.write("\x07") // Terminal notification
         this.lastThread = message.threadID

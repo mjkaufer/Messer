@@ -7,6 +7,15 @@ const mkdirp = require("mkdirp")
 const log = require("./log")
 
 /**
+ * Adds the number of unread messages in the terminal title
+ * @param {Object} unreadMessagesCount number of unread messages
+ */
+function notifyTerminal(unreadMessagesCount) {
+  const title = (unreadMessagesCount) ? `messer (${unreadMessagesCount})` : "messer"
+  process.stdout.write(`${String.fromCharCode(27)}]0;${title}${String.fromCharCode(7)}`)
+}
+
+/**
  * Prompts the user for their username and password in the terminal
  */
 function promptCredentials() {
@@ -98,4 +107,5 @@ module.exports = {
   saveAppState,
   promptCode,
   objectValues,
+  notifyTerminal,
 }

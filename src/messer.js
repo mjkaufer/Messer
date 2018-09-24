@@ -174,7 +174,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   let localCommand = rawCommand
 
   // ignore if rawCommand is only spaces
-  if (localCommand.trim().length === 0) return null
+  if (localCommand.trim().length === 0) return Promise.resolve()
 
   const args = localCommand.replace("\n", "").split(" ")
   commandHandler = getCommandHandler(args[0])
@@ -192,7 +192,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   }
 
   if (!commandHandler) {
-    return new Promise(resolve => resolve("Invalid command - check your syntax"))
+    return Promise.reject(Error("Invalid command - check your syntax"))
   }
 
   return commandHandler.call(this, localCommand)

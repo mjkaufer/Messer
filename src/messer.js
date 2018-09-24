@@ -7,6 +7,7 @@ const { getCommandHandler } = require("./commands/command-handlers")
 const eventHandlers = require("./event-handlers")
 const log = require("./util/log")
 const settings = require("./settings")
+const lock = require("./util/lock")
 
 /**
  * Creates a singleton that represents a Messer session.
@@ -169,17 +170,32 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
 Messer.prototype.processCommand = function processCommand(rawCommand) {
   this.clear() // If we are typing, new messages have been read
 
-  // ignore if rawCommand is only spaces
-  if (rawCommand.trim().length === 0) return null
+  let commandHandler = null
+  let localCommand = rawCommand
 
-  const args = rawCommand.replace("\n", "").split(" ")
-  const commandHandler = getCommandHandler(args[0])
+  // ignore if rawCommand is only spaces
+  if (localCommand.trim().length === 0) return null
+
+  const args = localCommand.replace("\n", "").split(" ")
+  commandHandler = getCommandHandler(args[0])
+
+  if (lock.isLocked()) {
+    if (localCommand.trim() === "unlock") {
+      commandHandler = getCommandHandler("unlock")
+    } else {
+      commandHandler = getCommandHandler("m")
+      localCommand = "m ".concat("\"")
+        .concat(lock.getLockedTarget())
+        .concat("\" ")
+        .concat(args.join(" "))
+    }
+  }
 
   if (!commandHandler) {
     return new Promise(resolve => resolve("Invalid command - check your syntax"))
   }
 
-  return commandHandler.call(this, rawCommand)
+  return commandHandler.call(this, localCommand)
 }
 
 /**

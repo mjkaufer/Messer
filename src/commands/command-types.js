@@ -43,6 +43,14 @@ const commandTypes = {
   CLEAR: {
     command: "clear",
   },
+  LOCK: {
+    command: "lock",
+    help: "lock [thread name]",
+  },
+  UNLOCK: {
+    command: "unlock",
+    help: "unlock",
+  },
 }
 
 module.exports = commandTypes

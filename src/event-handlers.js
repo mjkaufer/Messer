@@ -65,8 +65,8 @@ const eventHandlers = {
           this.getThreadById(message.senderID, true).then((threadSender) => {
             sender = `(${thread.name}) ${threadSender.name}` // Get true sender name from list
             log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
-          }).catch({
-            sender = thread.name // Sender not in list, keep origin
+          }).catch(function () {
+            sender = `(${thread.name}) ${sender.name}` // Sender not in list, keep origin
             log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
           })
         } else {

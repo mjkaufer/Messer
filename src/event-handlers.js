@@ -57,15 +57,22 @@ const eventHandlers = {
         let sender = thread.name
         let messageBody = message.body
 
-        if (message.isGroup) {
-          sender = `(${thread.name}) ${sender}`
-        }
-
         if (message.attachments.length > 0) {
           messageBody = message.attachments.reduce((prev, curr) => `${prev} ${parseAttachment(curr)};`, "")
         }
 
-        log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+        if (message.isGroup) {
+          this.getThreadById(message.senderID, true).then((threadSender) => {
+            sender = `(${thread.name}) ${threadSender.name}` // Get true sender name from list
+            log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+          }).catch({
+            sender = thread.name // Sender not in list, keep origin
+            log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+          })
+        } else {
+          log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+        }
+
         this.unreadMessagesCount += 1
 
         helpers.notifyTerminal(this.unreadMessagesCount) // Terminal notification in title
@@ -86,7 +93,9 @@ const eventHandlers = {
 
         switch (ev.logMessageType) {
           case "log:thread-color":
-            Object.assign(thread, { color: `#${ev.logMessageData.theme_color.slice(2)}` })
+            Object.assign(thread, {
+              color: `#${ev.logMessageData.theme_color.slice(2)}`
+            })
             logMessage = ev.logMessageBody
             break
           default:

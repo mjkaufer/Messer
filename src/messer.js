@@ -32,7 +32,7 @@ const getMessy = ctx => {
  * @class
  */
 function Messer(options = {}) {
-  this.messy = undefined;
+  this.messy = getMessy(this);
 
   this.threadCache = {}; // cached by id
   this.threadNameToIdMap = {}; // maps a thread name to a thread id
@@ -60,7 +60,6 @@ Messer.prototype.refreshThreadList = function refreshThreadList() {
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
-  this.messy = getMessy(this);
   helpers.notifyTerminal();
 
   this.messy
@@ -215,7 +214,7 @@ Messer.prototype.getThreadById = function getThreadById(
       if (!thread.name && requireName) {
         let friendName = null;
 
-        if (threadID === this.messy.user.userID) {
+        if (threadID === this.messy.user.id) {
           friendName = this.messy.user.name;
         } else {
           const friend = this.messy.user.friends.find(
@@ -223,7 +222,7 @@ Messer.prototype.getThreadById = function getThreadById(
           );
 
           if (!friend) {
-            return reject(Error('Name could not be found for thread'));
+            return reject(Error('Friend could not be found for thread'));
           }
 
           friendName = friend.fullName;

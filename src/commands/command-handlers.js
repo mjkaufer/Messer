@@ -186,7 +186,7 @@ const commands = {
 
                       let logText = `${sender.name}: ${message.body}`;
                       if (message.isUnread) logText = chalk.red(logText);
-                      if (message.senderID === this.messy.user.userID) {
+                      if (message.senderID === this.messy.user.id) {
                         logText = chalk.dim(logText);
                       }
 

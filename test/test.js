@@ -229,7 +229,7 @@ describe('Command Handlers', () => {
             type: 'message',
           },
           {
-            senderID: messer.messy.user.userID,
+            senderID: messer.messy.user.id,
             body: 'hey marn',
             type: 'message',
           },

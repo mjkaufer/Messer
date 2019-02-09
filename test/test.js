@@ -48,18 +48,18 @@ function MockMesser() {
   messer.messy.api = MockApi();
   messer.cacheThread(getMockThread());
   messer.messy.user = {
-    userID: '666',
+    id: '666',
     name: 'Tom Quirk',
-    friends: {
-      'Waylon Smithers': {
+    friends: [
+      {
         fullName: 'Waylon Smithers',
         userID: '1',
       },
-      'Keniff Kaniff': {
+      {
         fullName: 'Keniff Kaniff',
         userID: '2',
       },
-    },
+    ],
   };
 
   return messer;
@@ -119,7 +119,12 @@ describe('Messer', () => {
     it('should process and handle a valid command', () =>
       messer
         .processCommand('message "waylon" hey dude')
-        .then(res => assert.ok(res)));
+        .then(res => {
+          assert.ok(res);
+        })
+        .catch(err => {
+          console.log(err);
+        }));
   });
 });
 

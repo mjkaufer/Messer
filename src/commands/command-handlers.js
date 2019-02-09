@@ -1,8 +1,8 @@
-const chalk = require("chalk")
+const chalk = require('chalk');
 
-const helpers = require("../util/helpers")
-const lock = require("../util/lock")
-const commandTypes = require("./command-types")
+const helpers = require('../util/helpers');
+const lock = require('../util/lock');
+const commandTypes = require('./command-types');
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -10,7 +10,7 @@ const commandShortcuts = {
   m: commandTypes.MESSAGE,
   r: commandTypes.REPLY,
   c: commandTypes.CLEAR,
-}
+};
 
 /**
  * Matches a raw command on a given regex and returns the available arguments
@@ -19,10 +19,10 @@ const commandShortcuts = {
  * @return {Array<String>}
  */
 function parseCommand(regexp, rawCommand) {
-  if (regexp) return rawCommand.match(regexp)
+  if (regexp) return rawCommand.match(regexp);
 
   // return a 1-item array if no regex i.e. 1 word commands (contacts, etc.)
-  return [rawCommand.trim()]
+  return [rawCommand.trim()];
 }
 
 /**
@@ -37,22 +37,31 @@ const commands = {
    */
   [commandTypes.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.MESSAGE.regexp, rawCommand)
-      if (!argv) return reject(Error("Invalid message - check your syntax"))
+      const argv = parseCommand(commandTypes.MESSAGE.regexp, rawCommand);
+      if (!argv) return reject(Error('Invalid message - check your syntax'));
 
-      const rawReceiver = argv[2]
-      const message = argv[3]
+      const rawReceiver = argv[2];
+      const message = argv[3];
 
-      if (message.length === 0) return reject(Error("No message to send - check your syntax"))
-
+      if (message.length === 0) {
+        return reject(Error('No message to send - check your syntax'));
+      }
       return this.getThreadByName(rawReceiver)
-        .then(receiver => this.api.sendMessage(message, receiver.threadID, (err) => {
-          if (err) return reject(err)
+        .then(receiver =>
+          this.messy.api.sendMessage(message, receiver.threadID, err => {
+            if (err) return reject(err);
 
-          return resolve(`Sent message to ${receiver.name}`)
-        }))
-        .catch(() => reject(Error(`User '${rawReceiver}' could not be found in your friends list!`)))
-    })
+            return resolve(`Sent message to ${receiver.name}`);
+          }),
+        )
+        .catch(() =>
+          reject(
+            Error(
+              `User '${rawReceiver}' could not be found in your friends list!`,
+            ),
+          ),
+        );
+    });
   },
 
   /**
@@ -63,20 +72,26 @@ const commands = {
   [commandTypes.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
       if (this.lastThread === null) {
-        return reject(Error("ERROR: You need to receive a message on Messer before using `reply`"))
+        return reject(
+          Error(
+            'ERROR: You need to receive a message on Messer before using `reply`',
+          ),
+        );
       }
 
-      const argv = parseCommand(commandTypes.REPLY.regexp, rawCommand)
-      if (!argv || !argv[2]) return reject(Error("Invalid command - check your syntax"))
+      const argv = parseCommand(commandTypes.REPLY.regexp, rawCommand);
+      if (!argv || !argv[2]) {
+        return reject(Error('Invalid command - check your syntax'));
+      }
 
       // var body = rawCommand.substring(commandTypes.REPLY.length).trim()
 
-      return this.api.sendMessage(argv[2], this.lastThread, (err) => {
-        if (err) return reject(err)
+      return this.messy.api.sendMessage(argv[2], this.lastThread, err => {
+        if (err) return reject(err);
 
-        return resolve()
-      })
-    })
+        return resolve();
+      });
+    });
   },
 
   /**
@@ -84,17 +99,17 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.CONTACTS.command]() {
-    return new Promise((resolve) => {
-      const friendsList = Object.keys(this.user.friendsList)
+    return new Promise(resolve => {
+      const friendsList = Object.keys(this.messy.user.friendsList);
 
-      if (friendsList.length === 0) return resolve("You have no friends 😢")
+      if (friendsList.length === 0) return resolve('You have no friends 😢');
 
       const friendsListPretty = friendsList
-        .sort((a, b) => ((a) > (b) ? 1 : -1))
-        .reduce((a, b) => `${a}${b}\n`, "")
+        .sort((a, b) => (a > b ? 1 : -1))
+        .reduce((a, b) => `${a}${b}\n`, '');
 
-      return resolve(friendsListPretty)
-    })
+      return resolve(friendsListPretty);
+    });
   },
 
   /**
@@ -105,9 +120,9 @@ const commands = {
     const helpPretty = `Commands:\n${helpers
       .objectValues(commandTypes)
       .filter(command => command.help)
-      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`
+      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, '')}`;
 
-    return new Promise(resolve => resolve(helpPretty))
+    return new Promise(resolve => resolve(helpPretty));
   },
 
   /**
@@ -115,7 +130,7 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.LOGOUT.command]() {
-    return new Promise(() => this.logout())
+    return new Promise(() => this.messy.logout());
   },
 
   /**
@@ -123,7 +138,7 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.CLEAR.command]() {
-    return new Promise(() => this.clear())
+    return new Promise(() => this.clear());
   },
 
   /**
@@ -133,37 +148,60 @@ const commands = {
    */
   [commandTypes.HISTORY.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const DEFAULT_COUNT = 5
+      const DEFAULT_COUNT = 5;
 
-      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand)
-      if (!argv) return reject(Error("Invalid command - check your syntax"))
-      const rawThreadName = argv[2]
-      const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT
+      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
+      if (!argv) return reject(Error('Invalid command - check your syntax'));
+      const rawThreadName = argv[2];
+      const messageCount = argv[3]
+        ? parseInt(argv[3].trim(), 10)
+        : DEFAULT_COUNT;
 
       return this.getThreadByName(rawThreadName)
-        .then(thread => this.api.getThreadHistory(thread.threadID, messageCount, undefined,
-          (err, data) => {
-            if (err) return reject(err)
+        .then(thread =>
+          this.messy.api.getThreadHistory(
+            thread.threadID,
+            messageCount,
+            undefined,
+            (err, data) => {
+              if (err) return reject(err);
 
-            if (data.length === 0) return resolve("You haven't started a conversation!")
+              if (data.length === 0) {
+                return resolve("You haven't started a conversation!");
+              }
 
-            const senderIds = Array.from(new Set(data.map(message => message.senderID)))
+              const senderIds = Array.from(
+                new Set(data.map(message => message.senderID)),
+              );
 
-            return Promise.all(senderIds.map(id => this.getThreadById(id, true)))
-              .then(threads => resolve(data
-                .filter(event => event.type === "message")
-                .reduce((a, message) => {
-                  const sender = threads.find(t => t.threadID === message.senderID)
+              return Promise.all(
+                senderIds.map(id => this.getThreadById(id, true)),
+              ).then(threads =>
+                resolve(
+                  data
+                    .filter(event => event.type === 'message')
+                    .reduce((a, message) => {
+                      const sender = threads.find(
+                        t => t.threadID === message.senderID,
+                      );
 
-                  let logText = `${sender.name}: ${message.body}`
-                  if (message.isUnread) logText = chalk.red(logText)
-                  if (message.senderID === this.user.userID) logText = chalk.dim(logText)
+                      let logText = `${sender.name}: ${message.body}`;
+                      if (message.isUnread) logText = chalk.red(logText);
+                      if (message.senderID === this.messy.user.userID) {
+                        logText = chalk.dim(logText);
+                      }
 
-                  return `${a}${logText}\n`
-                }, "")))
-          }))
-        .catch(() => reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)))
-    })
+                      return `${a}${logText}\n`;
+                    }, ''),
+                ),
+              );
+            },
+          ),
+        )
+        .catch(() =>
+          reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)),
+        );
+    });
   },
 
   /**
@@ -173,28 +211,34 @@ const commands = {
    */
   [commandTypes.COLOR.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.COLOR.regexp, rawCommand)
-      if (!argv) return reject(Error("Invalid command - check your syntax"))
+      const argv = parseCommand(commandTypes.COLOR.regexp, rawCommand);
+      if (!argv) return reject(Error('Invalid command - check your syntax'));
 
-      let color = argv[3]
-      if (!color.startsWith("#")) {
-        color = this.api.threadColors[color]
-        if (!color) return reject(Error(`Color '${argv[3]}' not available`))
+      let color = argv[3];
+      if (!color.startsWith('#')) {
+        color = this.messy.api.threadColors[color];
+        if (!color) return reject(Error(`Color '${argv[3]}' not available`));
       }
       // check if hex code is legit (TODO: regex this)
-      if (color.length !== 7) return reject(Error(`Hex code '${argv[3]}' is not valid`))
+      if (color.length !== 7) {
+        return reject(Error(`Hex code '${argv[3]}' is not valid`));
+      }
 
-      const threadName = argv[2]
+      const threadName = argv[2];
 
       // Find the thread to send to
       return this.getThreadByName(threadName)
-        .then(thread => this.api.changeThreadColor(color, thread.theadID, (err) => {
-          if (err) return reject(err)
+        .then(thread =>
+          this.messy.api.changeThreadColor(color, thread.theadID, err => {
+            if (err) return reject(err);
 
-          return resolve()
-        }))
-        .catch(() => reject(Error(`Thread '${threadName}' couldn't be found!`)))
-    })
+            return resolve();
+          }),
+        )
+        .catch(() =>
+          reject(Error(`Thread '${threadName}' couldn't be found!`)),
+        );
+    });
   },
 
   /**
@@ -204,25 +248,28 @@ const commands = {
    */
   [commandTypes.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand)
-      if (!argv) return reject(Error("Invalid command - check your syntax"))
+      const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand);
+      if (!argv) return reject(Error('Invalid command - check your syntax'));
 
-      const DEFAULT_COUNT = 5
+      const DEFAULT_COUNT = 5;
 
-      const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT
+      const threadCount = argv[2]
+        ? parseInt(argv[2].trim(), 10)
+        : DEFAULT_COUNT;
 
-      const threadList = helpers.objectValues(this.threadCache)
+      const threadList = helpers
+        .objectValues(this.threadCache)
         .slice(0, threadCount)
         .sort((a, b) => a.lastMessageTimestamp < b.lastMessageTimestamp)
         .reduce((a, thread, i) => {
-          let logText = `[${i}] ${thread.name}`
-          if (thread.unreadCount) logText = chalk.red(logText)
+          let logText = `[${i}] ${thread.name}`;
+          if (thread.unreadCount) logText = chalk.red(logText);
 
-          return `${a}${logText}\n`
-        }, "")
+          return `${a}${logText}\n`;
+        }, '');
 
-      return resolve(threadList)
-    })
+      return resolve(threadList);
+    });
   },
   /**
    * Displays the most recent n threads
@@ -230,17 +277,29 @@ const commands = {
    */
   [commandTypes.LOCK.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const receiver = rawCommand.split(" ")
+      const receiver = rawCommand
+        .split(' ')
         .slice(1)
-        .join(" ")
-        .replace("\n", "")
-      if (!receiver) return reject(Error("Please, specify a user to lock on to"))
+        .join(' ')
+        .replace('\n', '');
+      if (!receiver) {
+        return reject(Error('Please, specify a user to lock on to'));
+      }
       return this.getThreadByName(receiver)
         .then(() => {
-          lock.lockOn(receiver)
-          return resolve("Locked on to ".concat(receiver))
-        }).catch(() => reject(Error("Cannot find user ".concat(receiver).concat(" in friends list or active threads"))))
-    })
+          lock.lockOn(receiver);
+          return resolve('Locked on to '.concat(receiver));
+        })
+        .catch(() =>
+          reject(
+            Error(
+              'Cannot find user '
+                .concat(receiver)
+                .concat(' in friends list or active threads'),
+            ),
+          ),
+        );
+    });
   },
 
   /**
@@ -250,14 +309,14 @@ const commands = {
   [commandTypes.UNLOCK.command]() {
     return new Promise((resolve, reject) => {
       if (lock.isLocked()) {
-        const threadName = lock.getLockedTarget()
-        lock.unlock()
-        return resolve("Unlocked form ".concat(threadName))
+        const threadName = lock.getLockedTarget();
+        lock.unlock();
+        return resolve('Unlocked form '.concat(threadName));
       }
-      return reject(Error("No current locked user"))
-    })
+      return reject(Error('No current locked user'));
+    });
   },
-}
+};
 
 module.exports = {
   /**
@@ -266,12 +325,12 @@ module.exports = {
    * @return {Promise}
    */
   getCommandHandler(rawCommandKeyword) {
-    const shortcutCommand = commandShortcuts[rawCommandKeyword]
+    const shortcutCommand = commandShortcuts[rawCommandKeyword];
 
     if (shortcutCommand) {
-      return commands[shortcutCommand.command]
+      return commands[shortcutCommand.command];
     }
 
-    return commands[rawCommandKeyword]
+    return commands[rawCommandKeyword];
   },
-}
+};

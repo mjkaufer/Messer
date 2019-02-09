@@ -1,22 +1,22 @@
-let locked = false
-let target = ""
+let locked = false;
+let target = '';
 
 function isLocked() {
-  return locked
+  return locked;
 }
 
 function getLockedTarget() {
-  return target
+  return target;
 }
 
 function lockOn(targetUser) {
-  locked = true
-  target = targetUser
+  locked = true;
+  target = targetUser;
 }
 
 function unlock() {
-  locked = false
-  this.target = ""
+  locked = false;
+  this.target = '';
 }
 
 module.exports = {
@@ -24,4 +24,4 @@ module.exports = {
   getLockedTarget,
   lockOn,
   unlock,
-}
+};

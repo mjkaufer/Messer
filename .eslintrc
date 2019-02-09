@@ -1,17 +1,14 @@
 {
-    "env": {
-        "node": true,
-        "mocha": true
-    },
-    "extends": "airbnb-base",
-    "rules": {
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "never"
-        ]
-    }
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "extends": "airbnb-base",
+  "rules": {
+    "implicit-arrow-linebreak": 0,
+    "arrow-parens": 0,
+    "function-paren-newline": 0,
+    "operator-linebreak": 0,
+    "import/no-extraneous-dependencies": 0
+  }
 }

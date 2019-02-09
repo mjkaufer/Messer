@@ -30,7 +30,7 @@
   "scripts": {
     "start": "node index.js",
     "lint": "./node_modules/eslint/bin/eslint.js .",
-    "test": "npm run lint && mocha --reporter=\"list\""
+    "test": "mocha --reporter=\"list\""
   },
   "dependencies": {
     "chalk": "^2.4.1",

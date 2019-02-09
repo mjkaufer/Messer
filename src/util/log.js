@@ -1,4 +1,4 @@
-const chalk = require("chalk")
+const chalk = require('chalk');
 
 /**
  * Wrapper around console.log
@@ -7,16 +7,16 @@ const chalk = require("chalk")
  */
 function log(content, color) {
   /* eslint-disable */
-  if (!content) return null
+  if (!content) return null;
   if (color) {
     if (chalk[color]) {
-      return console.log(chalk[color](content))
+      return console.log(chalk[color](content));
     }
-    return console.log(chalk.hex(color)(content))
+    return console.log(chalk.hex(color)(content));
   }
 
-  return console.log(content)
+  return console.log(content);
   /* eslint-enable */
 }
 
-module.exports = log
+module.exports = log;

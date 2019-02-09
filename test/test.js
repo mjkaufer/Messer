@@ -190,7 +190,7 @@ describe('Command Handlers', () => {
       }));
 
     it('should return something for a thread with some history', () => {
-      messerWithHistory.api.getThreadHistory = (
+      messerWithHistory.messy.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -208,7 +208,7 @@ describe('Command Handlers', () => {
     });
 
     it('should handle messages where the sender is the current user', () => {
-      messerWithHistory.api.getThreadHistory = (
+      messerWithHistory.messy.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -221,7 +221,7 @@ describe('Command Handlers', () => {
         return cb(null, data);
       };
 
-      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
+      messerWithHistory.messy.api.getThreadInfo = (threadID, cb) =>
         cb(null, { threadID, name: 'Tom Quirk' });
 
       return messerWithHistory.processCommand('history "mark"').then(res => {
@@ -230,7 +230,7 @@ describe('Command Handlers', () => {
     });
 
     it("should return history for thread that isn't cached", () => {
-      messerWithHistory.api.getThreadHistory = (
+      messerWithHistory.messy.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -242,7 +242,7 @@ describe('Command Handlers', () => {
         return cb(null, data);
       };
 
-      messerWithHistory.api.getThreadInfo = (threadID, cb) =>
+      messerWithHistory.messy.api.getThreadInfo = (threadID, cb) =>
         cb(null, { threadID, name: 'Waylon Smithers' });
 
       return messerWithHistory.processCommand('history "waylon"').then(res => {
@@ -260,7 +260,7 @@ describe('Command Handlers', () => {
       }));
 
     it('should act appropriately when [messageCount] given', () => {
-      messerWithHistory.api.getThreadHistory = (
+      messerWithHistory.messy.api.getThreadHistory = (
         threadID,
         messageCount,
         x,

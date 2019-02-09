@@ -5,5 +5,5 @@ appstate.json
 # misc
 node_modules
 .DS_Store
-npm-debug.log*
+*debug.log*
 .vscode

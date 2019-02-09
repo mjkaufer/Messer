@@ -10,13 +10,19 @@ const lock = require('./util/lock');
 /**
  * Let's get messy
  */
-const getMessy = () => {
+const getMessy = ctx => {
   const messy = new Messy();
 
   messy.getMfaCode = () => helpers.promptCode();
   messy.promptCredentials = () => helpers.promptCredentials();
-  messy.onMessage = ev => eventHandlers.message(ev);
-  messy.onThreadEvent = ev => eventHandlers.event(ev);
+  messy.onMessage = ev => {
+    const handler = eventHandlers.message.bind(ctx);
+    return handler(ev);
+  };
+  messy.onThreadEvent = ev => {
+    const handler = eventHandlers.event.bind(ctx);
+    return handler(ev);
+  };
 
   return messy;
 };
@@ -26,7 +32,7 @@ const getMessy = () => {
  * @class
  */
 function Messer(options = {}) {
-  this.messy = getMessy();
+  this.messy = undefined;
 
   this.threadCache = {}; // cached by id
   this.threadNameToIdMap = {}; // maps a thread name to a thread id
@@ -54,6 +60,7 @@ Messer.prototype.refreshThreadList = function refreshThreadList() {
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
+  this.messy = getMessy(this);
   helpers.notifyTerminal();
 
   this.messy
@@ -157,18 +164,18 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
 
     // if thread not cached, try the friends list
     if (!threadID) {
-      const friendName = Object.keys(this.messy.user.friendsList).find(n =>
-        n.toLowerCase().startsWith(threadName.toLowerCase()),
+      const friend = this.messy.user.friends.find(n =>
+        n.fullName.toLowerCase().startsWith(threadName.toLowerCase()),
       );
 
-      if (!friendName) {
+      if (!friend) {
         return reject(Error('No threadID could be found.'));
       }
 
       // create a fake thread based off friend info
       const friendThread = {
-        name: friendName,
-        threadID: this.messy.user.friendsList[friendName].userID,
+        name: friend.fullName,
+        threadID: friend.userID,
       };
 
       return resolve(friendThread);
@@ -211,9 +218,9 @@ Messer.prototype.getThreadById = function getThreadById(
         if (threadID === this.messy.user.userID) {
           friendName = this.messy.user.name;
         } else {
-          const friend = helpers
-            .objectValues(this.messy.user.friendsList)
-            .find(user => user.userID === threadID);
+          const friend = this.messy.user.friends.find(
+            user => user.userID === threadID,
+          );
 
           if (!friend) {
             return reject(Error('Name could not be found for thread'));

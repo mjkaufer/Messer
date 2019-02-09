@@ -50,25 +50,25 @@ const eventHandlers = {
    * Handles the "message" event type
    * @param {Object} message - message to handle
    */
-  message(message) {
-    this.getThreadById(message.threadID)
+  message(ev) {
+    if (
+      ev.senderID === this.messy.user.id &&
+      ev.threadID !== this.messy.user.id
+    ) {
+      return;
+    }
+
+    this.getThreadById(ev.threadID)
       .then(thread => {
-        if (
-          message.senderID === this.user.userID &&
-          message.threadID !== this.user.userID
-        ) {
-          return;
-        }
-
         let sender = thread.name;
-        let messageBody = message.body;
+        let messageBody = ev.body;
 
-        if (message.isGroup) {
+        if (ev.isGroup) {
           sender = `(${thread.name}) ${sender}`;
         }
 
-        if (message.attachments.length > 0) {
-          messageBody = message.attachments.reduce(
+        if (ev.attachments.length > 0) {
+          messageBody = ev.attachments.reduce(
             (prev, curr) => `${prev} ${parseAttachment(curr)};`,
             '',
           );
@@ -76,7 +76,7 @@ const eventHandlers = {
 
         log(
           `${
-            this.lastThread !== message.threadID ? '\n' : ''
+            this.lastThread !== ev.threadID ? '\n' : ''
           }${sender} - ${messageBody}`,
           thread.color,
         );
@@ -85,7 +85,7 @@ const eventHandlers = {
         helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title
 
         process.stderr.write('\x07'); // Terminal notification
-        this.lastThread = message.threadID;
+        this.lastThread = ev.threadID;
       })
       .catch(err => log(err));
   },

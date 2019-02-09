@@ -50,7 +50,7 @@ function MockMesser() {
   messer.messy.user = {
     userID: '666',
     name: 'Tom Quirk',
-    friendsList: {
+    friends: {
       'Waylon Smithers': {
         fullName: 'Waylon Smithers',
         userID: '1',
@@ -326,7 +326,7 @@ describe('Command Handlers', () => {
 
     it('should gracefully handle user with no friends', () => {
       const messerNoFriends = MockMesser();
-      messerNoFriends.messy.user.friendsList = [];
+      messerNoFriends.messy.user.friends = [];
 
       return messerNoFriends.processCommand('contacts').then(res => {
         assert.ok(res);

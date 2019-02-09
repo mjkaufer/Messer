@@ -100,15 +100,14 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise(resolve => {
-      const friendsList = Object.keys(this.messy.user.friendsList);
+      const { friends } = this.messy.user;
+      if (friends.length === 0) return resolve('You have no friends 😢');
 
-      if (friendsList.length === 0) return resolve('You have no friends 😢');
+      const friendsPretty = friends
+        .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
+        .reduce((a, b) => `${a}${b.fullName}\n`, '');
 
-      const friendsListPretty = friendsList
-        .sort((a, b) => (a > b ? 1 : -1))
-        .reduce((a, b) => `${a}${b}\n`, '');
-
-      return resolve(friendsListPretty);
+      return resolve(friendsPretty);
     });
   },
 

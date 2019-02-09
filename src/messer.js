@@ -7,6 +7,9 @@ const eventHandlers = require('./event-handlers');
 const log = require('./util/log');
 const lock = require('./util/lock');
 
+/**
+ * Let's get messy
+ */
 const getMessy = () => {
   const messy = new Messy();
 

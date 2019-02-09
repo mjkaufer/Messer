@@ -9,17 +9,19 @@ const mockSettings = {
   APPSTATE_FILE_PATH: path.resolve(__dirname, 'tmp/appstate.json'),
 };
 
+const DEFAULT_MOCK_THREAD = {
+  name: 'Mark Zuckerberg',
+  threadID: '111',
+  color: '#000000',
+  unreadCount: 0,
+  lastMessageTimestamp: '123456789',
+};
+
 /**
  * Return a minimal thread as given by facebook-chat-api
  */
-function getThread() {
-  return {
-    name: 'Mark Zuckerberg',
-    threadID: '111',
-    color: '#000000',
-    unreadCount: 0,
-    lastMessageTimestamp: '123456789',
-  };
+function getMockThread() {
+  return JSON.parse(JSON.stringify(DEFAULT_MOCK_THREAD));
 }
 
 /**
@@ -44,7 +46,7 @@ function MockMesser() {
   const messer = new Messer();
 
   messer.messy.api = MockApi();
-  messer.cacheThread(getThread());
+  messer.cacheThread(getMockThread());
   messer.messy.user = {
     userID: '666',
     name: 'Tom Quirk',
@@ -72,7 +74,7 @@ describe('Messer', () => {
    */
   describe('#cacheThread(thread)', () => {
     const messer = new Messer();
-    const thread = getThread();
+    const thread = getMockThread();
 
     it('should populate threadCache as expected', () => {
       messer.cacheThread(thread);
@@ -90,7 +92,7 @@ describe('Messer', () => {
    */
   describe('#getThreadByName(name)', () => {
     const messer = new Messer();
-    const thread = getThread();
+    const thread = getMockThread();
 
     messer.cacheThread(thread);
 
@@ -160,7 +162,7 @@ describe('Command Handlers', () => {
    */
   describe(`#${commandTypes.REPLY.command}`, () => {
     const messerCanReply = MockMesser();
-    messerCanReply.lastThread = getThread();
+    messerCanReply.lastThread = getMockThread();
 
     it('should fail if no message has been recieved', () =>
       messer.processCommand('reply hey dude').catch(err => {
@@ -196,7 +198,13 @@ describe('Command Handlers', () => {
         x,
         cb,
       ) => {
-        const data = [{ senderID: '111', body: 'hey dude', type: 'message' }];
+        const data = [
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
+        ];
         return cb(null, data);
       };
       return messerWithHistory.processCommand('history "mark"').then(res => {
@@ -215,8 +223,16 @@ describe('Command Handlers', () => {
         cb,
       ) => {
         const data = [
-          { senderID: '111', body: 'hey dude', type: 'message' },
-          { senderID: messer.user.userID, body: 'hey marn', type: 'message' },
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
+          {
+            senderID: messer.messy.user.userID,
+            body: 'hey marn',
+            type: 'message',
+          },
         ];
         return cb(null, data);
       };
@@ -225,7 +241,7 @@ describe('Command Handlers', () => {
         cb(null, { threadID, name: 'Tom Quirk' });
 
       return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.includes(messer.user.name));
+        assert.ok(res.includes(messer.messy.user.name));
       });
     });
 
@@ -267,10 +283,26 @@ describe('Command Handlers', () => {
         cb,
       ) => {
         const data = [
-          { senderID: '111', body: 'hey dude', type: 'message' },
-          { senderID: '111', body: 'hey dude', type: 'message' },
-          { senderID: '111', body: 'hey dude', type: 'message' },
-          { senderID: '111', body: 'hey dude', type: 'message' },
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
+          {
+            senderID: DEFAULT_MOCK_THREAD.threadID,
+            body: 'hey dude',
+            type: 'message',
+          },
         ].slice(0, messageCount);
         return cb(null, data);
       };
@@ -294,7 +326,7 @@ describe('Command Handlers', () => {
 
     it('should gracefully handle user with no friends', () => {
       const messerNoFriends = MockMesser();
-      messerNoFriends.user.friendsList = [];
+      messerNoFriends.messy.user.friendsList = [];
 
       return messerNoFriends.processCommand('contacts').then(res => {
         assert.ok(res);

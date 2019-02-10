@@ -246,7 +246,7 @@ Messer.prototype.clear = function clear() {
 };
 
 /**
- * Clears the messer notification in the terminal title.
+ * Terminates the Messer session and removes all relevent files.
  */
 Messer.prototype.logout = function logout() {
   return this.messen.logout().then(() => {

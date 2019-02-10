@@ -245,4 +245,13 @@ Messer.prototype.clear = function clear() {
   helpers.notifyTerminal();
 };
 
+/**
+ * Clears the messer notification in the terminal title.
+ */
+Messer.prototype.logout = function logout() {
+  return this.messen.logout().then(() => {
+    process.exit();
+  });
+};
+
 module.exports = Messer;

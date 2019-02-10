@@ -128,9 +128,7 @@ const commands = {
    * Logs the user out of Messer
    */
   [commandTypes.LOGOUT.command]() {
-    return this.messen.logout().then(() => {
-      process.exit();
-    });
+    return this.logout();
   },
 
   /**

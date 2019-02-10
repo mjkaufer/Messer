@@ -11,16 +11,16 @@ Command-line Messaging for Facebook Messenger
 ## Installation
 
 ```bash
-npm install -g messer
+$ npm install -g messer
 ```
 
 ## Quick Start
 
 1. Install `messer`
 2. Run `messer`
-    ```bash
-    $ messer
-    ```
+   ```bash
+   $ messer
+   ```
 3. Enter your details
 4. ...
 5. Profit
@@ -34,7 +34,7 @@ For a list of commands, jump to the [Commands Reference](https://github.com/mjka
 1. Start Messer and wait for "Enter Code" prompt
 2. Enter a 2FA code generated from your 2FA app
 
-    If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
+   If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
 
 3. Approve the browser/device (i.e. approve Messer)
 4. Retry from Step 1
@@ -124,8 +124,7 @@ Logs you out
 logout
 ```
 
-
-## Non-interactive Mode
+### Non-interactive Mode
 
 Messer can be run in non-interactive mode with command line arguments to execute a single command.
 
@@ -133,14 +132,20 @@ Messer can be run in non-interactive mode with command line arguments to execute
 messer --command='[command]'
 ```
 
-Login will be prompted if this is the first time logging in.  
-
+Login will be prompted if this is the first time logging in.
 
 Examples
 
 - `messer --command='m "John Smith" Hey, John'`
 - `messer --command='r Hey, John'`
 
+### Cleanup
+
+If ever you want to clean up any old Messer sessions and start from scratch, run:
+
+```bash
+$ messer cleanup
+```
 
 ## FAQ
 

@@ -126,10 +126,11 @@ const commands = {
 
   /**
    * Logs the user out of Messer
-   * @return {Promise<String>}
    */
   [commandTypes.LOGOUT.command]() {
-    return new Promise(() => this.messen.logout());
+    return this.messen.logout().then(() => {
+      process.exit();
+    });
   },
 
   /**

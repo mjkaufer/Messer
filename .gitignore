@@ -1,7 +1,3 @@
-# Messer-specific
-tmp
-appstate.json
-
 # misc
 node_modules
 .DS_Store

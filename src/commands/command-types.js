@@ -2,7 +2,7 @@ const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
   /([A-z]+)\s+(.+){0,}/,
   /([A-z]+)\s+"(.*?)"(?:\s+)?([0-9]+)?/,
-]
+];
 
 /* Command type constants */
 const commandTypes = {
@@ -23,12 +23,12 @@ const commandTypes = {
   HISTORY: {
     command: "history",
     regexp: regexps[2],
-    help: "history \"[thread name]\" [n]",
+    help: 'history "[thread name]" [n]',
   },
   MESSAGE: {
     command: "message",
     regexp: regexps[0],
-    help: "message \"[thread name]\" [message]",
+    help: 'message "[thread name]" [message]',
   },
   RECENT: {
     command: "recent",
@@ -51,6 +51,6 @@ const commandTypes = {
     command: "unlock",
     help: "unlock",
   },
-}
+};
 
-module.exports = commandTypes
+module.exports = commandTypes;

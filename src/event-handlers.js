@@ -1,6 +1,6 @@
-const log = require("./util/log")
-const fbAssets = require("./fb-assets")
-const helpers = require("./util/helpers.js")
+const log = require("./util/log");
+const fbAssets = require("./fb-assets");
+const helpers = require("./util/helpers.js");
 
 /**
  * Returns the parsed attachment object as a String
@@ -8,36 +8,37 @@ const helpers = require("./util/helpers.js")
  * @return {String}
  */
 function parseAttachment(attachment) {
-  const attachmentType = attachment.type.replace(/_/g, " ")
+  const attachmentType = attachment.type.replace(/_/g, " ");
 
-  let messageBody = ""
+  let messageBody = "";
 
   switch (attachmentType) {
     case "sticker":
       try {
-        messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID]
+        messageBody =
+          fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
       } catch (e) {
-        messageBody = "sent a sticker (only viewable in browser)"
+        messageBody = "sent a sticker (only viewable in browser)";
       }
-      break
+      break;
     case "file":
-      messageBody = `${attachment.name}: ${attachment.url}`
-      break
+      messageBody = `${attachment.name}: ${attachment.url}`;
+      break;
     case "photo":
-      messageBody = `${attachment.filename}: ${attachment.facebookUrl}`
-      break
+      messageBody = `${attachment.filename}: ${attachment.facebookUrl}`;
+      break;
     case "share":
-      messageBody = `${attachment.facebookUrl}`
-      break
+      messageBody = `${attachment.facebookUrl}`;
+      break;
     case "video":
-      messageBody = `${attachment.filename}: ${attachment.url}`
-      break
+      messageBody = `${attachment.filename}: ${attachment.url}`;
+      break;
     default:
-      messageBody = `sent [${attachmentType}] - only viewable in browser`
-      break
+      messageBody = `sent [${attachmentType}] - only viewable in browser`;
+      break;
   }
 
-  return `[${attachmentType}] ${messageBody}`
+  return `[${attachmentType}] ${messageBody}`;
 }
 
 /**
@@ -49,69 +50,89 @@ const eventHandlers = {
    * Handles the "message" event type
    * @param {Object} message - message to handle
    */
-  message(message) {
-    this.getThreadById(message.threadID)
-      .then((thread) => {
-        if (message.senderID === this.user.userID && message.threadID !== this.user.userID) return
+  message(ev) {
+    if (
+      ev.senderID === this.messen.user.id &&
+      ev.threadID !== this.messen.user.id
+    ) {
+      return;
+    }
 
-        let sender = thread.name
-        let messageBody = message.body
+    this.getThreadById(ev.threadID)
+      .then(thread => {
+        let sender = thread.name;
+        let messageBody = ev.body;
 
-        if (message.attachments.length > 0) {
-          messageBody = message.attachments.reduce((prev, curr) => `${prev} ${parseAttachment(curr)};`, "")
+        if (ev.attachments.length > 0) {
+          messageBody = ev.attachments.reduce(
+            (prev, curr) => `${prev} ${parseAttachment(curr)};`,
+            "",
+          );
         }
 
-        if (message.isGroup) {
-          this.getThreadById(message.senderID, true).then((threadSender) => {
-            sender = `(${thread.name}) ${threadSender.name}` // Get true sender name from list
-            log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
-          }).catch(function () {
-            sender = `(${thread.name}) ${sender.name}` // Sender not in list, keep origin
-            log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
-          })
+        if (ev.isGroup) {
+          this.getThreadById(ev.senderID, true)
+            .then(threadSender => {
+              sender = `(${thread.name}) ${threadSender.name}`; // Get true sender name from list
+              log(
+                `${
+                  this.lastThread !== ev.threadID ? "\n" : ""
+                }${sender} - ${messageBody}`,
+                thread.color,
+              );
+            })
+            .catch(() => {
+              sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
+              log(
+                `${
+                  this.lastThread !== ev.threadID ? "\n" : ""
+                }${sender} - ${messageBody}`,
+                thread.color,
+              );
+            });
         } else {
-          log(`${this.lastThread !== message.threadID ? "\n" : ""}${sender} - ${messageBody}`, thread.color)
+          log(
+            `${
+              this.lastThread !== ev.threadID ? "\n" : ""
+            }${sender} - ${messageBody}`,
+            thread.color,
+          );
         }
 
-        this.unreadMessagesCount += 1
+        this.unreadMessagesCount += 1;
 
-        helpers.notifyTerminal(this.unreadMessagesCount) // Terminal notification in title
+        helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title
 
-        process.stderr.write("\x07") // Terminal notification
-        this.lastThread = message.threadID
+        process.stderr.write("\x07"); // Terminal notification
+        this.lastThread = ev.threadID;
       })
-      .catch(err => log(err))
+      .catch(err => log(err));
   },
   /**
    * Handles the "event" event type
    * @param {Object} ev - event to handle
    */
   event(ev) {
-    this.getThreadById(ev.threadID)
-      .then((thread) => {
-        let logMessage = "An event happened!"
+    this.getThreadById(ev.threadID).then(thread => {
+      let logMessage = "An event happened!";
 
-        switch (ev.logMessageType) {
-          case "log:thread-color":
-            Object.assign(thread, { color: `#${ev.logMessageData.theme_color.slice(2)}` })
-            logMessage = ev.logMessageBody
-            break
-          default:
-            break
-        }
+      switch (ev.logMessageType) {
+        case "log:thread-color":
+          Object.assign(thread, {
+            color: `#${ev.logMessageData.theme_color.slice(2)}`,
+          });
+          logMessage = ev.logMessageBody;
+          break;
+        default:
+          break;
+      }
 
-        log(logMessage)
-      })
+      log(logMessage);
+    });
   },
-  typ() {
+  typ() {},
+  read_receipt() {},
+  message_reaction() {},
+};
 
-  },
-  read_receipt() {
-
-  },
-  message_reaction() {
-
-  },
-}
-
-module.exports = eventHandlers
+module.exports = eventHandlers;

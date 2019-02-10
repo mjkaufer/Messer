@@ -45,9 +45,9 @@ function MockApi() {
 function MockMesser() {
   const messer = new Messer();
 
-  messer.messy.api = MockApi();
+  messer.messen.api = MockApi();
   messer.cacheThread(getMockThread());
-  messer.messy.user = {
+  messer.messen.user = {
     id: '666',
     name: 'Tom Quirk',
     friends: [
@@ -117,14 +117,9 @@ describe('Messer', () => {
     const messer = MockMesser();
 
     it('should process and handle a valid command', () =>
-      messer
-        .processCommand('message "waylon" hey dude')
-        .then(res => {
-          assert.ok(res);
-        })
-        .catch(err => {
-          console.log(err);
-        }));
+      messer.processCommand('message "waylon" hey dude').then(res => {
+        assert.ok(res);
+      }));
   });
 });
 
@@ -197,7 +192,7 @@ describe('Command Handlers', () => {
       }));
 
     it('should return something for a thread with some history', () => {
-      messerWithHistory.messy.api.getThreadHistory = (
+      messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -221,7 +216,7 @@ describe('Command Handlers', () => {
     });
 
     it('should handle messages where the sender is the current user', () => {
-      messerWithHistory.messy.api.getThreadHistory = (
+      messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -234,7 +229,7 @@ describe('Command Handlers', () => {
             type: 'message',
           },
           {
-            senderID: messer.messy.user.id,
+            senderID: messer.messen.user.id,
             body: 'hey marn',
             type: 'message',
           },
@@ -242,16 +237,16 @@ describe('Command Handlers', () => {
         return cb(null, data);
       };
 
-      messerWithHistory.messy.api.getThreadInfo = (threadID, cb) =>
+      messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
         cb(null, { threadID, name: 'Tom Quirk' });
 
       return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.includes(messer.messy.user.name));
+        assert.ok(res.includes(messer.messen.user.name));
       });
     });
 
     it("should return history for thread that isn't cached", () => {
-      messerWithHistory.messy.api.getThreadHistory = (
+      messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -263,7 +258,7 @@ describe('Command Handlers', () => {
         return cb(null, data);
       };
 
-      messerWithHistory.messy.api.getThreadInfo = (threadID, cb) =>
+      messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
         cb(null, { threadID, name: 'Waylon Smithers' });
 
       return messerWithHistory.processCommand('history "waylon"').then(res => {
@@ -281,7 +276,7 @@ describe('Command Handlers', () => {
       }));
 
     it('should act appropriately when [messageCount] given', () => {
-      messerWithHistory.messy.api.getThreadHistory = (
+      messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
         x,
@@ -331,7 +326,7 @@ describe('Command Handlers', () => {
 
     it('should gracefully handle user with no friends', () => {
       const messerNoFriends = MockMesser();
-      messerNoFriends.messy.user.friends = [];
+      messerNoFriends.messen.user.friends = [];
 
       return messerNoFriends.processCommand('contacts').then(res => {
         assert.ok(res);

@@ -1,4 +1,4 @@
-const Messy = require('messy');
+const Messen = require('messen');
 const repl = require('repl');
 
 const helpers = require('./util/helpers.js');
@@ -7,24 +7,21 @@ const eventHandlers = require('./event-handlers');
 const log = require('./util/log');
 const lock = require('./util/lock');
 
-/**
- * Let's get messy
- */
-const getMessy = ctx => {
-  const messy = new Messy();
+const getMessen = ctx => {
+  const messen = new Messen();
 
-  messy.getMfaCode = () => helpers.promptCode();
-  messy.promptCredentials = () => helpers.promptCredentials();
-  messy.onMessage = ev => {
+  messen.getMfaCode = () => helpers.promptCode();
+  messen.promptCredentials = () => helpers.promptCredentials();
+  messen.onMessage = ev => {
     const handler = eventHandlers.message.bind(ctx);
     return handler(ev);
   };
-  messy.onThreadEvent = ev => {
+  messen.onThreadEvent = ev => {
     const handler = eventHandlers.event.bind(ctx);
     return handler(ev);
   };
 
-  return messy;
+  return messen;
 };
 
 /**
@@ -32,7 +29,7 @@ const getMessy = ctx => {
  * @class
  */
 function Messer(options = {}) {
-  this.messy = getMessy(this);
+  this.messen = getMessen(this);
 
   this.threadCache = {}; // cached by id
   this.threadNameToIdMap = {}; // maps a thread name to a thread id
@@ -47,7 +44,7 @@ function Messer(options = {}) {
  */
 Messer.prototype.refreshThreadList = function refreshThreadList() {
   return new Promise((resolve, reject) =>
-    this.messy.api.getThreadList(20, null, ['INBOX'], (err, threads) => {
+    this.messen.api.getThreadList(20, null, ['INBOX'], (err, threads) => {
       if (!threads) return reject(Error('Nothing returned from getThreadList'));
 
       threads.forEach(thread => this.cacheThread(thread));
@@ -62,12 +59,12 @@ Messer.prototype.refreshThreadList = function refreshThreadList() {
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
 
-  this.messy
+  this.messen
     .login()
     .then(() => {
-      log(`Successfully logged in as ${this.messy.user.name}`);
+      log(`Successfully logged in as ${this.messen.user.name}`);
 
-      this.messy.listen();
+      this.messen.listen();
 
       repl.start({
         ignoreUndefined: true,
@@ -89,7 +86,7 @@ Messer.prototype.start = function start() {
  * Starts Messer and executes a single command
  */
 Messer.prototype.startSingle = function startSingle(rawCommand) {
-  this.messy
+  this.messen
     .login()
     .then(() => this.processCommand(rawCommand))
     .catch(err => log(err));
@@ -163,7 +160,7 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
 
     // if thread not cached, try the friends list
     if (!threadID) {
-      const friend = this.messy.user.friends.find(n =>
+      const friend = this.messen.user.friends.find(n =>
         n.fullName.toLowerCase().startsWith(threadName.toLowerCase()),
       );
 
@@ -206,7 +203,7 @@ Messer.prototype.getThreadById = function getThreadById(
 
     if (thread) return resolve(thread);
 
-    return this.messy.api.getThreadInfo(threadID, (err, data) => {
+    return this.messen.api.getThreadInfo(threadID, (err, data) => {
       if (err) return reject(err);
       thread = data;
 
@@ -214,10 +211,10 @@ Messer.prototype.getThreadById = function getThreadById(
       if (!thread.name && requireName) {
         let friendName = null;
 
-        if (threadID === this.messy.user.id) {
-          friendName = this.messy.user.name;
+        if (threadID === this.messen.user.id) {
+          friendName = this.messen.user.name;
         } else {
-          const friend = this.messy.user.friends.find(
+          const friend = this.messen.user.friends.find(
             user => user.userID === threadID,
           );
 

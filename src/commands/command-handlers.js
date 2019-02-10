@@ -48,7 +48,7 @@ const commands = {
       }
       return this.getThreadByName(rawReceiver)
         .then(receiver =>
-          this.messy.api.sendMessage(message, receiver.threadID, err => {
+          this.messen.api.sendMessage(message, receiver.threadID, err => {
             if (err) return reject(err);
 
             return resolve(`Sent message to ${receiver.name}`);
@@ -86,7 +86,7 @@ const commands = {
 
       // var body = rawCommand.substring(commandTypes.REPLY.length).trim()
 
-      return this.messy.api.sendMessage(argv[2], this.lastThread, err => {
+      return this.messen.api.sendMessage(argv[2], this.lastThread, err => {
         if (err) return reject(err);
 
         return resolve();
@@ -100,7 +100,7 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise(resolve => {
-      const { friends } = this.messy.user;
+      const { friends } = this.messen.user;
       if (friends.length === 0) return resolve('You have no friends 😢');
 
       const friendsPretty = friends
@@ -129,7 +129,7 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.LOGOUT.command]() {
-    return new Promise(() => this.messy.logout());
+    return new Promise(() => this.messen.logout());
   },
 
   /**
@@ -158,7 +158,7 @@ const commands = {
 
       return this.getThreadByName(rawThreadName)
         .then(thread =>
-          this.messy.api.getThreadHistory(
+          this.messen.api.getThreadHistory(
             thread.threadID,
             messageCount,
             undefined,
@@ -186,7 +186,7 @@ const commands = {
 
                       let logText = `${sender.name}: ${message.body}`;
                       if (message.isUnread) logText = chalk.red(logText);
-                      if (message.senderID === this.messy.user.id) {
+                      if (message.senderID === this.messen.user.id) {
                         logText = chalk.dim(logText);
                       }
 
@@ -215,7 +215,7 @@ const commands = {
 
       let color = argv[3];
       if (!color.startsWith('#')) {
-        color = this.messy.api.threadColors[color];
+        color = this.messen.api.threadColors[color];
         if (!color) return reject(Error(`Color '${argv[3]}' not available`));
       }
       // check if hex code is legit (TODO: regex this)
@@ -228,7 +228,7 @@ const commands = {
       // Find the thread to send to
       return this.getThreadByName(threadName)
         .then(thread =>
-          this.messy.api.changeThreadColor(color, thread.theadID, err => {
+          this.messen.api.changeThreadColor(color, thread.theadID, err => {
             if (err) return reject(err);
 
             return resolve();

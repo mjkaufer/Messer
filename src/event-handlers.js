@@ -52,8 +52,8 @@ const eventHandlers = {
    */
   message(ev) {
     if (
-      ev.senderID === this.messy.user.id &&
-      ev.threadID !== this.messy.user.id
+      ev.senderID === this.messen.user.id &&
+      ev.threadID !== this.messen.user.id
     ) {
       return;
     }
@@ -63,10 +63,6 @@ const eventHandlers = {
         let sender = thread.name;
         let messageBody = ev.body;
 
-        if (ev.isGroup) {
-          sender = `(${thread.name}) ${sender}`;
-        }
-
         if (ev.attachments.length > 0) {
           messageBody = ev.attachments.reduce(
             (prev, curr) => `${prev} ${parseAttachment(curr)};`,
@@ -74,12 +70,35 @@ const eventHandlers = {
           );
         }
 
-        log(
-          `${
-            this.lastThread !== ev.threadID ? '\n' : ''
-          }${sender} - ${messageBody}`,
-          thread.color,
-        );
+        if (ev.isGroup) {
+          this.getThreadById(ev.senderID, true)
+            .then(threadSender => {
+              sender = `(${thread.name}) ${threadSender.name}`; // Get true sender name from list
+              log(
+                `${
+                  this.lastThread !== ev.threadID ? '\n' : ''
+                }${sender} - ${messageBody}`,
+                thread.color,
+              );
+            })
+            .catch(() => {
+              sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
+              log(
+                `${
+                  this.lastThread !== ev.threadID ? '\n' : ''
+                }${sender} - ${messageBody}`,
+                thread.color,
+              );
+            });
+        } else {
+          log(
+            `${
+              this.lastThread !== ev.threadID ? '\n' : ''
+            }${sender} - ${messageBody}`,
+            thread.color,
+          );
+        }
+
         this.unreadMessagesCount += 1;
 
         helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title

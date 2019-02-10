@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "messen": "0.0.1",
+    "messen": "0.0.3",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "prompt": "^1.0.0"

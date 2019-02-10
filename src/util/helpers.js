@@ -1,10 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const prompt = require('prompt');
-const readline = require('readline');
-const mkdirp = require('mkdirp');
+const prompt = require("prompt");
+const readline = require("readline");
 
-const log = require('./log');
+const log = require("./log");
 
 /**
  * Adds the number of unread messages in the terminal title
@@ -13,7 +10,7 @@ const log = require('./log');
 function notifyTerminal(unreadMessagesCount) {
   const title = unreadMessagesCount
     ? `messer (${unreadMessagesCount})`
-    : 'messer';
+    : "messer";
   process.stdout.write(
     `${String.fromCharCode(27)}]0;${title}${String.fromCharCode(7)}`,
   );
@@ -24,7 +21,7 @@ function notifyTerminal(unreadMessagesCount) {
  */
 function promptCredentials() {
   log(
-    'Enter your Facebook credentials - your password will not be visible as you type it in',
+    "Enter your Facebook credentials - your password will not be visible as you type it in",
   );
   prompt.start();
 
@@ -32,11 +29,11 @@ function promptCredentials() {
     prompt.get(
       [
         {
-          name: 'email',
+          name: "email",
           required: true,
         },
         {
-          name: 'password',
+          name: "password",
           required: true,
           hidden: true,
         },
@@ -59,8 +56,8 @@ function promptCode() {
   });
 
   return new Promise(resolve => {
-    log('Enter code > ');
-    return rl.on('line', line => {
+    log("Enter code > ");
+    return rl.on("line", line => {
       resolve(line);
       rl.close();
     });

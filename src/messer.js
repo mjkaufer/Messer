@@ -1,11 +1,11 @@
-const Messen = require('messen');
-const repl = require('repl');
+const Messen = require("messen");
+const repl = require("repl");
 
-const helpers = require('./util/helpers.js');
-const { getCommandHandler } = require('./commands/command-handlers');
-const eventHandlers = require('./event-handlers');
-const log = require('./util/log');
-const lock = require('./util/lock');
+const helpers = require("./util/helpers.js");
+const { getCommandHandler } = require("./commands/command-handlers");
+const eventHandlers = require("./event-handlers");
+const log = require("./util/log");
+const lock = require("./util/lock");
 
 const getMessen = ctx => {
   const messen = new Messen();
@@ -44,8 +44,8 @@ function Messer(options = {}) {
  */
 Messer.prototype.refreshThreadList = function refreshThreadList() {
   return new Promise((resolve, reject) =>
-    this.messen.api.getThreadList(20, null, ['INBOX'], (err, threads) => {
-      if (!threads) return reject(Error('Nothing returned from getThreadList'));
+    this.messen.api.getThreadList(20, null, ["INBOX"], (err, threads) => {
+      if (!threads) return reject(Error("Nothing returned from getThreadList"));
 
       threads.forEach(thread => this.cacheThread(thread));
       return resolve();
@@ -104,25 +104,25 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   // ignore if rawCommand is only spaces
   if (localCommand.trim().length === 0) return Promise.resolve();
 
-  const args = localCommand.replace('\n', '').split(' ');
+  const args = localCommand.replace("\n", "").split(" ");
 
   let commandHandler = getCommandHandler(args[0]);
 
   if (lock.isLocked()) {
-    if (localCommand.trim() === 'unlock') {
-      commandHandler = getCommandHandler('unlock');
+    if (localCommand.trim() === "unlock") {
+      commandHandler = getCommandHandler("unlock");
     } else {
-      commandHandler = getCommandHandler('m');
-      localCommand = 'm '
+      commandHandler = getCommandHandler("m");
+      localCommand = "m "
         .concat('"')
         .concat(lock.getLockedTarget())
         .concat('" ')
-        .concat(args.join(' '));
+        .concat(args.join(" "));
     }
   }
 
   if (!commandHandler) {
-    return Promise.reject(Error('Invalid command - check your syntax'));
+    return Promise.reject(Error("Invalid command - check your syntax"));
   }
 
   return commandHandler.call(this, localCommand);
@@ -165,7 +165,7 @@ Messer.prototype.getThreadByName = function getThreadByName(threadName) {
       );
 
       if (!friend) {
-        return reject(Error('No threadID could be found.'));
+        return reject(Error("No threadID could be found."));
       }
 
       // create a fake thread based off friend info
@@ -219,7 +219,7 @@ Messer.prototype.getThreadById = function getThreadById(
           );
 
           if (!friend) {
-            return reject(Error('Friend could not be found for thread'));
+            return reject(Error("Friend could not be found for thread"));
           }
 
           friendName = friend.fullName;

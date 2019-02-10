@@ -1,20 +1,20 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
 
-const commandTypes = require('../src/commands/command-types');
-const Messer = require('../src/messer');
+const commandTypes = require("../src/commands/command-types");
+const Messer = require("../src/messer");
 
 const mockSettings = {
-  APPSTATE_FILE_PATH: path.resolve(__dirname, 'tmp/appstate.json'),
+  APPSTATE_FILE_PATH: path.resolve(__dirname, "tmp/appstate.json"),
 };
 
 const DEFAULT_MOCK_THREAD = {
-  name: 'Mark Zuckerberg',
-  threadID: '111',
-  color: '#000000',
+  name: "Mark Zuckerberg",
+  threadID: "111",
+  color: "#000000",
   unreadCount: 0,
-  lastMessageTimestamp: '123456789',
+  lastMessageTimestamp: "123456789",
 };
 
 /**
@@ -48,16 +48,16 @@ function MockMesser() {
   messer.messen.api = MockApi();
   messer.cacheThread(getMockThread());
   messer.messen.user = {
-    id: '666',
-    name: 'Tom Quirk',
+    id: "666",
+    name: "Tom Quirk",
     friends: [
       {
-        fullName: 'Waylon Smithers',
-        userID: '1',
+        fullName: "Waylon Smithers",
+        userID: "1",
       },
       {
-        fullName: 'Keniff Kaniff',
-        userID: '2',
+        fullName: "Keniff Kaniff",
+        userID: "2",
       },
     ],
   };
@@ -68,20 +68,20 @@ function MockMesser() {
 /**
  * Test Messer-related functionality
  */
-describe('Messer', () => {
+describe("Messer", () => {
   /**
    * Test cacheThread
    */
-  describe('#cacheThread(thread)', () => {
+  describe("#cacheThread(thread)", () => {
     const messer = new Messer();
     const thread = getMockThread();
 
-    it('should populate threadCache as expected', () => {
+    it("should populate threadCache as expected", () => {
       messer.cacheThread(thread);
       assert.deepEqual(thread, messer.threadCache[thread.threadID]);
     });
 
-    it('should populate threadNameToIdMap as expected', () => {
+    it("should populate threadNameToIdMap as expected", () => {
       messer.cacheThread(thread);
       assert.equal(thread.threadID, messer.threadNameToIdMap[thread.name]);
     });
@@ -90,33 +90,33 @@ describe('Messer', () => {
   /**
    * Test getThreadByName
    */
-  describe('#getThreadByName(name)', () => {
+  describe("#getThreadByName(name)", () => {
     const messer = new Messer();
     const thread = getMockThread();
 
     messer.cacheThread(thread);
 
-    it('should retrieve thread by exact name', () =>
+    it("should retrieve thread by exact name", () =>
       messer
         .getThreadByName(thread.name)
         .then(res => assert.deepEqual(res, thread)));
 
-    it('should retrieve thread by fuzzy name', () =>
+    it("should retrieve thread by fuzzy name", () =>
       messer
-        .getThreadByName('mark')
+        .getThreadByName("mark")
         .then(res => assert.deepEqual(res, thread)));
 
-    it('should fail to retrieve thread by name that is not cached', () =>
-      messer.getThreadByName('bill').catch(e => assert(e != null)));
+    it("should fail to retrieve thread by name that is not cached", () =>
+      messer.getThreadByName("bill").catch(e => assert(e != null)));
   });
 
   /**
    * Test processCommand
    */
-  describe('#processCommand(command)', () => {
+  describe("#processCommand(command)", () => {
     const messer = MockMesser();
 
-    it('should process and handle a valid command', () =>
+    it("should process and handle a valid command", () =>
       messer.processCommand('message "waylon" hey dude').then(res => {
         assert.ok(res);
       }));
@@ -126,19 +126,19 @@ describe('Messer', () => {
 /**
  * Test the command handlers
  */
-describe('Command Handlers', () => {
+describe("Command Handlers", () => {
   const messer = MockMesser();
 
   /**
    * Test the "message" command
    */
   describe(`#${commandTypes.MESSAGE.command}`, () => {
-    it('should send message to valid threadname', () =>
+    it("should send message to valid threadname", () =>
       messer.processCommand('message "waylon" hey dude').then(res => {
         assert.ok(res);
       }));
 
-    it('should send message to valid threadname using abbreviated command', () =>
+    it("should send message to valid threadname using abbreviated command", () =>
       messer.processCommand('m "waylon" hey dude').then(res => {
         assert.ok(res);
       }));
@@ -148,7 +148,7 @@ describe('Command Handlers', () => {
         assert.ok(res);
       }));
 
-    it('should fail to send message to invalid threadname', () =>
+    it("should fail to send message to invalid threadname", () =>
       messer.processCommand('m "rick" hey dude').catch(err => {
         assert.equal(
           err,
@@ -164,18 +164,18 @@ describe('Command Handlers', () => {
     const messerCanReply = MockMesser();
     messerCanReply.lastThread = getMockThread();
 
-    it('should fail if no message has been recieved', () =>
-      messer.processCommand('reply hey dude').catch(err => {
+    it("should fail if no message has been recieved", () =>
+      messer.processCommand("reply hey dude").catch(err => {
         assert.ok(err);
       }));
 
-    it('should reply', () =>
-      messerCanReply.processCommand('reply yea i agree').then(() => {
+    it("should reply", () =>
+      messerCanReply.processCommand("reply yea i agree").then(() => {
         assert.ok(true);
       }));
 
-    it('should reply using abbreviated command', () =>
-      messerCanReply.processCommand('r yea i agree').then(() => {
+    it("should reply using abbreviated command", () =>
+      messerCanReply.processCommand("r yea i agree").then(() => {
         assert.ok(true);
       }));
   });
@@ -186,12 +186,12 @@ describe('Command Handlers', () => {
   describe(`#${commandTypes.HISTORY.command}`, () => {
     const messerWithHistory = MockMesser();
 
-    it('should gracefully fail if no thread found', () =>
+    it("should gracefully fail if no thread found", () =>
       messer.processCommand('history "bill"').catch(err => {
         assert.ok(err);
       }));
 
-    it('should return something for a thread with some history', () => {
+    it("should return something for a thread with some history", () => {
       messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
@@ -201,21 +201,21 @@ describe('Command Handlers', () => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
         ];
         return cb(null, data);
       };
       return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.trim().split('\n'));
-        assert.ok(!res.includes('undefined'));
-        assert.ok(!res.includes('null'));
-        assert.ok(res.includes('Mark'));
+        assert.ok(res.trim().split("\n"));
+        assert.ok(!res.includes("undefined"));
+        assert.ok(!res.includes("null"));
+        assert.ok(res.includes("Mark"));
       });
     });
 
-    it('should handle messages where the sender is the current user', () => {
+    it("should handle messages where the sender is the current user", () => {
       messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
@@ -225,20 +225,20 @@ describe('Command Handlers', () => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
           {
             senderID: messer.messen.user.id,
-            body: 'hey marn',
-            type: 'message',
+            body: "hey marn",
+            type: "message",
           },
         ];
         return cb(null, data);
       };
 
       messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: 'Tom Quirk' });
+        cb(null, { threadID, name: "Tom Quirk" });
 
       return messerWithHistory.processCommand('history "mark"').then(res => {
         assert.ok(res.includes(messer.messen.user.name));
@@ -253,29 +253,29 @@ describe('Command Handlers', () => {
         cb,
       ) => {
         const data = [
-          { senderID: '1', body: 'hey im waylon', type: 'message' },
+          { senderID: "1", body: "hey im waylon", type: "message" },
         ];
         return cb(null, data);
       };
 
       messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: 'Waylon Smithers' });
+        cb(null, { threadID, name: "Waylon Smithers" });
 
       return messerWithHistory.processCommand('history "waylon"').then(res => {
-        assert.ok(res.trim().split('\n'));
-        assert.ok(!res.includes('undefined'));
-        assert.ok(!res.includes('null'));
-        assert.ok(res.includes('Waylon'));
+        assert.ok(res.trim().split("\n"));
+        assert.ok(!res.includes("undefined"));
+        assert.ok(!res.includes("null"));
+        assert.ok(res.includes("Waylon"));
       });
     });
 
-    it('should return truthy value when no history exists in thread', () =>
+    it("should return truthy value when no history exists in thread", () =>
       messer.processCommand('history "waylon"').then(res => {
         assert.ok(res);
-        assert.ok(!res.includes('waylon'));
+        assert.ok(!res.includes("waylon"));
       }));
 
-    it('should act appropriately when [messageCount] given', () => {
+    it("should act appropriately when [messageCount] given", () => {
       messerWithHistory.messen.api.getThreadHistory = (
         threadID,
         messageCount,
@@ -285,32 +285,32 @@ describe('Command Handlers', () => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: 'hey dude',
-            type: 'message',
+            body: "hey dude",
+            type: "message",
           },
         ].slice(0, messageCount);
         return cb(null, data);
       };
       return messerWithHistory.processCommand('history "mark" 2').then(res => {
-        assert.equal(res.trim().split('\n').length, 2);
-        assert.ok(!res.includes('undefined'));
-        assert.ok(!res.includes('null'));
-        assert.ok(res.includes('Mark'));
+        assert.equal(res.trim().split("\n").length, 2);
+        assert.ok(!res.includes("undefined"));
+        assert.ok(!res.includes("null"));
+        assert.ok(res.includes("Mark"));
       });
     });
   });
@@ -319,16 +319,16 @@ describe('Command Handlers', () => {
    * Test the "contacts" command
    */
   describe(`#${commandTypes.CONTACTS.command}`, () => {
-    it('should return list of friends sep. by newline', () =>
+    it("should return list of friends sep. by newline", () =>
       messer.processCommand(commandTypes.CONTACTS.command).then(res => {
-        assert.equal(res, 'Keniff Kaniff\nWaylon Smithers\n');
+        assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n");
       }));
 
-    it('should gracefully handle user with no friends', () => {
+    it("should gracefully handle user with no friends", () => {
       const messerNoFriends = MockMesser();
       messerNoFriends.messen.user.friends = [];
 
-      return messerNoFriends.processCommand('contacts').then(res => {
+      return messerNoFriends.processCommand("contacts").then(res => {
         assert.ok(res);
       });
     });
@@ -338,7 +338,7 @@ describe('Command Handlers', () => {
    * Test the "help" command
    */
   describe(`#${commandTypes.HELP.command}`, () => {
-    it('should return some truthy value', () =>
+    it("should return some truthy value", () =>
       messer.processCommand(commandTypes.HELP.command).then(res => {
         assert.ok(res);
       }));
@@ -348,8 +348,8 @@ describe('Command Handlers', () => {
    * Test the "logout" command
    */
   describe(`#${commandTypes.LOGOUT.command}`, () => {
-    it('should remove appstate file', () => {
-      fs.writeFile(mockSettings.APPSTATE_FILE_PATH, '{}', () =>
+    it("should remove appstate file", () => {
+      fs.writeFile(mockSettings.APPSTATE_FILE_PATH, "{}", () =>
         messer.processCommand(commandTypes.LOGOUT.command).then(() => {
           assert.ok(!fs.existsSync(mockSettings.APPSTATE_FILE_PATH));
         }),
@@ -361,27 +361,27 @@ describe('Command Handlers', () => {
    * Test the "lock" command
    */
   describe(`#${commandTypes.LOCK.command}`, () => {
-    it('should lock on to a valid thread name and porcess every input line as a message command', () =>
-      messer.processCommand('lock waylon').then(() =>
-        messer.processCommand('hey, dude').then(res => {
+    it("should lock on to a valid thread name and porcess every input line as a message command", () =>
+      messer.processCommand("lock waylon").then(() =>
+        messer.processCommand("hey, dude").then(res => {
           assert.ok(res);
         }),
       ));
 
-    it('should lock on to a valid thread name that is not a friend and porcess every input line as a message command', () =>
-      messer.processCommand('lock mark').then(() =>
-        messer.processCommand('hey, dude').then(res => {
+    it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", () =>
+      messer.processCommand("lock mark").then(() =>
+        messer.processCommand("hey, dude").then(res => {
           assert.ok(res);
         }),
       ));
 
-    it('should fail if no thread name is specified', () =>
-      messer.processCommand('lock').catch(err => {
+    it("should fail if no thread name is specified", () =>
+      messer.processCommand("lock").catch(err => {
         assert.ok(err);
       }));
 
-    it('should fail if a non-existant thread name is specified', () =>
-      messer.processCommand('lock asd').catch(err => {
+    it("should fail if a non-existant thread name is specified", () =>
+      messer.processCommand("lock asd").catch(err => {
         assert.ok(err);
       }));
   });
@@ -390,17 +390,17 @@ describe('Command Handlers', () => {
    * Test the "unlock" command
    */
   describe(`#${commandTypes.UNLOCK.command}`, () => {
-    it('should free up the input to type regular commands', () =>
-      messer.processCommand('lock waylon').then(() =>
-        messer.processCommand('unlock').then(() =>
+    it("should free up the input to type regular commands", () =>
+      messer.processCommand("lock waylon").then(() =>
+        messer.processCommand("unlock").then(() =>
           messer.processCommand('m "waylon" hey, dude').then(res => {
             assert.ok(res);
           }),
         ),
       ));
 
-    it('should fail if no lock command was issued beforehand', () =>
-      messer.processCommand('unlock').catch(err => {
+    it("should fail if no lock command was issued beforehand", () =>
+      messer.processCommand("unlock").catch(err => {
         assert.ok(err);
       }));
   });

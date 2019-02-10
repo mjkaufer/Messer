@@ -1,8 +1,8 @@
-const chalk = require('chalk');
+const chalk = require("chalk");
 
-const helpers = require('../util/helpers');
-const lock = require('../util/lock');
-const commandTypes = require('./command-types');
+const helpers = require("../util/helpers");
+const lock = require("../util/lock");
+const commandTypes = require("./command-types");
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -38,13 +38,13 @@ const commands = {
   [commandTypes.MESSAGE.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandTypes.MESSAGE.regexp, rawCommand);
-      if (!argv) return reject(Error('Invalid message - check your syntax'));
+      if (!argv) return reject(Error("Invalid message - check your syntax"));
 
       const rawReceiver = argv[2];
       const message = argv[3];
 
       if (message.length === 0) {
-        return reject(Error('No message to send - check your syntax'));
+        return reject(Error("No message to send - check your syntax"));
       }
       return this.getThreadByName(rawReceiver)
         .then(receiver =>
@@ -74,14 +74,14 @@ const commands = {
       if (this.lastThread === null) {
         return reject(
           Error(
-            'ERROR: You need to receive a message on Messer before using `reply`',
+            "ERROR: You need to receive a message on Messer before using `reply`",
           ),
         );
       }
 
       const argv = parseCommand(commandTypes.REPLY.regexp, rawCommand);
       if (!argv || !argv[2]) {
-        return reject(Error('Invalid command - check your syntax'));
+        return reject(Error("Invalid command - check your syntax"));
       }
 
       // var body = rawCommand.substring(commandTypes.REPLY.length).trim()
@@ -101,11 +101,11 @@ const commands = {
   [commandTypes.CONTACTS.command]() {
     return new Promise(resolve => {
       const { friends } = this.messen.user;
-      if (friends.length === 0) return resolve('You have no friends 😢');
+      if (friends.length === 0) return resolve("You have no friends 😢");
 
       const friendsPretty = friends
         .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName}\n`, '');
+        .reduce((a, b) => `${a}${b.fullName}\n`, "");
 
       return resolve(friendsPretty);
     });
@@ -119,7 +119,7 @@ const commands = {
     const helpPretty = `Commands:\n${helpers
       .objectValues(commandTypes)
       .filter(command => command.help)
-      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, '')}`;
+      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`;
 
     return new Promise(resolve => resolve(helpPretty));
   },
@@ -151,7 +151,7 @@ const commands = {
       const DEFAULT_COUNT = 5;
 
       const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
-      if (!argv) return reject(Error('Invalid command - check your syntax'));
+      if (!argv) return reject(Error("Invalid command - check your syntax"));
       const rawThreadName = argv[2];
       const messageCount = argv[3]
         ? parseInt(argv[3].trim(), 10)
@@ -179,7 +179,7 @@ const commands = {
               ).then(threads =>
                 resolve(
                   data
-                    .filter(event => event.type === 'message')
+                    .filter(event => event.type === "message")
                     .reduce((a, message) => {
                       const sender = threads.find(
                         t => t.threadID === message.senderID,
@@ -192,7 +192,7 @@ const commands = {
                       }
 
                       return `${a}${logText}\n`;
-                    }, ''),
+                    }, ""),
                 ),
               );
             },
@@ -212,10 +212,10 @@ const commands = {
   [commandTypes.COLOR.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandTypes.COLOR.regexp, rawCommand);
-      if (!argv) return reject(Error('Invalid command - check your syntax'));
+      if (!argv) return reject(Error("Invalid command - check your syntax"));
 
       let color = argv[3];
-      if (!color.startsWith('#')) {
+      if (!color.startsWith("#")) {
         color = this.messen.api.threadColors[color];
         if (!color) return reject(Error(`Color '${argv[3]}' not available`));
       }
@@ -249,7 +249,7 @@ const commands = {
   [commandTypes.RECENT.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand);
-      if (!argv) return reject(Error('Invalid command - check your syntax'));
+      if (!argv) return reject(Error("Invalid command - check your syntax"));
 
       const DEFAULT_COUNT = 5;
 
@@ -266,7 +266,7 @@ const commands = {
           if (thread.unreadCount) logText = chalk.red(logText);
 
           return `${a}${logText}\n`;
-        }, '');
+        }, "");
 
       return resolve(threadList);
     });
@@ -278,24 +278,24 @@ const commands = {
   [commandTypes.LOCK.command](rawCommand) {
     return new Promise((resolve, reject) => {
       const receiver = rawCommand
-        .split(' ')
+        .split(" ")
         .slice(1)
-        .join(' ')
-        .replace('\n', '');
+        .join(" ")
+        .replace("\n", "");
       if (!receiver) {
-        return reject(Error('Please, specify a user to lock on to'));
+        return reject(Error("Please, specify a user to lock on to"));
       }
       return this.getThreadByName(receiver)
         .then(() => {
           lock.lockOn(receiver);
-          return resolve('Locked on to '.concat(receiver));
+          return resolve("Locked on to ".concat(receiver));
         })
         .catch(() =>
           reject(
             Error(
-              'Cannot find user '
+              "Cannot find user "
                 .concat(receiver)
-                .concat(' in friends list or active threads'),
+                .concat(" in friends list or active threads"),
             ),
           ),
         );
@@ -311,9 +311,9 @@ const commands = {
       if (lock.isLocked()) {
         const threadName = lock.getLockedTarget();
         lock.unlock();
-        return resolve('Unlocked form '.concat(threadName));
+        return resolve("Unlocked form ".concat(threadName));
       }
-      return reject(Error('No current locked user'));
+      return reject(Error("No current locked user"));
     });
   },
 };

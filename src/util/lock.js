@@ -1,5 +1,5 @@
 let locked = false;
-let target = '';
+let target = "";
 
 function isLocked() {
   return locked;
@@ -16,7 +16,7 @@ function lockOn(targetUser) {
 
 function unlock() {
   locked = false;
-  this.target = '';
+  this.target = "";
 }
 
 module.exports = {

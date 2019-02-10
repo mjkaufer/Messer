@@ -1,6 +1,6 @@
-const log = require('./util/log');
-const fbAssets = require('./fb-assets');
-const helpers = require('./util/helpers.js');
+const log = require("./util/log");
+const fbAssets = require("./fb-assets");
+const helpers = require("./util/helpers.js");
 
 /**
  * Returns the parsed attachment object as a String
@@ -8,29 +8,29 @@ const helpers = require('./util/helpers.js');
  * @return {String}
  */
 function parseAttachment(attachment) {
-  const attachmentType = attachment.type.replace(/_/g, ' ');
+  const attachmentType = attachment.type.replace(/_/g, " ");
 
-  let messageBody = '';
+  let messageBody = "";
 
   switch (attachmentType) {
-    case 'sticker':
+    case "sticker":
       try {
         messageBody =
           fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
       } catch (e) {
-        messageBody = 'sent a sticker (only viewable in browser)';
+        messageBody = "sent a sticker (only viewable in browser)";
       }
       break;
-    case 'file':
+    case "file":
       messageBody = `${attachment.name}: ${attachment.url}`;
       break;
-    case 'photo':
+    case "photo":
       messageBody = `${attachment.filename}: ${attachment.facebookUrl}`;
       break;
-    case 'share':
+    case "share":
       messageBody = `${attachment.facebookUrl}`;
       break;
-    case 'video':
+    case "video":
       messageBody = `${attachment.filename}: ${attachment.url}`;
       break;
     default:
@@ -66,7 +66,7 @@ const eventHandlers = {
         if (ev.attachments.length > 0) {
           messageBody = ev.attachments.reduce(
             (prev, curr) => `${prev} ${parseAttachment(curr)};`,
-            '',
+            "",
           );
         }
 
@@ -76,7 +76,7 @@ const eventHandlers = {
               sender = `(${thread.name}) ${threadSender.name}`; // Get true sender name from list
               log(
                 `${
-                  this.lastThread !== ev.threadID ? '\n' : ''
+                  this.lastThread !== ev.threadID ? "\n" : ""
                 }${sender} - ${messageBody}`,
                 thread.color,
               );
@@ -85,7 +85,7 @@ const eventHandlers = {
               sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
               log(
                 `${
-                  this.lastThread !== ev.threadID ? '\n' : ''
+                  this.lastThread !== ev.threadID ? "\n" : ""
                 }${sender} - ${messageBody}`,
                 thread.color,
               );
@@ -93,7 +93,7 @@ const eventHandlers = {
         } else {
           log(
             `${
-              this.lastThread !== ev.threadID ? '\n' : ''
+              this.lastThread !== ev.threadID ? "\n" : ""
             }${sender} - ${messageBody}`,
             thread.color,
           );
@@ -103,7 +103,7 @@ const eventHandlers = {
 
         helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title
 
-        process.stderr.write('\x07'); // Terminal notification
+        process.stderr.write("\x07"); // Terminal notification
         this.lastThread = ev.threadID;
       })
       .catch(err => log(err));
@@ -114,10 +114,10 @@ const eventHandlers = {
    */
   event(ev) {
     this.getThreadById(ev.threadID).then(thread => {
-      let logMessage = 'An event happened!';
+      let logMessage = "An event happened!";
 
       switch (ev.logMessageType) {
-        case 'log:thread-color':
+        case "log:thread-color":
           Object.assign(thread, {
             color: `#${ev.logMessageData.theme_color.slice(2)}`,
           });

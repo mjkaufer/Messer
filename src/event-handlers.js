@@ -15,8 +15,7 @@ function parseAttachment(attachment) {
   switch (attachmentType) {
     case "sticker":
       try {
-        messageBody =
-          fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
+        messageBody = fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
       } catch (e) {
         messageBody = "sent a sticker (only viewable in browser)";
       }
@@ -51,14 +50,12 @@ const eventHandlers = {
    * @param {Object} message - message to handle
    */
   message(ev) {
-    if (
-      ev.senderID === this.messen.user.id &&
-      ev.threadID !== this.messen.user.id
-    ) {
+    if (ev.senderID === this.messen.store.user.id && ev.threadID !== this.messen.store.user.id) {
       return;
     }
 
-    this.getThreadById(ev.threadID)
+    this.messen.store.threads
+      .getThread({ id: ev.threadID })
       .then(thread => {
         let sender = thread.name;
         let messageBody = ev.body;
@@ -71,30 +68,25 @@ const eventHandlers = {
         }
 
         if (ev.isGroup) {
-          this.getThreadById(ev.senderID, true)
+          this.messen.store.threads
+            .getThread({ id: ev.senderID })
             .then(threadSender => {
               sender = `(${thread.name}) ${threadSender.name}`; // Get true sender name from list
               log(
-                `${
-                  this.lastThread !== ev.threadID ? "\n" : ""
-                }${sender} - ${messageBody}`,
+                `${this.lastThread !== ev.threadID ? "\n" : ""}${sender} - ${messageBody}`,
                 thread.color,
               );
             })
             .catch(() => {
               sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
               log(
-                `${
-                  this.lastThread !== ev.threadID ? "\n" : ""
-                }${sender} - ${messageBody}`,
+                `${this.lastThread !== ev.threadID ? "\n" : ""}${sender} - ${messageBody}`,
                 thread.color,
               );
             });
         } else {
           log(
-            `${
-              this.lastThread !== ev.threadID ? "\n" : ""
-            }${sender} - ${messageBody}`,
+            `${this.lastThread !== ev.threadID ? "\n" : ""}${sender} - ${messageBody}`,
             thread.color,
           );
         }
@@ -113,7 +105,7 @@ const eventHandlers = {
    * @param {Object} ev - event to handle
    */
   event(ev) {
-    this.getThreadById(ev.threadID).then(thread => {
+    this.messen.store.threads.getThread({ id: ev.threadID }).then(thread => {
       let logMessage = "An event happened!";
 
       switch (ev.logMessageType) {

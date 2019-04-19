@@ -46,7 +46,8 @@ const commands = {
       if (message.length === 0) {
         return reject(Error("No message to send - check your syntax"));
       }
-      return this.getThreadByName(rawReceiver)
+      return this.messen.store.threads
+        .getThread({ name: rawReceiver })
         .then(receiver =>
           this.messen.api.sendMessage(message, receiver.threadID, err => {
             if (err) return reject(err);
@@ -55,11 +56,7 @@ const commands = {
           }),
         )
         .catch(() =>
-          reject(
-            Error(
-              `User '${rawReceiver}' could not be found in your friends list!`,
-            ),
-          ),
+          reject(Error(`User '${rawReceiver}' could not be found in your friends list!`)),
         );
     });
   },
@@ -72,11 +69,7 @@ const commands = {
   [commandTypes.REPLY.command](rawCommand) {
     return new Promise((resolve, reject) => {
       if (this.lastThread === null) {
-        return reject(
-          Error(
-            "ERROR: You need to receive a message on Messer before using `reply`",
-          ),
-        );
+        return reject(Error("ERROR: You need to receive a message on Messer before using `reply`"));
       }
 
       const argv = parseCommand(commandTypes.REPLY.regexp, rawCommand);
@@ -100,7 +93,7 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise(resolve => {
-      const { friends } = this.messen.user;
+      const { friends } = this.messen.store.user;
       if (friends.length === 0) return resolve("You have no friends 😢");
 
       const friendsPretty = friends
@@ -151,11 +144,10 @@ const commands = {
       const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
       if (!argv) return reject(Error("Invalid command - check your syntax"));
       const rawThreadName = argv[2];
-      const messageCount = argv[3]
-        ? parseInt(argv[3].trim(), 10)
-        : DEFAULT_COUNT;
+      const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT;
 
-      return this.getThreadByName(rawThreadName)
+      return this.messen.store.threads
+        .getThread({ name: rawThreadName })
         .then(thread =>
           this.messen.api.getThreadHistory(
             thread.threadID,
@@ -168,24 +160,20 @@ const commands = {
                 return resolve("You haven't started a conversation!");
               }
 
-              const senderIds = Array.from(
-                new Set(data.map(message => message.senderID)),
-              );
+              const senderIds = Array.from(new Set(data.map(message => message.senderID)));
 
               return Promise.all(
-                senderIds.map(id => this.getThreadById(id, true)),
+                senderIds.map(id => this.messen.store.threads.getThread({ id })),
               ).then(threads =>
                 resolve(
                   data
                     .filter(event => event.type === "message")
                     .reduce((a, message) => {
-                      const sender = threads.find(
-                        t => t.threadID === message.senderID,
-                      );
-
+                      const sender = threads.find(t => t.threadID === message.senderID);
+                      console.log("sender", sender);
                       let logText = `${sender.name}: ${message.body}`;
                       if (message.isUnread) logText = chalk.red(logText);
-                      if (message.senderID === this.messen.user.id) {
+                      if (message.senderID === this.messen.store.user.id) {
                         logText = chalk.dim(logText);
                       }
 
@@ -196,9 +184,7 @@ const commands = {
             },
           ),
         )
-        .catch(() =>
-          reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)),
-        );
+        .catch(() => reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)));
     });
   },
 
@@ -225,7 +211,8 @@ const commands = {
       const threadName = argv[2];
 
       // Find the thread to send to
-      return this.getThreadByName(threadName)
+      return this.messen.store.threads
+        .getThread({ name: threadName })
         .then(thread =>
           this.messen.api.changeThreadColor(color, thread.theadID, err => {
             if (err) return reject(err);
@@ -233,9 +220,7 @@ const commands = {
             return resolve();
           }),
         )
-        .catch(() =>
-          reject(Error(`Thread '${threadName}' couldn't be found!`)),
-        );
+        .catch(() => reject(Error(`Thread '${threadName}' couldn't be found!`)));
     });
   },
 
@@ -251,9 +236,7 @@ const commands = {
 
       const DEFAULT_COUNT = 5;
 
-      const threadCount = argv[2]
-        ? parseInt(argv[2].trim(), 10)
-        : DEFAULT_COUNT;
+      const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT;
 
       const threadList = helpers
         .objectValues(this.threadCache)
@@ -283,7 +266,8 @@ const commands = {
       if (!receiver) {
         return reject(Error("Please, specify a user to lock on to"));
       }
-      return this.getThreadByName(receiver)
+      return this.messen.store.threads
+        .getThread({ name: receiver })
         .then(() => {
           lock.lockOn(receiver);
           return resolve("Locked on to ".concat(receiver));
@@ -291,9 +275,7 @@ const commands = {
         .catch(() =>
           reject(
             Error(
-              "Cannot find user "
-                .concat(receiver)
-                .concat(" in friends list or active threads"),
+              "Cannot find user ".concat(receiver).concat(" in friends list or active threads"),
             ),
           ),
         );

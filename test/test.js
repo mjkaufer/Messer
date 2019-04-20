@@ -2,6 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 
+const mockMessen = require("messen/dist/test/mock");
 const commandTypes = require("../src/commands/command-types");
 const Messer = require("../src/messer");
 
@@ -25,43 +26,12 @@ function getMockThread() {
 }
 
 /**
- * Factory to mock an instance of the facebook-chat-api
- */
-function MockApi() {
-  return {
-    getThreadHistory(threadID, messageCount, x, cb) {
-      const data = [];
-      return cb(null, data);
-    },
-    sendMessage(message, threadID, cb) {
-      return cb(null);
-    },
-  };
-}
-
-/**
  * Factory to mock an instance of Messer
  */
 function MockMesser() {
   const messer = new Messer();
 
-  messer.messen.api = MockApi();
-  messer.cacheThread(getMockThread());
-  messer.messen.user = {
-    id: "666",
-    name: "Tom Quirk",
-    friends: [
-      {
-        fullName: "Waylon Smithers",
-        userID: "1",
-      },
-      {
-        fullName: "Keniff Kaniff",
-        userID: "2",
-      },
-    ],
-  };
-
+  messer.messen = mockMessen.getMessen();
   return messer;
 }
 
@@ -69,47 +39,6 @@ function MockMesser() {
  * Test Messer-related functionality
  */
 describe("Messer", () => {
-  /**
-   * Test cacheThread
-   */
-  describe("#cacheThread(thread)", () => {
-    const messer = new Messer();
-    const thread = getMockThread();
-
-    it("should populate threadCache as expected", () => {
-      messer.cacheThread(thread);
-      assert.deepEqual(thread, messer.threadCache[thread.threadID]);
-    });
-
-    it("should populate threadNameToIdMap as expected", () => {
-      messer.cacheThread(thread);
-      assert.equal(thread.threadID, messer.threadNameToIdMap[thread.name]);
-    });
-  });
-
-  /**
-   * Test getThreadByName
-   */
-  describe("#getThreadByName(name)", () => {
-    const messer = new Messer();
-    const thread = getMockThread();
-
-    messer.cacheThread(thread);
-
-    it("should retrieve thread by exact name", () =>
-      messer
-        .getThreadByName(thread.name)
-        .then(res => assert.deepEqual(res, thread)));
-
-    it("should retrieve thread by fuzzy name", () =>
-      messer
-        .getThreadByName("mark")
-        .then(res => assert.deepEqual(res, thread)));
-
-    it("should fail to retrieve thread by name that is not cached", () =>
-      messer.getThreadByName("bill").catch(e => assert(e != null)));
-  });
-
   /**
    * Test processCommand
    */
@@ -126,8 +55,9 @@ describe("Messer", () => {
 /**
  * Test the command handlers
  */
-describe("Command Handlers", () => {
+describe("Command Handlers", async () => {
   const messer = MockMesser();
+  await messer.messen.login();
 
   /**
    * Test the "message" command
@@ -150,18 +80,17 @@ describe("Command Handlers", () => {
 
     it("should fail to send message to invalid threadname", () =>
       messer.processCommand('m "rick" hey dude').catch(err => {
-        assert.equal(
-          err,
-          "Error: User 'rick' could not be found in your friends list!",
-        );
+        assert.equal(err, "Error: User 'rick' could not be found in your friends list!");
       }));
   });
 
   /**
    * Test the "reply" command
    */
-  describe(`#${commandTypes.REPLY.command}`, () => {
+  describe(`#${commandTypes.REPLY.command}`, async () => {
     const messerCanReply = MockMesser();
+    await messer.messen.login();
+
     messerCanReply.lastThread = getMockThread();
 
     it("should fail if no message has been recieved", () =>
@@ -183,8 +112,9 @@ describe("Command Handlers", () => {
   /**
    * Test the "history" command
    */
-  describe(`#${commandTypes.HISTORY.command}`, () => {
+  describe(`#${commandTypes.HISTORY.command}`, async () => {
     const messerWithHistory = MockMesser();
+    await messer.messen.login();
 
     it("should gracefully fail if no thread found", () =>
       messer.processCommand('history "bill"').catch(err => {
@@ -192,12 +122,7 @@ describe("Command Handlers", () => {
       }));
 
     it("should return something for a thread with some history", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
+      messerWithHistory.messen.api.getThreadHistory = (threadID, messageCount, x, cb) => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
@@ -216,12 +141,7 @@ describe("Command Handlers", () => {
     });
 
     it("should handle messages where the sender is the current user", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
+      messerWithHistory.messen.api.getThreadHistory = (threadID, messageCount, x, cb) => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
@@ -229,7 +149,7 @@ describe("Command Handlers", () => {
             type: "message",
           },
           {
-            senderID: messer.messen.user.id,
+            senderID: messer.messen.store.users.me.user.id,
             body: "hey marn",
             type: "message",
           },
@@ -241,20 +161,13 @@ describe("Command Handlers", () => {
         cb(null, { threadID, name: "Tom Quirk" });
 
       return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.includes(messer.messen.user.name));
+        assert.ok(res.includes(messer.messen.store.users.me.user.name));
       });
     });
 
     it("should return history for thread that isn't cached", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
-        const data = [
-          { senderID: "1", body: "hey im waylon", type: "message" },
-        ];
+      messerWithHistory.messen.api.getThreadHistory = (threadID, messageCount, x, cb) => {
+        const data = [{ senderID: "1", body: "hey im waylon", type: "message" }];
         return cb(null, data);
       };
 
@@ -276,12 +189,7 @@ describe("Command Handlers", () => {
       }));
 
     it("should act appropriately when [messageCount] given", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
+      messerWithHistory.messen.api.getThreadHistory = (threadID, messageCount, x, cb) => {
         const data = [
           {
             senderID: DEFAULT_MOCK_THREAD.threadID,
@@ -326,7 +234,7 @@ describe("Command Handlers", () => {
 
     it("should gracefully handle user with no friends", () => {
       const messerNoFriends = MockMesser();
-      messerNoFriends.messen.user.friends = [];
+      messerNoFriends.messen.store.users.me.friends = [];
 
       return messerNoFriends.processCommand("contacts").then(res => {
         assert.ok(res);

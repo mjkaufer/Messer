@@ -1,4 +1,4 @@
-const { Messen } = require("messen/dist/messen");
+const { Messen } = require("messen/dist/src/messen");
 
 const repl = require("repl");
 
@@ -46,7 +46,7 @@ Messer.prototype.start = function start() {
   this.messen
     .login()
     .then(() => {
-      log(`Successfully logged in as ${this.messen.store.user.name}`);
+      log(`Successfully logged in as ${this.messen.store.users.me.user.name}`);
 
       this.messen.listen();
 

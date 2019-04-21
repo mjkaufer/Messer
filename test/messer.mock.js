@@ -34,6 +34,37 @@ const threads = [
     participantIDs: ["100003961877411", "100035969370185"],
     threadType: 1,
   },
+  {
+    threadID: "67890",
+    name: "Waylon Smithers",
+    unreadCount: 2,
+    messageCount: 2,
+    imageSrc: null,
+    emoji: null,
+    color: null,
+    nicknames: [],
+    muteUntil: null,
+    participants: [{ id: "67890" }, { id: "11111" }], // TODO(tom) there is actually full user objects here
+    adminIDs: [],
+    folder: "INBOX",
+    isGroup: false,
+    customizationEnabled: true,
+    participantAddMode: null,
+    montageThread: null,
+    reactionsMuteMode: "REACTIONS_NOT_MUTED",
+    mentionsMuteMode: "MENTIONS_NOT_MUTED",
+    isArchived: false,
+    isSubscribed: true,
+    timestamp: "1555626604953",
+    snippet: "hey man, wassup! 🏑",
+    snippetAttachments: null,
+    snippetSender: "100003961877411",
+    lastMessageTimestamp: "1555626604953",
+    lastReadTimestamp: null,
+    cannotReplyReason: null,
+    participantIDs: ["67890", "11111"],
+    threadType: 1,
+  },
 ];
 
 const friends = [
@@ -161,7 +192,10 @@ const getMessen = function getMessen() {
     async login() {
       this.state.authenticated = true;
 
-      return Promise.all([this.store.users.refresh(), this.store.threads.refresh()]);
+      return Promise.all([
+        this.store.users.refresh(),
+        this.store.threads.refresh(),
+      ]);
     }
 
     async logout() {

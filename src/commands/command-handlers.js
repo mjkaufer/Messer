@@ -170,6 +170,7 @@ const commands = {
             messageCount,
             undefined,
             (err, threadHistory) => {
+              console.log("here", err, threadHistory);
               if (err) return reject(err);
 
               if (threadHistory.length === 0) {
@@ -201,7 +202,7 @@ const commands = {
             },
           ),
         )
-        .catch(() => reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)));
+        .catch(err => reject(Error(`We couldn't find a thread for '${rawThreadName}'! ${err}`)));
     });
   },
 
@@ -232,10 +233,14 @@ const commands = {
         .getThread({ name: rawThreadName })
         .then(thread => {
           if (thread) return thread;
-          return this.messen.store.users.getUser({ name: rawThreadName }).then(user => ({
-            threadID: user.id,
-            name: user.name,
-          }));
+          return this.messen.store.users.getUser({ name: rawThreadName }).then(user => {
+            console.log(rawThreadName, user);
+            if (!user) throw new Error();
+            return {
+              threadID: user.id,
+              name: user.name,
+            };
+          });
         })
         .then(thread =>
           this.messen.api.changeThreadColor(color, thread.theadID, err => {

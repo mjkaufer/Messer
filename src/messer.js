@@ -1,6 +1,5 @@
-const { Messen } = require("messen/dist/src/messen");
-
 const repl = require("repl");
+const { Messen } = require("messen");
 
 const helpers = require("./util/helpers.js");
 const { getCommandHandler } = require("./commands/command-handlers");
@@ -8,8 +7,12 @@ const eventHandlers = require("./event-handlers");
 const log = require("./util/log");
 const lock = require("./util/lock");
 
+const APPSTATE_DIR = `${process.env.HOME}/.messer`;
+
 const getMessen = ctx => {
-  const messen = new Messen();
+  const messen = new Messen({
+    dir: APPSTATE_DIR,
+  });
 
   messen.getMfaCode = () => helpers.promptCode();
   messen.promptCredentials = () => helpers.promptCredentials();
@@ -42,8 +45,7 @@ function Messer(options = {}) {
  */
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
-
-  this.messen
+  return this.messen
     .login()
     .then(() => {
       log(`Successfully logged in as ${this.messen.store.users.me.user.name}`);

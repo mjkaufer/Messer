@@ -29,7 +29,8 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test-unit": "mocha"
+    "test-unit": "mocha",
+    "test": "npm run test-unit"
   },
   "dependencies": {
     "chalk": "^2.4.2",

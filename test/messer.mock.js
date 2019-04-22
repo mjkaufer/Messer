@@ -1,3 +1,5 @@
+const path = require("path");
+
 const { ThreadStore } = require("messen/dist/store/threads");
 const { UserStore } = require("messen/dist/store/users");
 const transformers = require("messen/dist/util/transformers");
@@ -181,6 +183,10 @@ const getMessen = function getMessen() {
       this.api = getApi();
       this.state = {
         authenticated: false,
+      };
+      this.options = {
+        dir: path.resolve(__dirname),
+        appstateFilePath: path.resolve(__dirname, "appstate.json"),
       };
 
       this.store = {

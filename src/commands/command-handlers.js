@@ -181,8 +181,9 @@ const commands = {
               name: user.name,
             }));
         })
-        .then(thread =>
-          this.messen.api.getThreadHistory(
+        .then(thread => {
+          if (!thread) throw new Error("no thread");
+          return this.messen.api.getThreadHistory(
             thread.threadID,
             messageCount,
             undefined,
@@ -197,33 +198,33 @@ const commands = {
                 new Set(threadHistory.map(message => message.senderID)),
               );
 
-              return this.messen.store.users.getUsers(senderIds).then(users =>
-                resolve(
-                  threadHistory
-                    .filter(event => event.type === "message")
-                    .reduce((a, message) => {
-                      let sender = users.find(
-                        user => user.id === message.senderID,
-                      );
-                      if (!sender) {
-                        sender = { name: "unknown" };
-                      }
+              return this.messen.store.users.getUsers(senderIds).then(users => {
+                const threadHistoryText = threadHistory
+                  .filter(event => event.type === "message") // TODO include other events here
+                  .reduce((a, message) => {
+                    let sender = users.find(
+                      user => user && user.id === message.senderID,
+                    );
+                    if (!sender) {
+                      sender = { name: "unknown" };
+                    }
 
-                      let logText = `${sender.name}: ${message.body}`;
-                      if (message.isUnread) logText = `(unread) ${logText}`;
-                      if (
-                        message.senderID === this.messen.store.users.me.user.id
-                      ) {
-                        logText = chalk.dim(logText);
-                      }
+                    let logText = `${sender.name}: ${message.body}`;
+                    if (message.isUnread) logText = `(unread) ${logText}`;
+                    if (
+                      message.senderID === this.messen.store.users.me.user.id
+                    ) {
+                      logText = chalk.dim(logText);
+                    }
 
-                      return `${a}${logText}\n`;
-                    }, ""),
-                ),
-              );
+                    return `${a}${logText}\n`;
+                  }, "");
+
+                return resolve(threadHistoryText);
+              });
             },
-          ),
-        )
+          );
+        })
         .catch(err =>
           reject(
             Error(`We couldn't find a thread for '${rawThreadName}'! ${err}`),

@@ -11,7 +11,7 @@ if (argv._ && argv._[0] === "cleanup") {
 } else if (argv.command) {
   messer.startSingle(argv.command);
 } else if (argv.v) {
-  console.log(packageJson.version); // eslint-disable-line
+  console.log(packageJson.version);
 } else {
   messer.start();
 }

@@ -64,10 +64,7 @@ const eventHandlers = {
     let messageBody = ev.body;
 
     if (ev.attachments.length > 0) {
-      messageBody = ev.attachments.reduce(
-        (prev, curr) => `${prev} ${parseAttachment(curr)};`,
-        "",
-      );
+      messageBody = ev.attachments.map(parseAttachment).join(", ");
     }
 
     if (ev.isGroup) {

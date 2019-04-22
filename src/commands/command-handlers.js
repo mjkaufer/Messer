@@ -176,10 +176,13 @@ const commands = {
           if (thread) return thread;
           return this.messen.store.users
             .getUser({ name: rawThreadName })
-            .then(user => ({
-              threadID: user.id,
-              name: user.name,
-            }));
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
         })
         .then(thread => {
           if (!thread) throw new Error("no thread");
@@ -209,7 +212,16 @@ const commands = {
                       sender = { name: "unknown" };
                     }
 
-                    let logText = `${sender.name}: ${message.body}`;
+                    let messageBody = message.body;
+
+                    if (message.attachments.length > 0) {
+                      console.log(message.attachments);
+                      messageBody += message.attachments
+                        .map(helpers.parseAttachment)
+                        .join(", ");
+                    }
+
+                    let logText = `${sender.name}: ${messageBody}`;
                     if (message.isUnread) logText = `(unread) ${logText}`;
                     if (
                       message.senderID === this.messen.store.users.me.user.id
@@ -332,10 +344,13 @@ const commands = {
           if (thread) return thread;
           return this.messen.store.users
             .getUser({ name: receiver })
-            .then(user => ({
-              threadID: user.id,
-              name: user.name,
-            }));
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
         })
         .then(() => {
           lock.lockOn(receiver);

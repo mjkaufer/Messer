@@ -46,15 +46,30 @@ const commands = {
       if (message.length === 0) {
         return reject(Error("No message to send - check your syntax"));
       }
-      return this.getThreadByName(rawReceiver)
-        .then(receiver =>
-          this.messen.api.sendMessage(message, receiver.threadID, err => {
+      return this.messen.store.threads
+        .getThread({ name: rawReceiver })
+        .then(thread => {
+          if (thread) return thread;
+          return this.messen.store.users
+            .getUser({ name: rawReceiver })
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
+        })
+        .then(thread => {
+          if (!thread) throw new Error("No thread found");
+
+          return this.messen.api.sendMessage(message, thread.threadID, err => {
             if (err) return reject(err);
 
-            return resolve(`Sent message to ${receiver.name}`);
-          }),
-        )
-        .catch(() =>
+            return resolve(`Sent message to ${thread.name}`);
+          });
+        })
+        .catch(e =>
           reject(
             Error(
               `User '${rawReceiver}' could not be found in your friends list!`,
@@ -100,12 +115,12 @@ const commands = {
    */
   [commandTypes.CONTACTS.command]() {
     return new Promise(resolve => {
-      const { friends } = this.messen.user;
+      const { friends } = this.messen.store.users.me;
       if (friends.length === 0) return resolve("You have no friends 😢");
 
       const friendsPretty = friends
-        .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
-        .reduce((a, b) => `${a}${b.fullName}\n`, "");
+        .sort((a, b) => (a.name > b.name ? 1 : -1))
+        .reduce((a, b) => `${a}${b.name}\n`, "");
 
       return resolve(friendsPretty);
     });
@@ -155,49 +170,77 @@ const commands = {
         ? parseInt(argv[3].trim(), 10)
         : DEFAULT_COUNT;
 
-      return this.getThreadByName(rawThreadName)
-        .then(thread =>
-          this.messen.api.getThreadHistory(
+      return this.messen.store.threads
+        .getThread({ name: rawThreadName })
+        .then(thread => {
+          if (thread) return thread;
+          return this.messen.store.users
+            .getUser({ name: rawThreadName })
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
+        })
+        .then(thread => {
+          if (!thread) throw new Error("no thread");
+          return this.messen.api.getThreadHistory(
             thread.threadID,
             messageCount,
             undefined,
-            (err, data) => {
+            (err, threadHistory) => {
               if (err) return reject(err);
 
-              if (data.length === 0) {
+              if (threadHistory.length === 0) {
                 return resolve("You haven't started a conversation!");
               }
 
               const senderIds = Array.from(
-                new Set(data.map(message => message.senderID)),
+                new Set(threadHistory.map(message => message.senderID)),
               );
 
-              return Promise.all(
-                senderIds.map(id => this.getThreadById(id, true)),
-              ).then(threads =>
-                resolve(
-                  data
-                    .filter(event => event.type === "message")
-                    .reduce((a, message) => {
-                      const sender = threads.find(
-                        t => t.threadID === message.senderID,
-                      );
+              return this.messen.store.users.getUsers(senderIds).then(users => {
+                const threadHistoryText = threadHistory
+                  .filter(event => event.type === "message") // TODO include other events here
+                  .reduce((a, message) => {
+                    let sender = users.find(
+                      user => user && user.id === message.senderID,
+                    );
+                    if (!sender) {
+                      sender = { name: "unknown" };
+                    }
 
-                      let logText = `${sender.name}: ${message.body}`;
-                      if (message.isUnread) logText = chalk.red(logText);
-                      if (message.senderID === this.messen.user.id) {
-                        logText = chalk.dim(logText);
-                      }
+                    let messageBody = message.body;
 
-                      return `${a}${logText}\n`;
-                    }, ""),
-                ),
-              );
+                    if (message.attachments.length > 0) {
+                      console.log(message.attachments);
+                      messageBody += message.attachments
+                        .map(helpers.parseAttachment)
+                        .join(", ");
+                    }
+
+                    let logText = `${sender.name}: ${messageBody}`;
+                    if (message.isUnread) logText = `(unread) ${logText}`;
+                    if (
+                      message.senderID === this.messen.store.users.me.user.id
+                    ) {
+                      logText = chalk.dim(logText);
+                    }
+
+                    return `${a}${logText}\n`;
+                  }, "");
+
+                return resolve(threadHistoryText);
+              });
             },
+          );
+        })
+        .catch(err =>
+          reject(
+            Error(`We couldn't find a thread for '${rawThreadName}'! ${err}`),
           ),
-        )
-        .catch(() =>
-          reject(Error(`We couldn't find a thread for '${rawThreadName}'!`)),
         );
     });
   },
@@ -222,10 +265,23 @@ const commands = {
         return reject(Error(`Hex code '${argv[3]}' is not valid`));
       }
 
-      const threadName = argv[2];
+      const rawThreadName = argv[2];
 
       // Find the thread to send to
-      return this.getThreadByName(threadName)
+      return this.messen.store.threads
+        .getThread({ name: rawThreadName })
+        .then(thread => {
+          if (thread) return thread;
+          return this.messen.store.users
+            .getUser({ name: rawThreadName })
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
+        })
         .then(thread =>
           this.messen.api.changeThreadColor(color, thread.theadID, err => {
             if (err) return reject(err);
@@ -234,7 +290,7 @@ const commands = {
           }),
         )
         .catch(() =>
-          reject(Error(`Thread '${threadName}' couldn't be found!`)),
+          reject(Error(`Thread '${rawThreadName}' couldn't be found!`)),
         );
     });
   },
@@ -255,9 +311,8 @@ const commands = {
         ? parseInt(argv[2].trim(), 10)
         : DEFAULT_COUNT;
 
-      const threadList = helpers
-        .objectValues(this.threadCache)
-        .slice(0, threadCount)
+      const threadList = this.messen.store.threads
+        .getThreadList(threadCount)
         .sort((a, b) => a.lastMessageTimestamp < b.lastMessageTimestamp)
         .reduce((a, thread, i) => {
           let logText = `[${i}] ${thread.name}`;
@@ -269,9 +324,9 @@ const commands = {
       return resolve(threadList);
     });
   },
+
   /**
-   * Displays the most recent n threads
-   * @param {String} rawCommand - command to handle
+   * Locks the display onto a given user
    */
   [commandTypes.LOCK.command](rawCommand) {
     return new Promise((resolve, reject) => {
@@ -283,7 +338,20 @@ const commands = {
       if (!receiver) {
         return reject(Error("Please, specify a user to lock on to"));
       }
-      return this.getThreadByName(receiver)
+      return this.messen.store.threads
+        .getThread({ name: receiver })
+        .then(thread => {
+          if (thread) return thread;
+          return this.messen.store.users
+            .getUser({ name: receiver })
+            .then(user => {
+              if (!user) throw new Error();
+              return {
+                threadID: user.id,
+                name: user.name,
+              };
+            });
+        })
         .then(() => {
           lock.lockOn(receiver);
           return resolve("Locked on to ".concat(receiver));

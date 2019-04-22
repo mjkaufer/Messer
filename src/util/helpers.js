@@ -72,9 +72,49 @@ function objectValues(dict) {
   return Object.keys(dict).map(key => dict[key]);
 }
 
+/**
+ * Returns the parsed attachment object as a String
+ * @param {Object} attachment
+ * @return {String}
+ */
+function parseAttachment(attachment) {
+  const attachmentType = attachment.type.replace(/_/g, " ");
+
+  let messageBody = "";
+
+  switch (attachmentType) {
+    case "sticker":
+      try {
+        messageBody =
+          fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
+      } catch (e) {
+        messageBody = "sent a sticker (only viewable in browser)";
+      }
+      break;
+    case "file":
+      messageBody = `${attachment.name}: ${attachment.url}`;
+      break;
+    case "photo":
+      messageBody = `${attachment.url}`;
+      break;
+    case "share":
+      messageBody = `${attachment.facebookUrl}`;
+      break;
+    case "video":
+      messageBody = `${attachment.url}`;
+      break;
+    default:
+      messageBody = `sent [${attachmentType}] - only viewable in browser`;
+      break;
+  }
+
+  return `[${attachmentType}] ${messageBody}`;
+}
+
 module.exports = {
   promptCredentials,
   promptCode,
   objectValues,
   notifyTerminal,
+  parseAttachment,
 };

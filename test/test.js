@@ -4,18 +4,13 @@ const path = require("path");
 
 const commandTypes = require("../src/commands/command-types");
 const Messer = require("../src/messer");
+const { getMessen, threads } = require("./messer.mock");
 
 const mockSettings = {
   APPSTATE_FILE_PATH: path.resolve(__dirname, "tmp/appstate.json"),
 };
 
-const DEFAULT_MOCK_THREAD = {
-  name: "Mark Zuckerberg",
-  threadID: "111",
-  color: "#000000",
-  unreadCount: 0,
-  lastMessageTimestamp: "123456789",
-};
+const DEFAULT_MOCK_THREAD = threads[0];
 
 /**
  * Return a minimal thread as given by facebook-chat-api
@@ -25,383 +20,306 @@ function getMockThread() {
 }
 
 /**
- * Factory to mock an instance of the facebook-chat-api
- */
-function MockApi() {
-  return {
-    getThreadHistory(threadID, messageCount, x, cb) {
-      const data = [];
-      return cb(null, data);
-    },
-    sendMessage(message, threadID, cb) {
-      return cb(null);
-    },
-  };
-}
-
-/**
  * Factory to mock an instance of Messer
  */
 function MockMesser() {
   const messer = new Messer();
-
-  messer.messen.api = MockApi();
-  messer.cacheThread(getMockThread());
-  messer.messen.user = {
-    id: "666",
-    name: "Tom Quirk",
-    friends: [
-      {
-        fullName: "Waylon Smithers",
-        userID: "1",
-      },
-      {
-        fullName: "Keniff Kaniff",
-        userID: "2",
-      },
-    ],
-  };
-
+  messer.messen = getMessen();
   return messer;
 }
 
 /**
  * Test Messer-related functionality
  */
-describe("Messer", () => {
-  /**
-   * Test cacheThread
-   */
-  describe("#cacheThread(thread)", () => {
-    const messer = new Messer();
-    const thread = getMockThread();
-
-    it("should populate threadCache as expected", () => {
-      messer.cacheThread(thread);
-      assert.deepEqual(thread, messer.threadCache[thread.threadID]);
-    });
-
-    it("should populate threadNameToIdMap as expected", () => {
-      messer.cacheThread(thread);
-      assert.equal(thread.threadID, messer.threadNameToIdMap[thread.name]);
-    });
+describe("Messer", function() {
+  const messer = MockMesser();
+  before(async function() {
+    await messer.messen.login();
   });
-
-  /**
-   * Test getThreadByName
-   */
-  describe("#getThreadByName(name)", () => {
-    const messer = new Messer();
-    const thread = getMockThread();
-
-    messer.cacheThread(thread);
-
-    it("should retrieve thread by exact name", () =>
-      messer
-        .getThreadByName(thread.name)
-        .then(res => assert.deepEqual(res, thread)));
-
-    it("should retrieve thread by fuzzy name", () =>
-      messer
-        .getThreadByName("mark")
-        .then(res => assert.deepEqual(res, thread)));
-
-    it("should fail to retrieve thread by name that is not cached", () =>
-      messer.getThreadByName("bill").catch(e => assert(e != null)));
-  });
-
   /**
    * Test processCommand
    */
-  describe("#processCommand(command)", () => {
-    const messer = MockMesser();
-
-    it("should process and handle a valid command", () =>
-      messer.processCommand('message "waylon" hey dude').then(res => {
-        assert.ok(res);
-      }));
-  });
-});
-
-/**
- * Test the command handlers
- */
-describe("Command Handlers", () => {
-  const messer = MockMesser();
-
-  /**
-   * Test the "message" command
-   */
-  describe(`#${commandTypes.MESSAGE.command}`, () => {
-    it("should send message to valid threadname", () =>
-      messer.processCommand('message "waylon" hey dude').then(res => {
-        assert.ok(res);
-      }));
-
-    it("should send message to valid threadname using abbreviated command", () =>
-      messer.processCommand('m "waylon" hey dude').then(res => {
-        assert.ok(res);
-      }));
-
-    it("should send message to valid thread that isn't a friend", () =>
-      messer.processCommand('message "mark" hey dude').then(res => {
-        assert.ok(res);
-      }));
-
-    it("should fail to send message to invalid threadname", () =>
-      messer.processCommand('m "rick" hey dude').catch(err => {
-        assert.equal(
-          err,
-          "Error: User 'rick' could not be found in your friends list!",
-        );
-      }));
-  });
-
-  /**
-   * Test the "reply" command
-   */
-  describe(`#${commandTypes.REPLY.command}`, () => {
-    const messerCanReply = MockMesser();
-    messerCanReply.lastThread = getMockThread();
-
-    it("should fail if no message has been recieved", () =>
-      messer.processCommand("reply hey dude").catch(err => {
-        assert.ok(err);
-      }));
-
-    it("should reply", () =>
-      messerCanReply.processCommand("reply yea i agree").then(() => {
-        assert.ok(true);
-      }));
-
-    it("should reply using abbreviated command", () =>
-      messerCanReply.processCommand("r yea i agree").then(() => {
-        assert.ok(true);
-      }));
-  });
-
-  /**
-   * Test the "history" command
-   */
-  describe(`#${commandTypes.HISTORY.command}`, () => {
-    const messerWithHistory = MockMesser();
-
-    it("should gracefully fail if no thread found", () =>
-      messer.processCommand('history "bill"').catch(err => {
-        assert.ok(err);
-      }));
-
-    it("should return something for a thread with some history", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
-        const data = [
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-        ];
-        return cb(null, data);
-      };
-      return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.trim().split("\n"));
-        assert.ok(!res.includes("undefined"));
-        assert.ok(!res.includes("null"));
-        assert.ok(res.includes("Mark"));
-      });
-    });
-
-    it("should handle messages where the sender is the current user", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
-        const data = [
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-          {
-            senderID: messer.messen.user.id,
-            body: "hey marn",
-            type: "message",
-          },
-        ];
-        return cb(null, data);
-      };
-
-      messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: "Tom Quirk" });
-
-      return messerWithHistory.processCommand('history "mark"').then(res => {
-        assert.ok(res.includes(messer.messen.user.name));
-      });
-    });
-
-    it("should return history for thread that isn't cached", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
-        const data = [
-          { senderID: "1", body: "hey im waylon", type: "message" },
-        ];
-        return cb(null, data);
-      };
-
-      messerWithHistory.messen.api.getThreadInfo = (threadID, cb) =>
-        cb(null, { threadID, name: "Waylon Smithers" });
-
-      return messerWithHistory.processCommand('history "waylon"').then(res => {
-        assert.ok(res.trim().split("\n"));
-        assert.ok(!res.includes("undefined"));
-        assert.ok(!res.includes("null"));
-        assert.ok(res.includes("Waylon"));
-      });
-    });
-
-    it("should return truthy value when no history exists in thread", () =>
-      messer.processCommand('history "waylon"').then(res => {
-        assert.ok(res);
-        assert.ok(!res.includes("waylon"));
-      }));
-
-    it("should act appropriately when [messageCount] given", () => {
-      messerWithHistory.messen.api.getThreadHistory = (
-        threadID,
-        messageCount,
-        x,
-        cb,
-      ) => {
-        const data = [
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-          {
-            senderID: DEFAULT_MOCK_THREAD.threadID,
-            body: "hey dude",
-            type: "message",
-          },
-        ].slice(0, messageCount);
-        return cb(null, data);
-      };
-      return messerWithHistory.processCommand('history "mark" 2').then(res => {
-        assert.equal(res.trim().split("\n").length, 2);
-        assert.ok(!res.includes("undefined"));
-        assert.ok(!res.includes("null"));
-        assert.ok(res.includes("Mark"));
-      });
-    });
-  });
-
-  /**
-   * Test the "contacts" command
-   */
-  describe(`#${commandTypes.CONTACTS.command}`, () => {
-    it("should return list of friends sep. by newline", () =>
-      messer.processCommand(commandTypes.CONTACTS.command).then(res => {
-        assert.equal(res, "Keniff Kaniff\nWaylon Smithers\n");
-      }));
-
-    it("should gracefully handle user with no friends", () => {
-      const messerNoFriends = MockMesser();
-      messerNoFriends.messen.user.friends = [];
-
-      return messerNoFriends.processCommand("contacts").then(res => {
+  describe("#processCommand(command)", function() {
+    it("should process and handle a valid command", async function() {
+      await messer.processCommand('message "test" hey dude').then(res => {
         assert.ok(res);
       });
     });
   });
 
   /**
-   * Test the "help" command
+   * Test the command handlers
    */
-  describe(`#${commandTypes.HELP.command}`, () => {
-    it("should return some truthy value", () =>
-      messer.processCommand(commandTypes.HELP.command).then(res => {
-        assert.ok(res);
-      }));
-  });
-
-  /**
-   * Test the "logout" command
-   */
-  describe(`#${commandTypes.LOGOUT.command}`, () => {
-    it("should remove appstate file", () => {
-      fs.writeFile(mockSettings.APPSTATE_FILE_PATH, "{}", () =>
-        messer.processCommand(commandTypes.LOGOUT.command).then(() => {
-          assert.ok(!fs.existsSync(mockSettings.APPSTATE_FILE_PATH));
-        }),
-      );
+  describe("Command Handlers", function() {
+    let messer = MockMesser();
+    before(async function() {
+      await messer.messen.login();
     });
-  });
 
-  /**
-   * Test the "lock" command
-   */
-  describe(`#${commandTypes.LOCK.command}`, () => {
-    it("should lock on to a valid thread name and porcess every input line as a message command", () =>
-      messer.processCommand("lock waylon").then(() =>
-        messer.processCommand("hey, dude").then(res => {
+    /**
+     * Test the "message" command
+     */
+    describe(`#${commandTypes.MESSAGE.command}`, function() {
+      it("should send message to valid threadname", async function() {
+        await messer.processCommand('message "test" hey dude').then(res => {
           assert.ok(res);
-        }),
-      ));
+        });
+      });
 
-    it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", () =>
-      messer.processCommand("lock mark").then(() =>
-        messer.processCommand("hey, dude").then(res => {
+      it("should send message to valid threadname using abbreviated command", async function() {
+        await messer.processCommand('m "test" hey dude').then(res => {
           assert.ok(res);
-        }),
-      ));
+        });
+      });
 
-    it("should fail if no thread name is specified", () =>
-      messer.processCommand("lock").catch(err => {
-        assert.ok(err);
-      }));
+      it("should send message to valid thread that isn't a friend", async function() {
+        await messer.processCommand('message "waylon" hey dude').then(res => {
+          assert.ok(res);
+        });
+      });
 
-    it("should fail if a non-existant thread name is specified", () =>
-      messer.processCommand("lock asd").catch(err => {
-        assert.ok(err);
-      }));
-  });
+      it("should fail to send message to invalid threadname", async function() {
+        await messer.processCommand('m "rick" hey dude').catch(err => {
+          assert.equal(
+            err,
+            "Error: User 'rick' could not be found in your friends list!",
+          );
+        });
+      });
+    });
 
-  /**
-   * Test the "unlock" command
-   */
-  describe(`#${commandTypes.UNLOCK.command}`, () => {
-    it("should free up the input to type regular commands", () =>
-      messer.processCommand("lock waylon").then(() =>
-        messer.processCommand("unlock").then(() =>
-          messer.processCommand('m "waylon" hey, dude').then(res => {
+    /**
+     * Test the "reply" command
+     */
+    describe(`#${commandTypes.REPLY.command}`, function() {
+      it("should fail if no message has been recieved", async function() {
+        await messer.processCommand("reply hey dude").catch(err => {
+          assert.ok(err);
+        });
+      });
+
+      it("should reply", async function() {
+        messer.lastThread = getMockThread();
+        await messer.processCommand("reply yea i agree").then(() => {
+          assert.ok(true);
+        });
+      });
+
+      it("should reply using abbreviated command", async function() {
+        await messer.processCommand("r yea i agree").then(() => {
+          assert.ok(true);
+        });
+      });
+    });
+
+    /**
+     * Test the "history" command
+     */
+    describe(`#${commandTypes.HISTORY.command}`, function() {
+      it("should gracefully fail if no thread found", async function() {
+        await messer.processCommand('history "bill"').catch(err => {
+          assert.ok(err);
+        });
+      });
+
+      it("should return something for a thread with some history", async function() {
+        messer.messen.api.getThreadHistory = (
+          threadID,
+          messageCount,
+          x,
+          cb,
+        ) => {
+          const data = [
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+          ];
+          return cb(null, data);
+        };
+        await messer.processCommand('history "test"').then(res => {
+          assert.ok(res.trim().split("\n"));
+          assert.ok(!res.includes("undefined"));
+          assert.ok(!res.includes("null"));
+          assert.ok(res.includes(DEFAULT_MOCK_THREAD.name));
+        });
+      });
+
+      it("should handle messages where the sender is the current user", async function() {
+        messer.messen.api.getThreadHistory = (
+          threadID,
+          messageCount,
+          x,
+          cb,
+        ) => {
+          const data = [
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+            {
+              senderID: messer.messen.store.users.me.user.id,
+              body: "hey marn",
+              type: "message",
+            },
+          ];
+          return cb(null, data);
+        };
+
+        await messer.processCommand('history "test"').then(res => {
+          assert.ok(res.includes(messer.messen.store.users.me.user.name));
+        });
+      });
+
+      it("should return truthy value when no history exists in thread", async function() {
+        messer.messen.api.getThreadHistory = (
+          threadID,
+          messageCount,
+          x,
+          cb,
+        ) => {
+          const data = [];
+          return cb(null, data);
+        };
+        await messer.processCommand('history "test"').then(res => {
+          assert.ok(res);
+          assert.ok(!res.includes("test"));
+        });
+      });
+
+      it("should act appropriately when [messageCount] given", async function() {
+        messer.messen.api.getThreadHistory = (
+          threadID,
+          messageCount,
+          x,
+          cb,
+        ) => {
+          const data = [
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+            {
+              senderID: DEFAULT_MOCK_THREAD.threadID,
+              body: "hey dude",
+              type: "message",
+            },
+          ].slice(0, messageCount);
+          return cb(null, data);
+        };
+        await messer.processCommand('history "test" 2').then(res => {
+          assert.equal(res.trim().split("\n").length, 2);
+          assert.ok(!res.includes("undefined"));
+          assert.ok(!res.includes("null"));
+          assert.ok(res.includes("Tom"));
+        });
+      });
+    });
+
+    /**
+     * Test the "contacts" command
+     */
+    describe(`#${commandTypes.CONTACTS.command}`, function() {
+      it("should return list of friends sep. by newline", async function() {
+        await messer.processCommand(commandTypes.CONTACTS.command).then(res => {
+          assert.equal(res, "Test Friend\nTom Quirk\n");
+        });
+      });
+
+      it("should gracefully handle user with no friends", async function() {
+        messer.messen.store.users.me.friends = [];
+
+        const res = await messer.processCommand("contacts");
+        assert.ok(res);
+      });
+    });
+
+    /**
+     * Test the "help" command
+     */
+    describe(`#${commandTypes.HELP.command}`, function() {
+      it("should return some truthy value", async function() {
+        await messer.processCommand(commandTypes.HELP.command).then(res => {
+          assert.ok(res);
+        });
+      });
+    });
+
+    /**
+     * Test the "lock" command
+     */
+    describe(`#${commandTypes.LOCK.command}`, function() {
+      it("should lock on to a valid thread name and process every input line as a message command", async function() {
+        await messer
+          .processCommand("lock test")
+          .then(() => {
+            return messer.processCommand("hey, dude");
+          })
+          .then(res => {
             assert.ok(res);
-          }),
-        ),
-      ));
+          });
+      });
 
-    it("should fail if no lock command was issued beforehand", () =>
-      messer.processCommand("unlock").catch(err => {
-        assert.ok(err);
-      }));
+      it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", async function() {
+        await messer
+          .processCommand("lock waylon")
+          .then(() => {
+            return messer.processCommand("hey, dude");
+          })
+          .then(res => {
+            assert.ok(res);
+          });
+      });
+
+      it("should fail if no thread name is specified", async function() {
+        await messer.processCommand("lock").catch(err => {
+          assert.ok(err);
+        });
+      });
+
+      it("should fail if a non-existant thread name is specified", async function() {
+        await messer.processCommand("lock asd").catch(err => {
+          assert.ok(err);
+        });
+      });
+    });
+
+    /**
+     * Test the "unlock" command
+     */
+    describe(`#${commandTypes.UNLOCK.command}`, function() {
+      it("should free up the input to type regular commands", async function() {
+        await messer
+          .processCommand("lock test")
+          .then(() => {
+            return messer.processCommand("unlock");
+          })
+          .then(() => {
+            return messer.processCommand('m "test" hey, dude');
+          })
+          .then(res => {
+            assert.ok(res);
+          });
+      });
+
+      it("should fail if no lock command was issued beforehand", async function() {
+        await messer.processCommand("unlock").catch(err => {
+          assert.ok(err);
+        });
+      });
+    });
   });
 });

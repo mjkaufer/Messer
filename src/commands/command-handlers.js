@@ -41,11 +41,15 @@ const commands = {
       if (!argv) return reject(Error("Invalid message - check your syntax"));
 
       const rawReceiver = argv[2];
-      const message = argv[3];
+      const rawMessage = argv[3];
 
-      if (message.length === 0) {
+      if (rawMessage.length === 0) {
         return reject(Error("No message to send - check your syntax"));
       }
+
+      // clean message
+      const message = rawMessage.split("\\n").join("\u000A");
+
       return this.messen.store.threads
         .getThread({ name: rawReceiver })
         .then(thread => {
@@ -63,11 +67,15 @@ const commands = {
         .then(thread => {
           if (!thread) throw new Error("No thread found");
 
-          return this.messen.api.sendMessage(message, thread.threadID, err => {
-            if (err) return reject(err);
+          return this.messen.api.sendMessage(
+            { body: message },
+            thread.threadID,
+            err => {
+              if (err) return reject(err);
 
-            return resolve(`Sent message to ${thread.name}`);
-          });
+              return resolve(`Sent message to ${thread.name}`);
+            },
+          );
         })
         .catch(e =>
           reject(

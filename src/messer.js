@@ -57,12 +57,10 @@ Messer.prototype.start = function start() {
         eval: (input, context, filename, cb) =>
           this.processCommand(input)
             .then(res => {
-              log(res);
-              cb(null);
+              return cb(null, res);
             })
             .catch(err => {
-              log(err.message);
-              cb(null);
+              return cb(null, err.message);
             }),
       });
     })
@@ -75,7 +73,10 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
   this.messen
     .login()
     .then(() => this.processCommand(rawCommand))
-    .catch(err => log(err));
+    .then(output => process.stdout.write(output))
+    .catch(err => {
+      process.stderr.write(err);
+    });
 };
 /**
  * Execute appropriate action for user input commands.

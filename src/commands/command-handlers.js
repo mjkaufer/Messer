@@ -222,7 +222,7 @@ const commands = {
 
                     let messageBody = message.body;
 
-                    if (message.attachments.length > 0) {
+                    if (message.attachments && message.attachments.length > 0) {
                       messageBody += message.attachments
                         .map(helpers.parseAttachment)
                         .join(", ");

@@ -88,7 +88,7 @@ function parseAttachment(attachment) {
         messageBody =
           fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
       } catch (e) {
-        messageBody = "sent a sticker (only viewable in browser)";
+        messageBody = "- only viewable in browser";
       }
       break;
     case "file":
@@ -98,13 +98,13 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.url}`;
       break;
     case "share":
-      messageBody = `${attachment.facebookUrl}`;
+      messageBody = `${attachment.url}`;
       break;
     case "video":
       messageBody = `${attachment.url}`;
       break;
     default:
-      messageBody = `sent [${attachmentType}] - only viewable in browser`;
+      messageBody = `- only viewable in browser`;
       break;
   }
 

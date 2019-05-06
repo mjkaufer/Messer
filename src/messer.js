@@ -45,6 +45,7 @@ function Messer(options = {}) {
  */
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
+  log("Logging in...");
   return this.messen
     .login()
     .then(() => {
@@ -58,11 +59,10 @@ Messer.prototype.start = function start() {
           this.processCommand(input)
             .then(res => {
               log(res);
-              cb(null);
+              return cb(null);
             })
             .catch(err => {
-              log(err.message);
-              cb(null);
+              return cb(null, err.message);
             }),
       });
     })
@@ -75,7 +75,10 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
   this.messen
     .login()
     .then(() => this.processCommand(rawCommand))
-    .catch(err => log(err));
+    .then(output => process.stdout.write(output))
+    .catch(err => {
+      process.stderr.write(err);
+    });
 };
 /**
  * Execute appropriate action for user input commands.

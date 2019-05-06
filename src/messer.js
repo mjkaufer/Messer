@@ -45,6 +45,7 @@ function Messer(options = {}) {
  */
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
+  log("Logging in...");
   return this.messen
     .login()
     .then(() => {
@@ -57,7 +58,8 @@ Messer.prototype.start = function start() {
         eval: (input, context, filename, cb) =>
           this.processCommand(input)
             .then(res => {
-              return cb(null, res);
+              log(res);
+              return cb(null);
             })
             .catch(err => {
               return cb(null, err.message);

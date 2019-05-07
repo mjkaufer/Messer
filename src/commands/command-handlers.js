@@ -3,6 +3,7 @@ const chalk = require("chalk");
 const helpers = require("../util/helpers");
 const lock = require("../util/lock");
 const commandTypes = require("./command-types");
+const { getThreadHistory } = require("./utils");
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -168,88 +169,59 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.HISTORY.command](rawCommand) {
-    return new Promise((resolve, reject) => {
-      const DEFAULT_COUNT = 5;
+    const DEFAULT_COUNT = 5;
 
-      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
-      if (!argv) return reject(Error("Invalid command - check your syntax"));
-      const rawThreadName = argv[2];
-      const messageCount = argv[3]
-        ? parseInt(argv[3].trim(), 10)
-        : DEFAULT_COUNT;
+    const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
+    if (!argv) return Promise.reject("Invalid command - check your syntax");
+    const rawThreadName = argv[2];
+    const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT;
 
-      return this.messen.store.threads
-        .getThread({ name: rawThreadName })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawThreadName })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
-        .then(thread => {
-          if (!thread) throw new Error("no thread");
-          return this.messen.api.getThreadHistory(
-            thread.threadID,
-            messageCount,
-            undefined,
-            (err, threadHistory) => {
-              if (err) return reject(err);
+    return getThreadHistory(this.messen, rawThreadName)
+      .then(threadHistory => {
+        if (threadHistory.length === 0) {
+          return "You haven't started a conversation!";
+        }
 
-              if (threadHistory.length === 0) {
-                return resolve("You haven't started a conversation!");
+        const senderIds = Array.from(
+          new Set(threadHistory.map(message => message.senderID)),
+        );
+
+        return this.messen.store.users.getUsers(senderIds).then(users => {
+          const threadHistoryText = threadHistory
+            .filter(event => event.type === "message") // TODO include other events here
+            .reduce((a, message) => {
+              let sender = users.find(
+                user => user && user.id === message.senderID,
+              );
+              if (!sender) {
+                sender = { name: "unknown" };
               }
 
-              const senderIds = Array.from(
-                new Set(threadHistory.map(message => message.senderID)),
-              );
+              let messageBody = message.body;
 
-              return this.messen.store.users.getUsers(senderIds).then(users => {
-                const threadHistoryText = threadHistory
-                  .filter(event => event.type === "message") // TODO include other events here
-                  .reduce((a, message) => {
-                    let sender = users.find(
-                      user => user && user.id === message.senderID,
-                    );
-                    if (!sender) {
-                      sender = { name: "unknown" };
-                    }
+              if (message.attachments && message.attachments.length > 0) {
+                messageBody += message.attachments
+                  .map(helpers.parseAttachment)
+                  .join(", ");
+              }
 
-                    let messageBody = message.body;
+              let logText = `${sender.name}: ${messageBody}`;
+              if (message.isUnread) logText = `(unread) ${logText}`;
+              if (message.senderID === this.messen.store.users.me.user.id) {
+                logText = chalk.dim(logText);
+              }
 
-                    if (message.attachments && message.attachments.length > 0) {
-                      messageBody += message.attachments
-                        .map(helpers.parseAttachment)
-                        .join(", ");
-                    }
+              return `${a}${logText}\n`;
+            }, "");
 
-                    let logText = `${sender.name}: ${messageBody}`;
-                    if (message.isUnread) logText = `(unread) ${logText}`;
-                    if (
-                      message.senderID === this.messen.store.users.me.user.id
-                    ) {
-                      logText = chalk.dim(logText);
-                    }
-
-                    return `${a}${logText}\n`;
-                  }, "");
-
-                return resolve(threadHistoryText);
-              });
-            },
-          );
-        })
-        .catch(err =>
-          reject(
-            Error(`We couldn't find a thread for '${rawThreadName}'! ${err}`),
-          ),
+          return threadHistoryText;
+        });
+      })
+      .catch(err => {
+        throw new Error(
+          `We couldn't find a thread for '${rawThreadName}'! ${err}`,
         );
-    });
+      });
   },
 
   /**
@@ -375,10 +347,6 @@ const commands = {
     });
   },
 
-  /**
-   * Displays the most recent n threads
-   * @param {String} rawCommand - command to handle
-   */
   [commandTypes.UNLOCK.command]() {
     return new Promise((resolve, reject) => {
       if (lock.isLocked()) {
@@ -387,6 +355,39 @@ const commands = {
         return resolve("Unlocked form ".concat(threadName));
       }
       return reject(Error("No current locked user"));
+    });
+  },
+
+  /**
+   * Delete the most recent n threads
+   * @param {String} rawCommand - command to handle
+   * @return {Promise<string>}
+   */
+  [commandTypes.DELETE.command](rawCommand) {
+    const argv = parseCommand(commandTypes.DELETE.regexp, rawCommand);
+    if (!argv || !argv[2] || !argv[3])
+      return Promise.reject("Invalid command - check your syntax");
+
+    const rawThreadName = argv[2];
+    const messageCount = parseInt(argv[3].trim(), 10);
+
+    const deleteMessage = messageId => {
+      return new Promise((resolve, reject) => {
+        this.messen.api.deleteMessage(messageId, err => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      });
+    };
+
+    return getThreadHistory(this.messen, rawThreadName).then(threadHistory => {
+      return Promise.all(
+        threadHistory.map(thread => {
+          return deleteMessage(thread.messageID);
+        }),
+      ).then(deleted => {
+        return `Last ${deleted.length} messages deleted.`;
+      });
     });
   },
 };

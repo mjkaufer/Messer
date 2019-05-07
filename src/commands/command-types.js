@@ -51,6 +51,11 @@ const commandTypes = {
     command: "unlock",
     help: "unlock",
   },
+  DELETE: {
+    command: "delete",
+    regexp: regexps[2],
+    help: 'delete "[thread name]" [n]',
+  },
 };
 
 module.exports = commandTypes;

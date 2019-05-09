@@ -292,7 +292,7 @@ const commands = {
       return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
           lock.lockOn(thread.name, anonymous);
-          this.setReplPrompt(`${thread.name} > `);
+          this.setReplPrompt(`${thread.name}${anonymous ? " 🔒" : ""}> `);
 
           return resolve(
             `Locked on to ${thread.name} ${

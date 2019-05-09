@@ -1,4 +1,3 @@
-const log = require("./util/log");
 const fbAssets = require("./fb-assets");
 const helpers = require("./util/helpers.js");
 
@@ -28,41 +27,38 @@ const eventHandlers = {
       messageBody += ev.attachments.map(helpers.parseAttachment).join(", ");
     }
 
-    let eventLog;
+    const logEvent = message => {
+      if (!lock.isLocked()) {
+        this.log(message, thread.color);
+        return;
+      }
 
-    if (ev.isGroup) {
-      this.messen.store.users
-        .getUser({ id: ev.senderID })
-        .then(sendingUser => {
-          sender = `(${thread.name}) ${sendingUser.name}`; // Get true sender name from list
-          eventLog = `${
-            this.lastThread !== ev.threadID ? "\n" : ""
-          }${sender} - ${messageBody}`;
-        })
-        .catch(() => {
-          sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
-          eventLog = `${
-            this.lastThread !== ev.threadID ? "\n" : ""
-          }${sender} - ${messageBody}`;
-        });
-    } else {
-      eventLog = `${
-        this.lastThread !== ev.threadID ? "\n" : ""
-      }${sender} - ${messageBody}`;
-    }
-
-    if (lock.isLocked()) {
       const lockName = lock.getLockedTarget();
       if (lockName === thread.name) {
-        log(eventLog, thread.color);
+        this.log(eventLog, thread.color);
 
         if (lock.isAnonymous()) {
           // ew, but whatever
           this.messen.api.deleteMessage(ev.messageID, err => {});
         }
       }
+    };
+
+    let eventLog;
+
+    if (ev.isGroup) {
+      this.messen.store.users
+        .getUser({ id: ev.senderID })
+        .then(sendingUser => {
+          sender = `(${thread.name}) ${sendingUser.name}`;
+          logEvent(`${sender} - ${messageBody}`);
+        })
+        .catch(() => {
+          sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
+          logEvent(`${sender} - ${messageBody}`);
+        });
     } else {
-      log(eventLog, thread.color);
+      logEvent(`${sender} - ${messageBody}`);
     }
 
     this.unreadMessagesCount += 1;

@@ -3,7 +3,7 @@ const chalk = require("chalk");
 const helpers = require("../util/helpers");
 const lock = require("../util/lock");
 const commandTypes = require("./command-types");
-const { getThreadHistory } = require("./utils");
+const { getThreadHistory, getThreadByName } = require("./utils");
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -51,20 +51,7 @@ const commands = {
       // clean message
       const message = rawMessage.split("\\n").join("\u000A");
 
-      return this.messen.store.threads
-        .getThread({ name: rawReceiver })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawReceiver })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
+      return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
           if (!thread) throw new Error("No thread found");
 
@@ -78,13 +65,13 @@ const commands = {
             },
           );
         })
-        .catch(e =>
-          reject(
+        .catch(e => {
+          return reject(
             Error(
               `User '${rawReceiver}' could not be found in your friends list!`,
             ),
-          ),
-        );
+          );
+        });
     });
   },
 
@@ -247,20 +234,7 @@ const commands = {
       const rawThreadName = argv[2];
 
       // Find the thread to send to
-      return this.messen.store.threads
-        .getThread({ name: rawThreadName })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawThreadName })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
+      return getThreadByName(this.messen, rawThreadName)
         .then(thread =>
           this.messen.api.changeThreadColor(color, thread.theadID, err => {
             if (err) return reject(err);
@@ -268,9 +242,9 @@ const commands = {
             return resolve();
           }),
         )
-        .catch(() =>
-          reject(Error(`Thread '${rawThreadName}' couldn't be found!`)),
-        );
+        .catch(() => {
+          return reject(Error(`Thread '${rawThreadName}' couldn't be found!`));
+        });
     });
   },
 
@@ -309,41 +283,23 @@ const commands = {
    */
   [commandTypes.LOCK.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const receiver = rawCommand
-        .split(" ")
-        .slice(1)
-        .join(" ")
-        .replace("\n", "");
-      if (!receiver) {
-        return reject(Error("Please, specify a user to lock on to"));
-      }
-      return this.messen.store.threads
-        .getThread({ name: receiver })
+      const argv = parseCommand(commandTypes.LOCK.regexp, rawCommand);
+      if (!argv) return reject(Error("Invalid command - check your syntax"));
+
+      const rawReceiver = argv[2];
+
+      return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: receiver })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
+          lock.lockOn(thread.name);
+          return resolve(`Locked on to ${thread.name}`);
         })
-        .then(() => {
-          lock.lockOn(receiver);
-          return resolve("Locked on to ".concat(receiver));
-        })
-        .catch(() =>
-          reject(
+        .catch(err => {
+          return reject(
             Error(
-              "Cannot find user "
-                .concat(receiver)
-                .concat(" in friends list or active threads"),
+              `Cannot find user "${rawReceiver}" in friends list or active threads`,
             ),
-          ),
-        );
+          );
+        });
     });
   },
 
@@ -352,7 +308,7 @@ const commands = {
       if (lock.isLocked()) {
         const threadName = lock.getLockedTarget();
         lock.unlock();
-        return resolve("Unlocked form ".concat(threadName));
+        return resolve(`Unlocked from ${threadName}`);
       }
       return reject(Error("No current locked user"));
     });

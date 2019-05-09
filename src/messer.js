@@ -62,7 +62,8 @@ Messer.prototype.start = function start() {
               return cb(null);
             })
             .catch(err => {
-              return cb(null, err.message);
+              log(err.message);
+              return cb(null);
             }),
       });
     })

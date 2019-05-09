@@ -6,8 +6,6 @@ Command-line Messaging for Facebook Messenger
 ![Version](https://img.shields.io/npm/v/messer.svg)
 ![License](https://img.shields.io/npm/l/messer.svg)
 
-![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
-
 ## Installation
 
 ```bash
@@ -21,9 +19,7 @@ $ npm install -g messer
    ```bash
    $ messer
    ```
-3. Enter your details
-4. ...
-5. Profit
+3. Enter your login details (don't worry, we don't store a thing)
 
 For a list of commands, jump to the [Commands Reference](https://github.com/mjkaufer/Messer#commands-reference)
 
@@ -87,7 +83,7 @@ contacts
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
 ```bash
-(history | h] "<user>" [<numMessages>]
+(history | h) "<user>" [<numMessages>]
 ```
 
 Examples
@@ -129,7 +125,7 @@ logout
 Messer can be run in non-interactive mode with command line arguments to execute a single command.
 
 ```bash
-messer --command='[command]'
+messer --command='<command>'
 ```
 
 Login will be prompted if this is the first time logging in.

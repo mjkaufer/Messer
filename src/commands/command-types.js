@@ -23,29 +23,30 @@ const commandTypes = {
   HISTORY: {
     command: "history",
     regexp: regexps[2],
-    help: 'history "[thread name]" [n]',
+    help: 'history "<thread-name>" [<n>]',
   },
   MESSAGE: {
     command: "message",
     regexp: regexps[0],
-    help: 'message "[thread name]" [message]',
+    help: 'message "<thread-name>" <message>',
   },
   RECENT: {
     command: "recent",
     regexp: regexps[1],
-    help: "recent [n]",
+    help: "recent [<n>]",
   },
   REPLY: {
     command: "reply",
     regexp: regexps[1],
-    help: "reply [message]",
+    help: "reply <message>",
   },
   CLEAR: {
     command: "clear",
   },
   LOCK: {
     command: "lock",
-    help: "lock [thread name]",
+    regexp: regexps[2],
+    help: 'lock "<thread-name>"',
   },
   UNLOCK: {
     command: "unlock",
@@ -54,7 +55,7 @@ const commandTypes = {
   DELETE: {
     command: "delete",
     regexp: regexps[2],
-    help: 'delete "[thread name]" [n]',
+    help: 'delete "<thread-name>" [<n>]',
   },
 };
 

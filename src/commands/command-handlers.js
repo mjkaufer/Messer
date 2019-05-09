@@ -293,7 +293,9 @@ const commands = {
         .then(thread => {
           lock.lockOn(thread.name, anonymous);
           return resolve(
-            `Locked on to ${thread.name} ${anonymous && "(anonymous mode)"}`,
+            `Locked on to ${thread.name} ${
+              anonymous ? "(anonymous mode)" : ""
+            }`,
           );
         })
         .catch(err => {

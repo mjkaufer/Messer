@@ -18,7 +18,7 @@ const getMessen = ctx => {
   messen.promptCredentials = () => helpers.promptCredentials();
   messen.onMessage = ev => {
     const handler = eventHandlers.message.bind(ctx);
-    return handler(ev);
+    return handler(ev, lock);
   };
   messen.onThreadEvent = ev => {
     const handler = eventHandlers.event.bind(ctx);

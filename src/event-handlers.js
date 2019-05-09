@@ -11,7 +11,7 @@ const eventHandlers = {
    * Handles the "message" event type
    * @param {Object} message - message to handle
    */
-  message(ev) {
+  message(ev, lock) {
     if (
       ev.senderID === this.messen.store.users.me.user.id &&
       ev.threadID !== this.messen.store.users.me.user.id
@@ -28,30 +28,41 @@ const eventHandlers = {
       messageBody += ev.attachments.map(helpers.parseAttachment).join(", ");
     }
 
+    let eventLog;
+
     if (ev.isGroup) {
       this.messen.store.users
         .getUser({ id: ev.senderID })
         .then(sendingUser => {
           sender = `(${thread.name}) ${sendingUser.name}`; // Get true sender name from list
-          log(
-            `${this.lastThread !== ev.threadID &&
-              "\n"}${sender} - ${messageBody}`,
-            thread.color,
-          );
+          eventLog = `${
+            this.lastThread !== ev.threadID ? "\n" : ""
+          }${sender} - ${messageBody}`;
         })
         .catch(() => {
           sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
-          log(
-            `${this.lastThread !== ev.threadID &&
-              "\n"}${sender} - ${messageBody}`,
-            thread.color,
-          );
+          eventLog = `${
+            this.lastThread !== ev.threadID ? "\n" : ""
+          }${sender} - ${messageBody}`;
         });
     } else {
-      log(
-        `${this.lastThread !== ev.threadID && "\n"}${sender} - ${messageBody}`,
-        thread.color,
-      );
+      eventLog = `${
+        this.lastThread !== ev.threadID ? "\n" : ""
+      }${sender} - ${messageBody}`;
+    }
+
+    if (lock.isLocked()) {
+      const lockName = lock.getLockedTarget();
+      if (lockName === thread.name) {
+        log(eventLog, thread.color);
+
+        if (lock.isAnonymous()) {
+          // ew, but whatever
+          this.messen.api.deleteMessage(ev.messageID, err => {});
+        }
+      }
+    } else {
+      log(eventLog, thread.color);
     }
 
     this.unreadMessagesCount += 1;

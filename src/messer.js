@@ -49,6 +49,14 @@ Messer.prototype.log = function log(message, color) {
   this.repl.displayPrompt(true);
 };
 
+Messer.prototype.setReplPrompt = function setReplPrompt(prompt) {
+  if (!this.repl) return;
+
+  this.repl._prompt = prompt;
+  this.repl._initialPrompt = prompt;
+  this.repl._promptLength = prompt.length;
+};
+
 /**
  * Starts a Messer session.
  */

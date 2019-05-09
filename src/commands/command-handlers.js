@@ -292,6 +292,8 @@ const commands = {
       return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
           lock.lockOn(thread.name, anonymous);
+          this.setReplPrompt(`${thread.name} > `);
+
           return resolve(
             `Locked on to ${thread.name} ${
               anonymous ? "(anonymous mode)" : ""
@@ -313,6 +315,7 @@ const commands = {
       if (lock.isLocked()) {
         const threadName = lock.getLockedTarget();
         lock.unlock();
+        this.setReplPrompt("> ");
         return resolve(`Unlocked from ${threadName}`);
       }
       return reject(Error("No current locked user"));

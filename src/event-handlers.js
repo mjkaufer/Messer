@@ -34,26 +34,22 @@ const eventHandlers = {
         .then(sendingUser => {
           sender = `(${thread.name}) ${sendingUser.name}`; // Get true sender name from list
           log(
-            `${
-              this.lastThread !== ev.threadID ? "\n" : ""
-            }${sender} - ${messageBody}`,
+            `${this.lastThread !== ev.threadID &&
+              "\n"}${sender} - ${messageBody}`,
             thread.color,
           );
         })
         .catch(() => {
           sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
           log(
-            `${
-              this.lastThread !== ev.threadID ? "\n" : ""
-            }${sender} - ${messageBody}`,
+            `${this.lastThread !== ev.threadID &&
+              "\n"}${sender} - ${messageBody}`,
             thread.color,
           );
         });
     } else {
       log(
-        `${
-          this.lastThread !== ev.threadID ? "\n" : ""
-        }${sender} - ${messageBody}`,
+        `${this.lastThread !== ev.threadID && "\n"}${sender} - ${messageBody}`,
         thread.color,
       );
     }

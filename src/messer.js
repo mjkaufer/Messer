@@ -102,12 +102,8 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     if (localCommand.trim() === "unlock") {
       commandHandler = getCommandHandler("unlock");
     } else {
-      commandHandler = getCommandHandler("m");
-      localCommand = "m "
-        .concat('"')
-        .concat(lock.getLockedTarget())
-        .concat('" ')
-        .concat(args.join(" "));
+      commandHandler = getCommandHandler("message");
+      localCommand = `m "${lock.getLockedTarget()}" ${args.join(" ")}`;
     }
   }
 
@@ -115,7 +111,19 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     return Promise.reject(Error("Invalid command - check your syntax"));
   }
 
-  return commandHandler.call(this, localCommand);
+  return commandHandler
+    .call(this, localCommand)
+
+    .then(res => {
+      if (!lock.isLocked() && !lock.isAnonymous()) return res;
+
+      // delete the last message
+      commandHandler = getCommandHandler("delete");
+      localCommand = `delete "${lock.getLockedTarget()}" 1`;
+      return commandHandler.call(this, localCommand).then(() => {
+        return res;
+      });
+    });
 };
 
 /**

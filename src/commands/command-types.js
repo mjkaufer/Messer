@@ -2,6 +2,7 @@ const regexps = [
   /([A-z]+)\s+"(.*?)"\s+(.+)/,
   /([A-z]+)\s+(.+){0,}/,
   /([A-z]+)\s+"(.*?)"(?:\s+)?([0-9]+)?/,
+  /([A-z]+)\s+"(.*?)"(?:\s+)?(--[A-z]+)?/,
 ];
 
 /* Command type constants */
@@ -45,8 +46,8 @@ const commandTypes = {
   },
   LOCK: {
     command: "lock",
-    regexp: regexps[2],
-    help: 'lock "<thread-name>"',
+    regexp: regexps[3],
+    help: 'lock "<thread-name>" [--anon]',
   },
   UNLOCK: {
     command: "unlock",

@@ -287,11 +287,14 @@ const commands = {
       if (!argv) return reject(Error("Invalid command - check your syntax"));
 
       const rawReceiver = argv[2];
+      const anonymous = argv[3] === "--anon";
 
       return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
-          lock.lockOn(thread.name);
-          return resolve(`Locked on to ${thread.name}`);
+          lock.lockOn(thread.name, anonymous);
+          return resolve(
+            `Locked on to ${thread.name} ${anonymous && "(anonymous mode)"}`,
+          );
         })
         .catch(err => {
           return reject(
@@ -321,11 +324,11 @@ const commands = {
    */
   [commandTypes.DELETE.command](rawCommand) {
     const argv = parseCommand(commandTypes.DELETE.regexp, rawCommand);
-    if (!argv || !argv[2] || !argv[3])
+    if (!argv || !argv[2])
       return Promise.reject("Invalid command - check your syntax");
 
     const rawThreadName = argv[2];
-    const messageCount = parseInt(argv[3].trim(), 10);
+    const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : 1;
 
     const deleteMessage = messageId => {
       return new Promise((resolve, reject) => {
@@ -336,15 +339,17 @@ const commands = {
       });
     };
 
-    return getThreadHistory(this.messen, rawThreadName).then(threadHistory => {
-      return Promise.all(
-        threadHistory.map(thread => {
-          return deleteMessage(thread.messageID);
-        }),
-      ).then(deleted => {
-        return `Last ${deleted.length} messages deleted.`;
-      });
-    });
+    return getThreadHistory(this.messen, rawThreadName, messageCount).then(
+      threadHistory => {
+        return Promise.all(
+          threadHistory.map(thread => {
+            return deleteMessage(thread.messageID);
+          }),
+        ).then(deleted => {
+          return `Last ${deleted.length} messages deleted.`;
+        });
+      },
+    );
   },
 };
 

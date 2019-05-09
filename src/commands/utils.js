@@ -14,7 +14,7 @@ exports.getThreadByName = getThreadByName;
 
 exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
   return new Promise((resolve, reject) => {
-    getThreadByName(rawThreadName).then(thread => {
+    getThreadByName(messen, rawThreadName).then(thread => {
       if (!thread) throw new Error("no thread");
       return messen.api.getThreadHistory(
         thread.threadID,

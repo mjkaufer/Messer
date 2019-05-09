@@ -46,7 +46,7 @@ Messer.prototype.log = function log(message, color) {
 
   this.repl.clearBufferedCommand();
   logger.log(message, color);
-  this.repl.displayPrompt();
+  this.repl.displayPrompt(true);
 };
 
 /**

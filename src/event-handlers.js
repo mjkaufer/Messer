@@ -34,14 +34,15 @@ const eventHandlers = {
       }
 
       const lockName = lock.getLockedTarget();
-      if (lockName === thread.name) {
-        this.log(eventLog, thread.color);
+      // I think leave this out for now. Undecided on the UX
+      // if (lockName === thread.name) {
+      this.log(message, thread.color);
 
-        if (lock.isAnonymous()) {
-          // ew, but whatever
-          this.messen.api.deleteMessage(ev.messageID, err => {});
-        }
+      if (lock.isAnonymous()) {
+        // ew, but whatever
+        this.messen.api.deleteMessage(ev.messageID, err => {});
       }
+      // }
     };
 
     let eventLog;

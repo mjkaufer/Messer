@@ -6,6 +6,8 @@ Command-line Messaging for Facebook Messenger
 ![Version](https://img.shields.io/npm/v/messer.svg)
 ![License](https://img.shields.io/npm/l/messer.svg)
 
+Messer is a fully featured Facebook Messenger client for your terminal. Send and receive messages, view chat historys and more!
+
 ## Installation
 
 ```bash
@@ -21,27 +23,9 @@ $ npm install -g messer
    ```
 3. Enter your login details (don't worry, we don't store a thing)
 
-For a list of commands, jump to the [Commands Reference](https://github.com/mjkaufer/Messer#commands-reference)
-
-## Setup
-
-### 2-Factor Authentication
-
-1. Start Messer and wait for "Enter Code" prompt
-2. Enter a 2FA code generated from your 2FA app
-
-   If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
-
-3. Approve the browser/device (i.e. approve Messer)
-4. Retry from Step 1
-
-After you've successfully logged in, an `appstate.json` file is created which should allow you to skip this process every time you log in. If you wish to "start over", just delete that file.
-
-This _should™_ work! Please let us know if it doesn't: we've had a number of issues with it in the past.
-
 ## Commands Reference
 
-### `message`
+#### `message`
 
 Sends a _message_ to a given _user_
 
@@ -56,7 +40,7 @@ Examples
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
-### `reply`
+#### `reply`
 
 Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
 
@@ -70,7 +54,7 @@ Example
 
 Note: this will only work if you have received at least one message through Messer.
 
-### `contacts`
+#### `contacts`
 
 Lists all of your Facebook friends
 
@@ -78,12 +62,12 @@ Lists all of your Facebook friends
 contacts
 ```
 
-### `history`
+#### `history`
 
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
 ```bash
-(history | h) "<user>" [<numMessages>]
+(history | h) "<user>" [<n>]
 ```
 
 Examples
@@ -91,12 +75,12 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
-### `recent`
+#### `recent`
 
 Displays the _n_ most recent conversations. The number of threads is optional (default is 5).
 
 ```bash
-recent [<numThreads>]
+recent [<n>]
 ```
 
 Examples
@@ -104,7 +88,7 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
-### `clear`
+#### `clear`
 
 Clears the number of unread messages in the window title. Since we cannot listen on focus events, it has to be done manually.
 
@@ -112,12 +96,34 @@ Clears the number of unread messages in the window title. Since we cannot listen
 (clear | c)
 ```
 
-### `logout`
+#### `logout`
 
 Logs you out
 
 ```bash
 logout
+```
+
+### Lock-on Mode
+
+Locking on to a user or group allows you to send messages without having to specify the `message` command; just type away!
+
+```bash
+lock "Tom Q"
+```
+
+**To unlock**, simply run:
+
+```bash
+unlock
+```
+
+#### Secret Mode
+
+When in this mode, any messages sent or recieved in the thread will be deleted for you (note, **they won't be deleted for everyone**).
+
+```bash
+lock "Tom Q" --secret
 ```
 
 ### Non-interactive Mode
@@ -145,7 +151,11 @@ $ messer cleanup
 
 ## FAQ
 
-### Group Chats
+### Do you store any of my data?
+
+**We don't store your username, password, or any of your interactions on Messer**. The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `messer cleanup`, or if you're in a Messer session, run the `logout` command.
+
+### How do group chats work?
 
 Messages from group chats appear like
 
@@ -158,15 +168,3 @@ Send a message to a group by using the `message` command. The `name` is the name
 ## Contributing
 
 Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. Only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
-
-### Before you submit your PR, ask yourself...
-
-1. Does this PR resolve a particular issue? (if not, then why is this PR necessary)?
-
-2. Have I written tests? (where appropriate)
-
-3. Have I made sure the tests pass?
-
-```bash
-npm test
-```

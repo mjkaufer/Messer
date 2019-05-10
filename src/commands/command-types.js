@@ -47,7 +47,7 @@ const commandTypes = {
   LOCK: {
     command: "lock",
     regexp: regexps[3],
-    help: 'lock "<thread-name>" [--anon]',
+    help: 'lock "<thread-name>" [--secret]',
   },
   UNLOCK: {
     command: "unlock",

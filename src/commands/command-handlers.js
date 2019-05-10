@@ -287,7 +287,7 @@ const commands = {
       if (!argv) return reject(Error("Invalid command - check your syntax"));
 
       const rawReceiver = argv[2];
-      const anonymous = argv[3] === "--anon";
+      const anonymous = argv[3] === "--secret";
 
       return getThreadByName(this.messen, rawReceiver)
         .then(thread => {

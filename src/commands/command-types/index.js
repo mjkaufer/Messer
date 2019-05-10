@@ -30,6 +30,11 @@ const commandTypes = {
     regexp: patterns[0],
     help: 'message "<thread-name>" <message>',
   },
+  FILE: {
+    command: "file",
+    regexp: patterns[5],
+    help: 'file "<thread-name>" "<filepath>" <message>',
+  },
   RECENT: {
     command: "recent",
     regexp: patterns[1],

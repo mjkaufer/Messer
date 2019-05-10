@@ -14,6 +14,10 @@ const commandTypes = {
     command: "contacts",
     help: "contacts",
   },
+  THREADS: {
+    command: "threads",
+    help: "threads",
+  },
   HELP: {
     command: "help",
   },

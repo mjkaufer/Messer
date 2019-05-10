@@ -128,7 +128,8 @@ const commands = {
 
       const friendsPretty = friends
         .sort((a, b) => (a.name > b.name ? 1 : -1))
-        .reduce((a, b) => `${a}${b.name}\n`, "");
+        .map(user => user.name)
+        .join("\n");
 
       return resolve(friendsPretty);
     });
@@ -142,7 +143,10 @@ const commands = {
     const helpPretty = `Commands:\n${helpers
       .objectValues(commandTypes)
       .filter(command => command.help)
-      .reduce((a, b) => `${a}\t${chalk.blue(b.command)}: ${b.help}\n`, "")}`;
+      .map(type => {
+        return `${chalk.blue(type.command)}`;
+      })
+      .join("\n")}`;
 
     return new Promise(resolve => resolve(helpPretty));
   },
@@ -212,7 +216,7 @@ const commands = {
               return this.messen.store.users.getUsers(senderIds).then(users => {
                 const threadHistoryText = threadHistory
                   .filter(event => event.type === "message") // TODO include other events here
-                  .reduce((a, message) => {
+                  .map(message => {
                     let sender = users.find(
                       user => user && user.id === message.senderID,
                     );
@@ -236,8 +240,9 @@ const commands = {
                       logText = chalk.dim(logText);
                     }
 
-                    return `${a}${logText}\n`;
-                  }, "");
+                    return `${logText}`;
+                  })
+                  .join("\n");
 
                 return resolve(threadHistoryText);
               });

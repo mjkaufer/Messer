@@ -6,6 +6,7 @@ const { getCommandHandler } = require("./commands/command-handlers");
 const eventHandlers = require("./event-handlers");
 const logger = require("./util/logger");
 const lock = require("./util/lock");
+const patterns = require("./commands/command-types/patterns");
 
 const APPSTATE_DIR = `${process.env.HOME}/.messer`;
 
@@ -74,7 +75,7 @@ Messer.prototype.start = function start() {
 
       this.repl = repl.start({
         ignoreUndefined: true,
-        eval: (input, context, filename, cb) =>
+        eval: (input, context, filename, cb) => {
           this.processCommand(input)
             .then(res => {
               this.log(res);
@@ -83,10 +84,36 @@ Messer.prototype.start = function start() {
             .catch(err => {
               this.log(err.message);
               return cb(null);
-            }),
+            });
+        },
+        completer: line => {
+          const argv = line.match(patterns[4]);
+
+          const command = argv[1];
+          const nameQuery = argv[2];
+
+          const { friends } = this.messen.store.users.me;
+
+          const getCompletions = users => {
+            return users.map(user => {
+              return `${command} "${user.name}"`;
+            });
+          };
+
+          const completions = getCompletions(friends);
+
+          const hits = getCompletions(
+            friends.filter(user =>
+              user.name.toLowerCase().startsWith(nameQuery.toLowerCase()),
+            ),
+          );
+
+          // Show all completions if none found
+          return [hits.length ? hits : completions, line];
+        },
       });
     })
-    .catch(err => log(err));
+    .catch(err => console.log(err));
 };
 /**
  * Starts Messer and executes a single command

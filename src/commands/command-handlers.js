@@ -3,6 +3,7 @@ const chalk = require("chalk");
 const helpers = require("../util/helpers");
 const lock = require("../util/lock");
 const commandTypes = require("./command-types");
+const { getThreadHistory, getThreadByName } = require("./utils");
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -50,20 +51,7 @@ const commands = {
       // clean message
       const message = rawMessage.split("\\n").join("\u000A");
 
-      return this.messen.store.threads
-        .getThread({ name: rawReceiver })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawReceiver })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
+      return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
           if (!thread) throw new Error("No thread found");
 
@@ -77,13 +65,13 @@ const commands = {
             },
           );
         })
-        .catch(e =>
-          reject(
+        .catch(e => {
+          return reject(
             Error(
               `User '${rawReceiver}' could not be found in your friends list!`,
             ),
-          ),
-        );
+          );
+        });
     });
   },
 
@@ -168,88 +156,59 @@ const commands = {
    * @return {Promise<String>}
    */
   [commandTypes.HISTORY.command](rawCommand) {
-    return new Promise((resolve, reject) => {
-      const DEFAULT_COUNT = 5;
+    const DEFAULT_COUNT = 5;
 
-      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
-      if (!argv) return reject(Error("Invalid command - check your syntax"));
-      const rawThreadName = argv[2];
-      const messageCount = argv[3]
-        ? parseInt(argv[3].trim(), 10)
-        : DEFAULT_COUNT;
+    const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
+    if (!argv) return Promise.reject("Invalid command - check your syntax");
+    const rawThreadName = argv[2];
+    const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT;
 
-      return this.messen.store.threads
-        .getThread({ name: rawThreadName })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawThreadName })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
-        .then(thread => {
-          if (!thread) throw new Error("no thread");
-          return this.messen.api.getThreadHistory(
-            thread.threadID,
-            messageCount,
-            undefined,
-            (err, threadHistory) => {
-              if (err) return reject(err);
+    return getThreadHistory(this.messen, rawThreadName)
+      .then(threadHistory => {
+        if (threadHistory.length === 0) {
+          return "You haven't started a conversation!";
+        }
 
-              if (threadHistory.length === 0) {
-                return resolve("You haven't started a conversation!");
+        const senderIds = Array.from(
+          new Set(threadHistory.map(message => message.senderID)),
+        );
+
+        return this.messen.store.users.getUsers(senderIds).then(users => {
+          const threadHistoryText = threadHistory
+            .filter(event => event.type === "message") // TODO include other events here
+            .reduce((a, message) => {
+              let sender = users.find(
+                user => user && user.id === message.senderID,
+              );
+              if (!sender) {
+                sender = { name: "unknown" };
               }
 
-              const senderIds = Array.from(
-                new Set(threadHistory.map(message => message.senderID)),
-              );
+              let messageBody = message.body;
 
-              return this.messen.store.users.getUsers(senderIds).then(users => {
-                const threadHistoryText = threadHistory
-                  .filter(event => event.type === "message") // TODO include other events here
-                  .reduce((a, message) => {
-                    let sender = users.find(
-                      user => user && user.id === message.senderID,
-                    );
-                    if (!sender) {
-                      sender = { name: "unknown" };
-                    }
+              if (message.attachments && message.attachments.length > 0) {
+                messageBody += message.attachments
+                  .map(helpers.parseAttachment)
+                  .join(", ");
+              }
 
-                    let messageBody = message.body;
+              let logText = `${sender.name}: ${messageBody}`;
+              if (message.isUnread) logText = `(unread) ${logText}`;
+              if (message.senderID === this.messen.store.users.me.user.id) {
+                logText = chalk.dim(logText);
+              }
 
-                    if (message.attachments && message.attachments.length > 0) {
-                      messageBody += message.attachments
-                        .map(helpers.parseAttachment)
-                        .join(", ");
-                    }
+              return `${a}${logText}\n`;
+            }, "");
 
-                    let logText = `${sender.name}: ${messageBody}`;
-                    if (message.isUnread) logText = `(unread) ${logText}`;
-                    if (
-                      message.senderID === this.messen.store.users.me.user.id
-                    ) {
-                      logText = chalk.dim(logText);
-                    }
-
-                    return `${a}${logText}\n`;
-                  }, "");
-
-                return resolve(threadHistoryText);
-              });
-            },
-          );
-        })
-        .catch(err =>
-          reject(
-            Error(`We couldn't find a thread for '${rawThreadName}'! ${err}`),
-          ),
+          return threadHistoryText;
+        });
+      })
+      .catch(err => {
+        throw new Error(
+          `We couldn't find a thread for '${rawThreadName}'! ${err}`,
         );
-    });
+      });
   },
 
   /**
@@ -275,20 +234,7 @@ const commands = {
       const rawThreadName = argv[2];
 
       // Find the thread to send to
-      return this.messen.store.threads
-        .getThread({ name: rawThreadName })
-        .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: rawThreadName })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
-        })
+      return getThreadByName(this.messen, rawThreadName)
         .then(thread =>
           this.messen.api.changeThreadColor(color, thread.theadID, err => {
             if (err) return reject(err);
@@ -296,9 +242,9 @@ const commands = {
             return resolve();
           }),
         )
-        .catch(() =>
-          reject(Error(`Thread '${rawThreadName}' couldn't be found!`)),
-        );
+        .catch(() => {
+          return reject(Error(`Thread '${rawThreadName}' couldn't be found!`));
+        });
     });
   },
 
@@ -337,57 +283,78 @@ const commands = {
    */
   [commandTypes.LOCK.command](rawCommand) {
     return new Promise((resolve, reject) => {
-      const receiver = rawCommand
-        .split(" ")
-        .slice(1)
-        .join(" ")
-        .replace("\n", "");
-      if (!receiver) {
-        return reject(Error("Please, specify a user to lock on to"));
-      }
-      return this.messen.store.threads
-        .getThread({ name: receiver })
+      const argv = parseCommand(commandTypes.LOCK.regexp, rawCommand);
+      if (!argv) return reject(Error("Invalid command - check your syntax"));
+
+      const rawReceiver = argv[2];
+      const anonymous = argv[3] === "--secret";
+
+      return getThreadByName(this.messen, rawReceiver)
         .then(thread => {
-          if (thread) return thread;
-          return this.messen.store.users
-            .getUser({ name: receiver })
-            .then(user => {
-              if (!user) throw new Error();
-              return {
-                threadID: user.id,
-                name: user.name,
-              };
-            });
+          lock.lockOn(thread.name, anonymous);
+          this.setReplPrompt(`${thread.name}${anonymous ? " 🔒" : ""}> `);
+
+          return resolve(
+            `Locked on to ${thread.name} ${
+              anonymous ? "(anonymous mode)" : ""
+            }`,
+          );
         })
-        .then(() => {
-          lock.lockOn(receiver);
-          return resolve("Locked on to ".concat(receiver));
-        })
-        .catch(() =>
-          reject(
+        .catch(err => {
+          return reject(
             Error(
-              "Cannot find user "
-                .concat(receiver)
-                .concat(" in friends list or active threads"),
+              `Cannot find user "${rawReceiver}" in friends list or active threads`,
             ),
-          ),
-        );
+          );
+        });
     });
   },
 
-  /**
-   * Displays the most recent n threads
-   * @param {String} rawCommand - command to handle
-   */
   [commandTypes.UNLOCK.command]() {
     return new Promise((resolve, reject) => {
       if (lock.isLocked()) {
         const threadName = lock.getLockedTarget();
         lock.unlock();
-        return resolve("Unlocked form ".concat(threadName));
+        this.setReplPrompt("> ");
+        return resolve(`Unlocked from ${threadName}`);
       }
       return reject(Error("No current locked user"));
     });
+  },
+
+  /**
+   * Delete the most recent n threads
+   * @param {String} rawCommand - command to handle
+   * @return {Promise<string>}
+   */
+  [commandTypes.DELETE.command](rawCommand) {
+    const argv = parseCommand(commandTypes.DELETE.regexp, rawCommand);
+    if (!argv || !argv[2])
+      return Promise.reject("Invalid command - check your syntax");
+
+    const rawThreadName = argv[2];
+    const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : 1;
+
+    const deleteMessage = messageId => {
+      return new Promise((resolve, reject) => {
+        this.messen.api.deleteMessage(messageId, err => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      });
+    };
+
+    return getThreadHistory(this.messen, rawThreadName, messageCount).then(
+      threadHistory => {
+        return Promise.all(
+          threadHistory.map(thread => {
+            return deleteMessage(thread.messageID);
+          }),
+        ).then(deleted => {
+          return `Last ${deleted.length} messages deleted.`;
+        });
+      },
+    );
   },
 };
 

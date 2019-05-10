@@ -7,14 +7,17 @@ const chalk = require("chalk");
  */
 function log(content, color) {
   if (!content) return null;
+
+  let message = content;
+
   if (color) {
     if (chalk[color]) {
-      return console.log(chalk[color](content));
+      message = chalk[color](content);
     }
-    return console.log(chalk.hex(color)(content));
+    message = chalk.hex(color)(content);
   }
 
-  return console.log(content);
+  console.log(message);
 }
 
-module.exports = log;
+module.exports = { log };

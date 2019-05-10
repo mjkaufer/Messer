@@ -1,4 +1,3 @@
-const log = require("./util/log");
 const fbAssets = require("./fb-assets");
 const helpers = require("./util/helpers.js");
 
@@ -11,7 +10,7 @@ const eventHandlers = {
    * Handles the "message" event type
    * @param {Object} message - message to handle
    */
-  message(ev) {
+  message(ev, lock) {
     if (
       ev.senderID === this.messen.store.users.me.user.id &&
       ev.threadID !== this.messen.store.users.me.user.id
@@ -28,34 +27,39 @@ const eventHandlers = {
       messageBody += ev.attachments.map(helpers.parseAttachment).join(", ");
     }
 
+    const logEvent = message => {
+      if (!lock.isLocked()) {
+        this.log(message, thread.color);
+        return;
+      }
+
+      const lockName = lock.getLockedTarget();
+      // I think leave this out for now. Undecided on the UX
+      // if (lockName === thread.name) {
+      this.log(message, thread.color);
+
+      if (lock.isAnonymous()) {
+        // ew, but whatever
+        this.messen.api.deleteMessage(ev.messageID, err => {});
+      }
+      // }
+    };
+
+    let eventLog;
+
     if (ev.isGroup) {
       this.messen.store.users
         .getUser({ id: ev.senderID })
         .then(sendingUser => {
-          sender = `(${thread.name}) ${sendingUser.name}`; // Get true sender name from list
-          log(
-            `${
-              this.lastThread !== ev.threadID ? "\n" : ""
-            }${sender} - ${messageBody}`,
-            thread.color,
-          );
+          sender = `(${thread.name}) ${sendingUser.name}`;
+          logEvent(`${sender} - ${messageBody}`);
         })
         .catch(() => {
           sender = `(${thread.name}) ${sender.name}`; // Sender not in list, keep origin
-          log(
-            `${
-              this.lastThread !== ev.threadID ? "\n" : ""
-            }${sender} - ${messageBody}`,
-            thread.color,
-          );
+          logEvent(`${sender} - ${messageBody}`);
         });
     } else {
-      log(
-        `${
-          this.lastThread !== ev.threadID ? "\n" : ""
-        }${sender} - ${messageBody}`,
-        thread.color,
-      );
+      logEvent(`${sender} - ${messageBody}`);
     }
 
     this.unreadMessagesCount += 1;

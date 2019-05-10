@@ -4,7 +4,7 @@ const { Messen } = require("messen");
 const helpers = require("./util/helpers.js");
 const { getCommandHandler } = require("./commands/command-handlers");
 const eventHandlers = require("./event-handlers");
-const log = require("./util/log");
+const logger = require("./util/logger");
 const lock = require("./util/lock");
 
 const APPSTATE_DIR = `${process.env.HOME}/.messer`;
@@ -18,7 +18,7 @@ const getMessen = ctx => {
   messen.promptCredentials = () => helpers.promptCredentials();
   messen.onMessage = ev => {
     const handler = eventHandlers.message.bind(ctx);
-    return handler(ev);
+    return handler(ev, lock);
   };
   messen.onThreadEvent = ev => {
     const handler = eventHandlers.event.bind(ctx);
@@ -34,35 +34,55 @@ const getMessen = ctx => {
  */
 function Messer(options = {}) {
   this.messen = getMessen(this);
+  this.repl = undefined;
 
   this.lastThread = null;
   this.unreadMessagesCount = 0;
   this.debug = options.debug || false;
 }
 
+Messer.prototype.log = function log(message, color) {
+  if (!this.repl) return;
+
+  this.repl.clearBufferedCommand();
+  logger.log(message, color);
+  this.repl.displayPrompt(true);
+};
+
+Messer.prototype.setReplPrompt = function setReplPrompt(prompt) {
+  if (!this.repl) return;
+
+  this.repl._prompt = prompt;
+  this.repl._initialPrompt = prompt;
+  this.repl._promptLength = prompt.length;
+};
+
 /**
  * Starts a Messer session.
  */
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
-  log("Logging in...");
+  logger.log("Logging in...");
   return this.messen
     .login()
     .then(() => {
-      log(`Successfully logged in as ${this.messen.store.users.me.user.name}`);
+      logger.log(
+        `Successfully logged in as ${this.messen.store.users.me.user.name}`,
+      );
 
       this.messen.listen();
 
-      repl.start({
+      this.repl = repl.start({
         ignoreUndefined: true,
         eval: (input, context, filename, cb) =>
           this.processCommand(input)
             .then(res => {
-              log(res);
+              this.log(res);
               return cb(null);
             })
             .catch(err => {
-              return cb(null, err.message);
+              this.log(err.message);
+              return cb(null);
             }),
       });
     })
@@ -101,12 +121,8 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     if (localCommand.trim() === "unlock") {
       commandHandler = getCommandHandler("unlock");
     } else {
-      commandHandler = getCommandHandler("m");
-      localCommand = "m "
-        .concat('"')
-        .concat(lock.getLockedTarget())
-        .concat('" ')
-        .concat(args.join(" "));
+      commandHandler = getCommandHandler("message");
+      localCommand = `m "${lock.getLockedTarget()}" ${args.join(" ")}`;
     }
   }
 
@@ -114,7 +130,19 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     return Promise.reject(Error("Invalid command - check your syntax"));
   }
 
-  return commandHandler.call(this, localCommand);
+  return commandHandler
+    .call(this, localCommand)
+
+    .then(res => {
+      if (!lock.isLocked() && !lock.isAnonymous()) return res;
+
+      // delete the last message
+      commandHandler = getCommandHandler("delete");
+      localCommand = `delete "${lock.getLockedTarget()}" 1`;
+      return commandHandler.call(this, localCommand).then(() => {
+        return res;
+      });
+    });
 };
 
 /**

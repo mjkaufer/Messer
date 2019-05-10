@@ -1,17 +1,23 @@
 let locked = false;
 let target = "";
+let anonymous = false;
 
 function isLocked() {
   return locked;
+}
+
+function isAnonymous() {
+  return anonymous;
 }
 
 function getLockedTarget() {
   return target;
 }
 
-function lockOn(targetUser) {
+function lockOn(targetUser, _anonymous = false) {
   locked = true;
   target = targetUser;
+  anonymous = _anonymous;
 }
 
 function unlock() {
@@ -21,6 +27,7 @@ function unlock() {
 
 module.exports = {
   isLocked,
+  isAnonymous,
   getLockedTarget,
   lockOn,
   unlock,

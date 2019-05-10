@@ -1,7 +1,7 @@
 const prompt = require("prompt");
 const readline = require("readline");
 
-const log = require("./log");
+const { log } = require("./logger");
 
 /**
  * Adds the number of unread messages in the terminal title

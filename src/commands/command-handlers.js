@@ -123,6 +123,18 @@ const commands = {
     });
   },
 
+  [commandTypes.THREADS.command]() {
+    return new Promise(resolve => {
+      const threads = this.messen.store.threads.getThreadList();
+      if (threads.length === 0)
+        return resolve("You haven't sent any messages yet!");
+
+      const threadNames = threads.map(thread => thread.name).join("\n");
+
+      return resolve(threadNames);
+    });
+  },
+
   /**
    * Displays usage instructions
    * @return {Promise<String>}
@@ -132,7 +144,7 @@ const commands = {
       .objectValues(commandTypes)
       .filter(command => command.help)
       .map(type => {
-        return `${chalk.blue(type.command)}`;
+        return chalk.blue(type.command);
       })
       .join("\n")}`;
 
@@ -202,7 +214,7 @@ const commands = {
                 logText = chalk.dim(logText);
               }
 
-              return `${logText}`;
+              return logText;
             })
             .join("\n");
 

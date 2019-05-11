@@ -82,7 +82,7 @@ function Messer(options = {}) {
   this.repl = undefined;
 
   this.lastThread = null;
-  this.unreadMessagesCount = 0;
+  this.unreadThreadIds = [];
   this.debug = options.debug || false;
 }
 
@@ -182,7 +182,7 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
  * @return {Promise}
  */
 Messer.prototype.processCommand = function processCommand(rawCommand) {
-  this.clear(); // If we are typing, new messages have been read
+  this.clear(); // If we typed something, unread messages have likely been read
 
   let localCommand = rawCommand;
 
@@ -222,9 +222,14 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
  * Clears the messer notification in the terminal title.
  */
 Messer.prototype.clear = function clear() {
-  if (this.unreadMessagesCount === 0) return;
+  if (this.settings.get("SHOW_READ") === true) {
+    new Set(this.unreadThreadIds).forEach(threadId => {
+      this.messen.api.markAsRead(threadId);
+    });
+  }
 
-  this.unreadMessagesCount = 0;
+  this.unreadThreadIds = [];
+
   helpers.notifyTerminal();
 };
 

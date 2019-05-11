@@ -45,8 +45,6 @@ const eventHandlers = {
       // }
     };
 
-    let eventLog;
-
     if (ev.isGroup) {
       this.messen.store.users
         .getUser({ id: ev.senderID })
@@ -62,9 +60,9 @@ const eventHandlers = {
       logEvent(`${sender} - ${messageBody}`);
     }
 
-    this.unreadMessagesCount += 1;
+    this.unreadThreadIds.push(thread.threadID);
 
-    helpers.notifyTerminal(this.unreadMessagesCount); // Terminal notification in title
+    helpers.notifyTerminal(this.unreadThreadIds.length); // Terminal notification in title
 
     process.stderr.write("\x07"); // Terminal notification
     this.lastThread = ev.threadID;

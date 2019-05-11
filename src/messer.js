@@ -1,4 +1,6 @@
 const repl = require("repl");
+const path = require("path");
+const fs = require("fs");
 const { Messen } = require("messen");
 
 const helpers = require("./util/helpers.js");
@@ -8,11 +10,53 @@ const logger = require("./util/logger");
 const lock = require("./util/lock");
 const patterns = require("./commands/command-types/patterns");
 
-const APPSTATE_DIR = `${process.env.HOME}/.messer`;
+const APP_DIR = `${process.env.HOME}/.messer`;
+const SETTINGS_FILEPATH = path.resolve(APP_DIR, "settings.json");
+const DEFAULT_SETTINGS = {
+  SHOW_TYPING: false,
+  SHOW_READ: false,
+};
+
+/**
+ * Basic settings utils
+ */
+let _settings = undefined;
+const settings = {
+  list: function() {
+    if (_settings) return _settings;
+
+    try {
+      _settings = JSON.parse(fs.readFileSync(SETTINGS_FILEPATH));
+    } catch (e) {
+      _settings = DEFAULT_SETTINGS;
+    }
+
+    return _settings;
+  },
+  get: function(key) {
+    const _list = this.list();
+    const val = _list[key];
+
+    return val;
+  },
+  set: function(key, value) {
+    return new Promise((resolve, reject) => {
+      const _list = this.list();
+      _list[key] = value;
+
+      return fs.writeFile(SETTINGS_FILEPATH, JSON.stringify(_list), err => {
+        if (err) return reject(err);
+
+        _settings = _list;
+        return resolve(_settings);
+      });
+    });
+  },
+};
 
 const getMessen = ctx => {
   const messen = new Messen({
-    dir: APPSTATE_DIR,
+    dir: APP_DIR,
   });
 
   messen.getMfaCode = () => helpers.promptCode();
@@ -30,7 +74,7 @@ const getMessen = ctx => {
 };
 
 /**
- * Creates a singleton that represents a Messer session.
+ * Main Messer class
  * @class
  */
 function Messer(options = {}) {
@@ -42,11 +86,11 @@ function Messer(options = {}) {
   this.debug = options.debug || false;
 }
 
-Messer.prototype.log = function log(message, color) {
+Messer.prototype.log = function log(message, color, error = false) {
   if (!this.repl) return;
 
   this.repl.clearBufferedCommand();
-  logger.log(message, color);
+  logger.log(message, color, error);
   this.repl.displayPrompt(true);
 };
 
@@ -64,6 +108,7 @@ Messer.prototype.setReplPrompt = function setReplPrompt(prompt) {
 Messer.prototype.start = function start() {
   helpers.notifyTerminal();
   logger.log("Logging in...");
+
   return this.messen
     .login()
     .then(() => {
@@ -115,6 +160,7 @@ Messer.prototype.start = function start() {
     })
     .catch(err => console.log(err));
 };
+
 /**
  * Starts Messer and executes a single command
  */
@@ -122,11 +168,14 @@ Messer.prototype.startSingle = function startSingle(rawCommand) {
   this.messen
     .login()
     .then(() => this.processCommand(rawCommand))
-    .then(output => process.stdout.write(output))
+    .then(output => {
+      this.log(output);
+    })
     .catch(err => {
-      process.stderr.write(err);
+      this.log(err, undefined, true);
     });
 };
+
 /**
  * Execute appropriate action for user input commands.
  * @param {String} rawCommand - command to process
@@ -157,19 +206,16 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     return Promise.reject(Error("Invalid command - check your syntax"));
   }
 
-  return commandHandler
-    .call(this, localCommand)
+  return commandHandler.call(this, localCommand).then(res => {
+    if (!lock.isLocked() && !lock.isAnonymous()) return res;
 
-    .then(res => {
-      if (!lock.isLocked() && !lock.isAnonymous()) return res;
-
-      // delete the last message
-      commandHandler = getCommandHandler("delete");
-      localCommand = `delete "${lock.getLockedTarget()}" 1`;
-      return commandHandler.call(this, localCommand).then(() => {
-        return res;
-      });
+    // delete the last message
+    commandHandler = getCommandHandler("delete");
+    localCommand = `delete "${lock.getLockedTarget()}" 1`;
+    return commandHandler.call(this, localCommand).then(() => {
+      return res;
     });
+  });
 };
 
 /**
@@ -190,5 +236,7 @@ Messer.prototype.logout = function logout() {
     process.exit();
   });
 };
+
+Messer.prototype.settings = settings;
 
 module.exports = Messer;

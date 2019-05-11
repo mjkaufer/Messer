@@ -5,4 +5,5 @@ module.exports = [
   /([A-z]+)\s+"(.*?)"(?:\s+)?(--[A-z]+)?/, // `lock "Tom Quirk" and `lock "Tom Quirk" --secret`,
   /([A-z]+)\s+"(.*)/, // autocompleter, like `message "T`
   /([A-z]+)\s+"(.*?)"\s+"(.*?)"\s?(.+)?/, // `file "Tom Quirk" "/path/to/file"` and `file "Tom Quirk" "/path/to/file" cool pic`
+  /([A-z]+)\s([A-z]+)(?:\s([A-z]+)(?:=([A-z, 0-9]+))?)?/, // `settings list` and `settings set key=value` and `settings get key`
 ];

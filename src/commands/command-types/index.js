@@ -62,6 +62,11 @@ const commandTypes = {
     regexp: patterns[2],
     help: 'delete "<thread-name>" [<n>]',
   },
+  SETTINGS: {
+    command: "settings",
+    regexp: patterns[6],
+    help: "settings (set | get | list) <key>=<value>",
+  },
 };
 
 module.exports = commandTypes;

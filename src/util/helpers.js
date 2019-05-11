@@ -5,7 +5,6 @@ const { log } = require("./logger");
 
 /**
  * Adds the number of unread messages in the terminal title
- * @param {Object} unreadMessagesCount number of unread messages
  */
 function notifyTerminal(unreadMessagesCount) {
   const title = unreadMessagesCount

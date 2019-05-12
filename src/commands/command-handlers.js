@@ -1,10 +1,14 @@
-const chalk = require("chalk");
 const fs = require("fs");
+const chalk = require("chalk");
 
 const helpers = require("../util/helpers");
 const lock = require("../util/lock");
 const commandTypes = require("./command-types");
-const { getThreadHistory, getThreadByName } = require("./utils");
+const {
+  getThreadHistory,
+  getThreadByName,
+  formatThreadHistory,
+} = require("./utils");
 
 /* Store regexps that match raw commands */
 const commandShortcuts = {
@@ -230,45 +234,7 @@ const commands = {
 
     return getThreadHistory(this.messen, rawThreadName)
       .then(threadHistory => {
-        if (threadHistory.length === 0) {
-          return "You haven't started a conversation!";
-        }
-
-        const senderIds = Array.from(
-          new Set(threadHistory.map(message => message.senderID)),
-        );
-
-        return this.messen.store.users.getUsers(senderIds).then(users => {
-          const threadHistoryText = threadHistory
-            .filter(event => event.type === "message") // TODO include other events here
-            .map(message => {
-              let sender = users.find(
-                user => user && user.id === message.senderID,
-              );
-              if (!sender) {
-                sender = { name: "unknown" };
-              }
-
-              let messageBody = message.body;
-
-              if (message.attachments && message.attachments.length > 0) {
-                messageBody += message.attachments
-                  .map(helpers.parseAttachment)
-                  .join(", ");
-              }
-
-              let logText = `${sender.name}: ${messageBody}`;
-              if (message.isUnread) logText = `(unread) ${logText}`;
-              if (message.senderID === this.messen.store.users.me.user.id) {
-                logText = chalk.dim(logText);
-              }
-
-              return logText;
-            })
-            .join("\n");
-
-          return threadHistoryText;
-        });
+        return formatThreadHistory(this.messen, threadHistory);
       })
       .catch(err => {
         throw new Error(
@@ -320,27 +286,48 @@ const commands = {
    * @return {Promise<string>}
    */
   [commandTypes.RECENT.command](rawCommand) {
-    return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand);
-      if (!argv) return reject(Error("Invalid command - check your syntax"));
+    const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand);
+    if (!argv)
+      return Promise.reject(Error("Invalid command - check your syntax"));
 
-      const DEFAULT_COUNT = 5;
+    const DEFAULT_COUNT = 5;
 
-      const threadCount = argv[2]
-        ? parseInt(argv[2].trim(), 10)
-        : DEFAULT_COUNT;
+    const threadCount = argv[2] ? parseInt(argv[2].trim(), 10) : DEFAULT_COUNT;
 
-      const threadList = this.messen.store.threads
-        .getThreadList(threadCount)
-        .sort((a, b) => a.lastMessageTimestamp < b.lastMessageTimestamp)
-        .reduce((a, thread, i) => {
-          let logText = `[${i}] ${thread.name}`;
-          if (thread.unreadCount) logText = chalk.red(logText);
+    const withHistory = argv[3] === "--history";
 
-          return `${a}${logText}\n`;
-        }, "");
+    const threadList = this.messen.store.threads.getThreadList(
+      threadCount,
+      "desc",
+    );
 
-      return resolve(threadList);
+    return (withHistory
+      ? Promise.all(
+          threadList.map(thread =>
+            getThreadHistory(this.messen, thread.name, 5),
+          ),
+        )
+      : Promise.resolve([])
+    ).then(threadHistories => {
+      return Promise.all(
+        threadList.map((thread, i) => {
+          const logText = `[${i + 1}] ${thread.name}${
+            thread.unreadCount > 0 ? ` (${thread.unreadCount} unread)` : ""
+          }`;
+
+          if (!withHistory) return Promise.resolve(logText);
+
+          return formatThreadHistory(
+            this.messen,
+            threadHistories[i],
+            "\t",
+          ).then(_th => {
+            return `${logText}\n${_th}`;
+          });
+        }),
+      ).then(lines => {
+        return lines.join("\n");
+      });
     });
   },
 

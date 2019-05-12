@@ -235,7 +235,7 @@ describe("Messer", function() {
     describe(`#${commandTypes.CONTACTS.command}`, function() {
       it("should return list of friends sep. by newline", async function() {
         await messer.processCommand(commandTypes.CONTACTS.command).then(res => {
-          assert.equal(res, "Test Friend\nTom Quirk\n");
+          assert.equal(res, "Test Friend\nTom Quirk");
         });
       });
 
@@ -264,7 +264,7 @@ describe("Messer", function() {
     describe(`#${commandTypes.LOCK.command}`, function() {
       it("should lock on to a valid thread name and process every input line as a message command", async function() {
         await messer
-          .processCommand("lock test")
+          .processCommand('lock "test"')
           .then(() => {
             return messer.processCommand("hey, dude");
           })
@@ -275,7 +275,7 @@ describe("Messer", function() {
 
       it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", async function() {
         await messer
-          .processCommand("lock waylon")
+          .processCommand('lock "waylon"')
           .then(() => {
             return messer.processCommand("hey, dude");
           })
@@ -291,7 +291,7 @@ describe("Messer", function() {
       });
 
       it("should fail if a non-existant thread name is specified", async function() {
-        await messer.processCommand("lock asd").catch(err => {
+        await messer.processCommand('lock "asd"').catch(err => {
           assert.ok(err);
         });
       });
@@ -303,7 +303,7 @@ describe("Messer", function() {
     describe(`#${commandTypes.UNLOCK.command}`, function() {
       it("should free up the input to type regular commands", async function() {
         await messer
-          .processCommand("lock test")
+          .processCommand('lock "test"')
           .then(() => {
             return messer.processCommand("unlock");
           })

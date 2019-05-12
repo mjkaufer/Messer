@@ -110,10 +110,19 @@ function parseAttachment(attachment) {
   return `[${attachmentType}] ${messageBody}`;
 }
 
+const sortObjects = (arr, key, asc = true) => {
+  return arr.sort((a, b) => {
+    if (a[key] < b[key]) return asc ? -1 : 1;
+    if (a[key] > b[key]) return asc ? 1 : -1;
+    return 0;
+  });
+};
+
 module.exports = {
   promptCredentials,
   promptCode,
   objectValues,
   notifyTerminal,
   parseAttachment,
+  sortObjects,
 };

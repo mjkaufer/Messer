@@ -162,6 +162,9 @@ const getApi = function getApi() {
     sendMessage(body, id, cb) {
       return cb(undefined);
     },
+    deleteMessage(messageId, cb) {
+      return cb(undefined);
+    },
   };
 };
 

@@ -78,15 +78,17 @@ Examples
 #### `recent`
 
 Displays the _n_ most recent conversations. The number of threads is optional (default is 5).
+The `--history` option will display the 5 most recent messages in each thread.
 
 ```bash
-recent [<n>]
+recent [<n>] [--history]
 ```
 
 Examples
 
-- `history "Matthew" 10`
-- `h "Matthew"`
+- `recent`
+- `recent 10`
+- `recent --history`
 
 #### `clear`
 

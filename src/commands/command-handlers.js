@@ -243,42 +243,42 @@ const commands = {
       });
   },
 
-  /**
-   * Changes the color of the thread that matches given name
-   * @param {String} rawCommand - command to handle
-   * @return {Promise<null>}
-   */
-  [commandTypes.COLOR.command](rawCommand) {
-    return new Promise((resolve, reject) => {
-      const argv = parseCommand(commandTypes.COLOR.regexp, rawCommand);
-      if (!argv) return reject(Error("Invalid command - check your syntax"));
+  // /**
+  //  * Changes the color of the thread that matches given name
+  //  * @param {String} rawCommand - command to handle
+  //  * @return {Promise<null>}
+  //  */
+  // [commandTypes.COLOR.command](rawCommand) {
+  //   return new Promise((resolve, reject) => {
+  //     const argv = parseCommand(commandTypes.COLOR.regexp, rawCommand);
+  //     if (!argv) return reject(Error("Invalid command - check your syntax"));
 
-      let color = argv[3];
-      if (!color.startsWith("#")) {
-        color = this.messen.api.threadColors[color];
-        if (!color) return reject(Error(`Color '${argv[3]}' not available`));
-      }
-      // check if hex code is legit (TODO: regex this)
-      if (color.length !== 7) {
-        return reject(Error(`Hex code '${argv[3]}' is not valid`));
-      }
+  //     let color = argv[3];
+  //     if (!color.startsWith("#")) {
+  //       color = this.messen.api.threadColors[color];
+  //       if (!color) return reject(Error(`Color '${argv[3]}' not available`));
+  //     }
+  //     // check if hex code is legit (TODO: regex this)
+  //     if (color.length !== 7) {
+  //       return reject(Error(`Hex code '${argv[3]}' is not valid`));
+  //     }
 
-      const rawThreadName = argv[2];
+  //     const rawThreadName = argv[2];
 
-      // Find the thread to send to
-      return getThreadByName(this.messen, rawThreadName)
-        .then(thread =>
-          this.messen.api.changeThreadColor(color, thread.theadID, err => {
-            if (err) return reject(err);
+  //     // Find the thread to send to
+  //     return getThreadByName(this.messen, rawThreadName)
+  //       .then(thread =>
+  //         this.messen.api.changeThreadColor(color, thread.theadID, err => {
+  //           if (err) return reject(err);
 
-            return resolve();
-          }),
-        )
-        .catch(() => {
-          return reject(Error(`Thread '${rawThreadName}' couldn't be found!`));
-        });
-    });
-  },
+  //           return resolve();
+  //         }),
+  //       )
+  //       .catch(() => {
+  //         return reject(Error(`Thread '${rawThreadName}' couldn't be found!`));
+  //       });
+  //   });
+  // },
 
   /**
    * Displays the most recent n threads

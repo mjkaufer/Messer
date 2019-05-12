@@ -2,10 +2,10 @@ const patterns = require("./patterns");
 
 /* Command type constants */
 const commandTypes = {
-  COLOR: {
-    command: "color",
-    regexp: patterns[0],
-  },
+  // COLOR: {ƒ
+  //   command: "color",
+  //   regexp: patterns[0],
+  // },
   CONTACTS: {
     command: "contacts",
     help: "contacts",
@@ -38,7 +38,7 @@ const commandTypes = {
   RECENT: {
     command: "recent",
     regexp: patterns[1],
-    help: "recent [<n>]",
+    help: "recent [<n>] [--history]",
   },
   REPLY: {
     command: "reply",

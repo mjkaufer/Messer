@@ -229,17 +229,16 @@ const commands = {
 
     const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
     if (!argv) return Promise.reject("Invalid command - check your syntax");
+
     const rawThreadName = argv[2];
     const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : DEFAULT_COUNT;
 
-    return getThreadHistory(this.messen, rawThreadName)
+    return getThreadHistory(this.messen, rawThreadName, messageCount)
       .then(threadHistory => {
         return formatThreadHistory(this.messen, threadHistory);
       })
       .catch(err => {
-        throw new Error(
-          `We couldn't find a thread for '${rawThreadName}'! ${err}`,
-        );
+        throw new Error(`We couldn't find a thread for '${rawThreadName}'!`);
       });
   },
 

@@ -15,9 +15,10 @@ const getThreadByName = (messen, nameQuery) => {
 exports.getThreadByName = getThreadByName;
 
 exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
-  return new Promise((resolve, reject) => {
-    getThreadByName(messen, rawThreadName).then(thread => {
-      if (!thread) throw new Error("no thread");
+  return getThreadByName(messen, rawThreadName).then(thread => {
+    if (!thread) throw new Error("no thread");
+
+    return new Promise((resolve, reject) => {
       return messen.api.getThreadHistory(
         thread.threadID,
         messageCount,
@@ -33,7 +34,7 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
 };
 
 exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
-  if (threadHistory.length === 0) {
+  if (threadHistory && threadHistory.length === 0) {
     return "You haven't started a conversation!";
   }
 

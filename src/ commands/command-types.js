@@ -32,7 +32,9 @@ const commandTypes = {
   },
   RECENT: {
     command: "recent",
-    regexp: regexps[1],
+    reg
+
+exp: regexps[1],
     help: "recent [n]",
   },
   REPLY: {

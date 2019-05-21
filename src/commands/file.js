@@ -1,17 +1,15 @@
+const patterns = require("./util/patterns");
+const { getThreadByName } = require("./util/helpers");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "file",
 
-    help: "mycommand",
+    help: 'file "<thread-name>" "<filepath>" [<message>]',
 
-    parseCommand(rawCommand) {
-      return {
-        
-      }
-    }
-
-    handler(argv) {
+    handler(command) {
       return new Promise((resolve, reject) => {
+        const argv = command.match(patterns[4]);
         if (!argv || !argv[2] || !argv[3])
           return reject(Error("Invalid command - check your syntax"));
 
@@ -30,11 +28,11 @@ module.exports = messer => {
           return reject(Error("File could't be found - check your path"));
         }
 
-        return getThreadByName(this.messen, rawReceiver)
+        return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
 
-            return this.messen.api.sendMessage(
+            return messer.messen.api.sendMessage(
               {
                 body: message,
                 attachment: file,

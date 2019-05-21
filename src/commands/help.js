@@ -1,12 +1,10 @@
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "help",
 
-    regexp: /mycommand/,
+    help: "help",
 
-    help: "mycommand",
-
-    handler() {
+    handler(command) {
       const helpPretty = `Commands:\n${helpers
         .objectValues(commandTypes)
         .filter(command => command.help)
@@ -15,7 +13,7 @@ module.exports = messer => {
         })
         .join("\n")}`;
 
-      return new Promise(resolve => resolve(helpPretty));
+      return Promise.resolve(helpPretty);
     },
   };
 };

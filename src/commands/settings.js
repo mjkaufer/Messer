@@ -1,38 +1,49 @@
-const argv = parseCommand(commandTypes.SETTINGS.regexp, rawCommand);
+const patterns = require("./util/patterns");
 
-if (!argv || !argv[2])
-  return Promise.reject("Invalid command - check your syntax");
-const command = argv[2];
-const key = argv[3];
-const value = argv[4];
+module.exports = messer => {
+  return {
+    primaryCommand: "settings",
 
-if (command === "list" && !key && !value) {
-  const settings = this.settings.list();
-  return Promise.resolve(
-    Object.keys(settings)
-      .map(k => {
-        return `${k}=${settings[k]}`;
-      })
-      .join("\n"),
-  );
-}
+    help: "settings (set | get | list) [<key>=<value>]",
 
-if (command === "get" && key && !value) {
-  return Promise.resolve(`${this.settings.get(key)}`);
-}
+    handler(command) {
+      return new Promise((resolve, reject) => {
+        const argv = command.match(patterns[5]);
+        if (!argv || !argv[2])
+          return Promise.reject("Invalid command - check your syntax");
 
-if (command === "set" && key && value) {
-  let _value;
-  try {
-    _value = JSON.parse(value);
-  } catch (e) {
-    _value = value;
-  }
+        const command = argv[2];
+        const key = argv[3];
+        const value = argv[4];
 
-  return this.settings.set(key, _value).then(() => {
-    return;
-  });
-}
+        if (command === "list" && !key && !value) {
+          const settings = messer.settings.list();
+          return Promise.resolve(
+            Object.keys(settings)
+              .map(k => {
+                return `${k}=${settings[k]}`;
+              })
+              .join("\n"),
+          );
+        }
 
-return Promise.reject("Invalid command - check your syntax");
-},
+        if (command === "get" && key && !value) {
+          return Promise.resolve(`${messer.settings.get(key)}`);
+        }
+
+        if (command === "set" && key && value) {
+          let _value;
+          try {
+            _value = JSON.parse(value);
+          } catch (e) {
+            _value = value;
+          }
+
+          return messer.settings.set(key, _value).then(() => {
+            return;
+          });
+        }
+      });
+    },
+  };
+};

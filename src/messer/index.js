@@ -3,7 +3,7 @@ const { Messen } = require("messen");
 
 const repl = require("./repl");
 const settings = require("./settings");
-const helpers = require("../util/helpers.js");
+const helpers = require("../util/helpers");
 const lock = require("../util/lock");
 const messageEventHandler = require("../event-handlers/message");
 const eventEventHandler = require("../event-handlers/event");
@@ -72,6 +72,8 @@ Messer.prototype.registerEventHandler = function registerEventHandler(
 };
 
 Messer.prototype.log = repl.log;
+
+Messer.prototype.setPrompt = repl.setPrompt;
 
 /**
  * Starts a Messer session.
@@ -154,18 +156,17 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
     return Promise.reject(Error("Invalid command - check your syntax"));
   }
 
-  return commandEntry.handler(rawCommand);
+  return commandEntry.handler(rawCommand).then(res => {
+    // TODO(tom) probably a better way to handle this (probably in the message funciton itself)
+    if (!this.lock.isLocked() && !this.lock.isAnonymous()) return res;
 
-  // return commandHandler.call(this, localCommand).then(res => {
-  //   if (!lock.isLocked() && !lock.isAnonymous()) return res;
-
-  //   // delete the last message
-  //   commandHandler = getCommandHandler("delete");
-  //   localCommand = `delete "${lock.getLockedTarget()}" 1`;
-  //   return commandHandler.call(this, localCommand).then(() => {
-  //     return res;
-  //   });
-  // });
+    // delete the last message
+    commandEntry = this._commandRegistry.commands["delete"];
+    const deleteCommand = `delete "${lock.getLockedTarget()}" 1`;
+    return commandEntry.handler(deleteCommand).then(() => {
+      return res;
+    });
+  });
 };
 
 /**
@@ -193,5 +194,7 @@ Messer.prototype.logout = function logout() {
 };
 
 Messer.prototype.settings = settings;
+
+Messer.prototype.lock = lock;
 
 module.exports = Messer;

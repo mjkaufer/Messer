@@ -1,36 +1,35 @@
+const patterns = require("./util/patterns");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "message",
 
-    regexp: /mycommand/,
+    shortcutCommand: "m",
 
-    help: "mycommand",
+    help: '(message | m) "<thread-name>" <message>',
 
-    handler(argv) {
+    handler(command) {
       return new Promise((resolve, reject) => {
-        if (messer.lastThread === null) {
-          return reject(
-            Error(
-              "ERROR: You need to receive a message on Messer before using `reply`",
-            ),
-          );
-        }
-
+        const argv = command.match(patterns[1]);
         if (!argv || !argv[2]) {
           return reject(Error("Invalid command - check your syntax"));
         }
 
-        // var body = rawCommand.substring(commandTypes.REPLY.length).trim()
+        const messageBody = argv[2];
 
-        return messer.messen.api.sendMessage(
-          argv[2],
-          messer.lastThread,
-          err => {
-            if (err) return reject(err);
+        if (messer.lastThread === null) {
+          return reject(
+            Error(
+              "Oops! You need to receive a message on Messer before using `reply`",
+            ),
+          );
+        }
 
-            return resolve();
-          },
-        );
+        messer.messen.api.sendMessage(messageBody, messer.lastThread, err => {
+          if (err) return reject(err);
+
+          return resolve();
+        });
       });
     },
   };

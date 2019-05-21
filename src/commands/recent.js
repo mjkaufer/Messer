@@ -1,13 +1,14 @@
+const patterns = require("./util/patterns");
+const { formatThreadHistory } = require("./util/helpers");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "recent",
 
-    regexp: /mycommand/,
+    help: 'recent "<thread-name>" [<n>]',
 
-    help: "mycommand",
-
-    handler() {
-      const argv = parseCommand(commandTypes.RECENT.regexp, rawCommand);
+    handler(command) {
+      const argv = command.match(patterns[1]);
       if (!argv)
         return Promise.reject(Error("Invalid command - check your syntax"));
 
@@ -19,7 +20,7 @@ module.exports = messer => {
 
       const withHistory = argv[3] === "--history";
 
-      const threadList = this.messen.store.threads.getThreadList(
+      const threadList = messer.messen.store.threads.getThreadList(
         threadCount,
         "desc",
       );
@@ -27,7 +28,7 @@ module.exports = messer => {
       return (withHistory
         ? Promise.all(
             threadList.map(thread =>
-              getThreadHistory(this.messen, thread.name, 5),
+              getThreadHistory(messer.messen, thread.name, 5),
             ),
           )
         : Promise.resolve([])
@@ -41,7 +42,7 @@ module.exports = messer => {
             if (!withHistory) return Promise.resolve(logText);
 
             return formatThreadHistory(
-              this.messen,
+              messer.messen,
               threadHistories[i],
               "\t",
             ).then(_th => {

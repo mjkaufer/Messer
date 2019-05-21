@@ -1,15 +1,16 @@
+const patterns = require("./util/patterns");
+const { getThreadHistory, formatThreadHistory } = require("./util/helpers");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "history",
 
-    regexp: /mycommand/,
+    help: 'history "<thread-name>" [<n>]',
 
-    help: "mycommand",
-
-    handler() {
+    handler(command) {
       const DEFAULT_COUNT = 5;
 
-      const argv = parseCommand(commandTypes.HISTORY.regexp, rawCommand);
+      const argv = command.match(patterns[2]);
       if (!argv) return Promise.reject("Invalid command - check your syntax");
 
       const rawThreadName = argv[2];
@@ -17,9 +18,9 @@ module.exports = messer => {
         ? parseInt(argv[3].trim(), 10)
         : DEFAULT_COUNT;
 
-      return getThreadHistory(this.messen, rawThreadName, messageCount)
+      return getThreadHistory(messer.messen, rawThreadName, messageCount)
         .then(threadHistory => {
-          return formatThreadHistory(this.messen, threadHistory);
+          return formatThreadHistory(messer.messen, threadHistory);
         })
         .catch(err => {
           throw new Error(`We couldn't find a thread for '${rawThreadName}'!`);

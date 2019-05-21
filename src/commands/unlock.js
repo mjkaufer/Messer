@@ -1,17 +1,17 @@
+const patterns = require("./util/patterns");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "unlock",
 
-    regexp: /mycommand/,
+    help: "unlock",
 
-    help: "mycommand",
-
-    handler() {
+    handler(command) {
       return new Promise((resolve, reject) => {
         if (lock.isLocked()) {
           const threadName = lock.getLockedTarget();
-          lock.unlock();
-          this.setReplPrompt("> ");
+          messer.lock.unlock();
+          messer.setPrompt("> ");
           return resolve(`Unlocked from ${threadName}`);
         }
         return reject(Error("No current locked user"));

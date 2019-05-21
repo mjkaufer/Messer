@@ -1,23 +1,24 @@
+const patterns = require("./util/patterns");
+
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "lock",
 
-    regexp: /mycommand/,
+    help: 'lock "<thread-name>" [--secret]',
 
-    help: "mycommand",
-
-    handler() {
+    handler(command) {
       return new Promise((resolve, reject) => {
-        const argv = parseCommand(commandTypes.LOCK.regexp, rawCommand);
-        if (!argv) return reject(Error("Invalid command - check your syntax"));
+        const argv = command.match(patterns[3]);
+        if (!argv || !argv[2])
+          return reject(Error("Invalid command - check your syntax"));
 
         const rawReceiver = argv[2];
         const anonymous = argv[3] === "--secret";
 
-        return getThreadByName(this.messen, rawReceiver)
+        return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
-            lock.lockOn(thread.name, anonymous);
-            this.setReplPrompt(`${thread.name}${anonymous ? " 🔒" : ""}> `);
+            messer.lock.lockOn(thread.name, anonymous);
+            messer.setPrompt(`${thread.name}${anonymous ? " 🔒" : ""}> `);
 
             return resolve(
               `Locked on to ${thread.name} ${

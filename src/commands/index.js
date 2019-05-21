@@ -1,0 +1,16 @@
+module.exports = [
+  require("./clear"),
+  require("./contacts"),
+  require("./delete"),
+  require("./file"),
+  require("./help"),
+  require("./history"),
+  require("./lock"),
+  require("./logout"),
+  require("./message"),
+  require("./recent"),
+  require("./reply"),
+  require("./settings"),
+  require("./threads"),
+  require("./unlock"),
+];

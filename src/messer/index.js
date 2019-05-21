@@ -4,7 +4,7 @@ const { Messen } = require("messen");
 const repl = require("./repl");
 const settings = require("./settings");
 const helpers = require("../util/helpers");
-const lock = require("../util/lock");
+const lock = require("./lock");
 const messageEventHandler = require("../event-handlers/message");
 const eventEventHandler = require("../event-handlers/event");
 
@@ -143,12 +143,16 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   // ignore if rawCommand is only spaces
   if (rawCommand.trim().length === 0) return Promise.resolve();
 
-  const args = rawCommand.replace("\n", "").split(" ");
+  const argv = rawCommand.match(/([A-z]+).*/);
 
-  let commandEntry = this._commandRegistry.commands[args[0]];
+  if (!argv || !argv[1]) {
+    return Promise.reject(Error("Invalid command - check your syntax"));
+  }
+
+  let commandEntry = this._commandRegistry.commands[argv[1]];
   if (!commandEntry) {
     commandEntry = this._commandRegistry.commands[
-      this._commandRegistry.shortcutMap[args[0]]
+      this._commandRegistry.shortcutMap[argv[1]]
     ];
   }
 

@@ -2,7 +2,6 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 
-const commandTypes = require("../src/commands/command-types");
 const Messer = require("../src/messer");
 const { getMessen, threads } = require("./messer.mock");
 
@@ -23,8 +22,19 @@ function getMockThread() {
  * Factory to mock an instance of Messer
  */
 function MockMesser() {
+  const COMMANDS = require("../src/commands");
+  const EVENT_HANDLERS = require("../src/event-handlers");
+
   const messer = new Messer();
   messer.messen = getMessen();
+
+  COMMANDS.forEach(command => {
+    messer.registerCommand(command(messer));
+  });
+  EVENT_HANDLERS.forEach(handler => {
+    messer.registerEventHandler(handler(messer));
+  });
+
   return messer;
 }
 
@@ -36,6 +46,7 @@ describe("Messer", function() {
   before(async function() {
     await messer.messen.login();
   });
+
   /**
    * Test processCommand
    */
@@ -59,14 +70,14 @@ describe("Messer", function() {
     /**
      * Test the "message" command
      */
-    describe(`#${commandTypes.MESSAGE.command}`, function() {
+    describe("#message", function() {
       it("should send message to valid threadname", async function() {
         await messer.processCommand('message "test" hey dude').then(res => {
           assert.ok(res);
         });
       });
 
-      it("should send message to valid threadname using abbreviated command", async function() {
+      it("should send message to valid threadname using shortcut command", async function() {
         await messer.processCommand('m "test" hey dude').then(res => {
           assert.ok(res);
         });
@@ -91,7 +102,7 @@ describe("Messer", function() {
     /**
      * Test the "reply" command
      */
-    describe(`#${commandTypes.REPLY.command}`, function() {
+    describe("#reply", function() {
       it("should fail if no message has been recieved", async function() {
         await messer.processCommand("reply hey dude").catch(err => {
           assert.ok(err);
@@ -105,7 +116,7 @@ describe("Messer", function() {
         });
       });
 
-      it("should reply using abbreviated command", async function() {
+      it("should reply using shortcut command", async function() {
         await messer.processCommand("r yea i agree").then(() => {
           assert.ok(true);
         });
@@ -115,7 +126,7 @@ describe("Messer", function() {
     /**
      * Test the "history" command
      */
-    describe(`#${commandTypes.HISTORY.command}`, function() {
+    describe("#history", function() {
       it("should gracefully fail if no thread found", async function() {
         await messer.processCommand('history "bill"').catch(err => {
           assert.ok(err);
@@ -232,9 +243,9 @@ describe("Messer", function() {
     /**
      * Test the "contacts" command
      */
-    describe(`#${commandTypes.CONTACTS.command}`, function() {
+    describe("#contacts", function() {
       it("should return list of friends sep. by newline", async function() {
-        await messer.processCommand(commandTypes.CONTACTS.command).then(res => {
+        await messer.processCommand("contacts").then(res => {
           assert.equal(res, "Test Friend\nTom Quirk");
         });
       });
@@ -250,9 +261,9 @@ describe("Messer", function() {
     /**
      * Test the "help" command
      */
-    describe(`#${commandTypes.HELP.command}`, function() {
+    describe("#help", function() {
       it("should return some truthy value", async function() {
-        await messer.processCommand(commandTypes.HELP.command).then(res => {
+        await messer.processCommand("help").then(res => {
           assert.ok(res);
         });
       });
@@ -261,7 +272,7 @@ describe("Messer", function() {
     /**
      * Test the "lock" command
      */
-    describe(`#${commandTypes.LOCK.command}`, function() {
+    describe("#lock", function() {
       it("should lock on to a valid thread name and process every input line as a message command", async function() {
         await messer
           .processCommand('lock "test"')
@@ -300,7 +311,7 @@ describe("Messer", function() {
     /**
      * Test the "unlock" command
      */
-    describe(`#${commandTypes.UNLOCK.command}`, function() {
+    describe("#unlock", function() {
       it("should free up the input to type regular commands", async function() {
         await messer
           .processCommand('lock "test"')

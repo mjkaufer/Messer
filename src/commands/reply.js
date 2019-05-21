@@ -2,11 +2,11 @@ const patterns = require("./util/patterns");
 
 module.exports = messer => {
   return {
-    primaryCommand: "message",
+    primaryCommand: "reply",
 
-    shortcutCommand: "m",
+    shortcutCommand: "r",
 
-    help: '(message | m) "<thread-name>" <message>',
+    help: "reply <message>",
 
     handler(command) {
       return new Promise((resolve, reject) => {

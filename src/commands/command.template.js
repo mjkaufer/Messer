@@ -1,12 +1,12 @@
 module.exports = messer => {
   return {
-    commands: ["mycommand"],
+    primaryCommand: "mycommand",
 
-    regexp: /mycommand/,
+    shortcutCommand: "mc",
 
-    help: "mycommand",
+    help: "mycommand <my-argument>",
 
-    handler() {
+    handler(command) {
       return new Promise((resolve, reject) => {
         return resolve();
       });

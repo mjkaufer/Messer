@@ -4,8 +4,8 @@ const Messer = require("./src/messer");
 const packageJson = require("./package.json");
 const settings = require("./settings");
 
-const COMMANDS = [require("./src/commands/message")];
-const EVENT_HANDLERS = [require("./src/event-handlers/message")];
+const COMMANDS = require("./src/commands");
+const EVENT_HANDLERS = require("./src/event-handlers");
 
 const messer = new Messer();
 COMMANDS.forEach(command => {

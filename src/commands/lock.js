@@ -1,4 +1,5 @@
 const patterns = require("./util/patterns");
+const { getThreadByName } = require("./util/helpers");
 
 module.exports = messer => {
   return {

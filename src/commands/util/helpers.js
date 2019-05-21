@@ -1,4 +1,5 @@
 const chalk = require("chalk");
+const helpers = require("../../util/helpers.js");
 
 const getThreadByName = (messen, nameQuery) => {
   return messen.store.threads.getThread({ name: nameQuery }).then(thread => {

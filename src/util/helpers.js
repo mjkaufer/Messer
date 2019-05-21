@@ -77,15 +77,13 @@ function objectValues(dict) {
  * @return {String}
  */
 function parseAttachment(attachment) {
-  const attachmentType = attachment.type.replace(/_/g, " ");
-
+  let attachmentType = attachment.type.replace(/_/g, " ");
   let messageBody = "";
 
   switch (attachmentType) {
     case "sticker":
       try {
-        messageBody =
-          fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
+        messageBody = `<${attachment.caption}>`;
       } catch (e) {
         messageBody = "- only viewable in browser";
       }
@@ -97,7 +95,13 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.url}`;
       break;
     case "share":
-      messageBody = `${attachment.url}`;
+      // its likely a game
+      if (attachment.target) {
+        attachmentType = "game";
+        messageBody = attachment.title;
+      } else {
+        messageBody = `${attachment.url}`;
+      }
       break;
     case "video":
       messageBody = `${attachment.url}`;

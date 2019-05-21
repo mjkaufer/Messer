@@ -101,6 +101,41 @@ describe("Messer", function() {
     });
 
     /**
+     * Test the "file" command
+     */
+    describe("#file", function() {
+      const testfile = path.resolve(__dirname, "data/test.txt");
+      it("should send file to valid threadname", async function() {
+        await messer.processCommand(`file "test" "${testfile}"`).then(res => {
+          assert.ok(res);
+        });
+      });
+
+      it("should send file to valid threadname with a caption", async function() {
+        await messer
+          .processCommand(`file "test" "${testfile}" my caption dood`)
+          .then(res => {
+            assert.ok(res);
+          });
+      });
+
+      it("should send file to valid thread that isn't a friend", async function() {
+        await messer.processCommand(`file "waylon" "${testfile}"`).then(res => {
+          assert.ok(res);
+        });
+      });
+
+      it("should fail to send file to invalid threadname", async function() {
+        await messer.processCommand(`file "rick" "${testfile}"`).catch(err => {
+          assert.equal(
+            err,
+            "Error: User 'rick' could not be found in your friends list!",
+          );
+        });
+      });
+    });
+
+    /**
      * Test the "reply" command
      */
     describe("#reply", function() {

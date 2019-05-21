@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 const patterns = require("./util/patterns");
 const { getThreadByName } = require("./util/helpers");
 
@@ -20,7 +22,6 @@ module.exports = messer => {
         if (filePath.length === 0) {
           return reject(Error("No file to send - check your syntax"));
         }
-
         let file;
         try {
           file = fs.createReadStream(filePath);

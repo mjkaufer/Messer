@@ -22,7 +22,7 @@ module.exports = messer => {
       }
 
       const logEvent = message => {
-        if (!messer.lock) {
+        if (!messer.lock.isLocked()) {
           messer.log(message, thread.color);
           return;
         }

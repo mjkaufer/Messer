@@ -4,7 +4,7 @@ module.exports = messer => {
 
     help: "contacts",
 
-    handler(command) {
+    handler() {
       return new Promise(resolve => {
         const { friends } = messer.messen.store.users.me;
         if (friends.length === 0) return resolve("You have no friends 😢");

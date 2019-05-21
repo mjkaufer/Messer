@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { Messen } = require("messen");
 
 const repl = require("./repl");
@@ -86,7 +85,7 @@ Messer.prototype.setPrompt = repl.setPrompt;
 /**
  * Starts a Messer session.
  */
-Messer.prototype.start = function start(interactive = true) {
+Messer.prototype.start = function start(interactive = true, rawCommand) {
   helpers.notifyTerminal();
   console.log("Logging in...");
 

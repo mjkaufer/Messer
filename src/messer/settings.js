@@ -1,4 +1,4 @@
-const path = require("path");
+const fs = require("fs");
 
 const DEFAULT_SETTINGS = {
   SHOW_TYPING: false,

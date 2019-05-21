@@ -1,13 +1,8 @@
 const assert = require("assert");
-const fs = require("fs");
 const path = require("path");
 
 const Messer = require("../src/messer");
 const { getMessen, threads } = require("./messer.mock");
-
-const mockSettings = {
-  APPSTATE_FILE_PATH: path.resolve(__dirname, "tmp/appstate.json"),
-};
 
 const DEFAULT_MOCK_THREAD = threads[0];
 
@@ -27,7 +22,9 @@ function MockMesser() {
 
   const messer = new Messer();
   messer.messen = getMessen();
-  messer.setPrompt = _ => {};
+  messer.setPrompt = _ => {
+    return _;
+  };
 
   COMMANDS.forEach(command => {
     messer.registerCommand(command(messer));

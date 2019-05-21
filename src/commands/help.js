@@ -7,8 +7,8 @@ module.exports = messer => {
 
     help: "help",
 
-    handler(command) {
-      const help = Object.values(messer._commandRegistry.commands)
+    handler() {
+      const help = objectValues(messer._commandRegistry.commands)
         .map(command => {
           return `${command.primaryCommand}\n\t${chalk.blue(command.help)}`;
         })

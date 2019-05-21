@@ -30,7 +30,8 @@
   "scripts": {
     "start": "node index.js",
     "test-unit": "mocha",
-    "test": "npm run test-unit"
+    "lint": "./node_modules/eslint/bin/eslint.js .",
+    "test": "NODE_ENV=test && npm run lint && npm run test-unit"
   },
   "dependencies": {
     "chalk": "^2.4.2",
@@ -40,9 +41,13 @@
     "prompt": "^1.0.0"
   },
   "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
     "husky": "^1.3.1",
     "mocha": "^5.2.0",
-    "prettier": "^1.16.4",
+    "prettier": "^1.17.1",
     "pretty-quick": "^1.10.0"
   },
   "husky": {

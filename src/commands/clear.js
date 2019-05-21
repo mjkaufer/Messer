@@ -4,7 +4,7 @@ module.exports = messer => {
 
     help: "clear",
 
-    handler(command) {
+    handler() {
       return Promise.resolve().then(() => {
         return messer.clear();
       });

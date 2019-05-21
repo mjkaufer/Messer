@@ -1,3 +1,5 @@
+/* eslint no-unused-vars: 0 */ // --> OFF
+
 module.exports = messer => {
   return {
     primaryCommand: "mycommand",

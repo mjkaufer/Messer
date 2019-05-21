@@ -27,7 +27,7 @@ module.exports = messer => {
               }`,
             );
           })
-          .catch(err => {
+          .catch(() => {
             return reject(
               Error(
                 `Cannot find user "${rawReceiver}" in friends list or active threads`,

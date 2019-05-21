@@ -1,5 +1,5 @@
 const patterns = require("./util/patterns");
-const { formatThreadHistory } = require("./util/helpers");
+const { getThreadHistory, formatThreadHistory } = require("./util/helpers");
 
 module.exports = messer => {
   return {

@@ -1,12 +1,10 @@
-const patterns = require("./util/patterns");
-
 module.exports = messer => {
   return {
     primaryCommand: "--unlock",
 
     help: "--unlock",
 
-    handler(command) {
+    handler() {
       return new Promise((resolve, reject) => {
         if (!messer.lock.isLocked()) {
           return reject(Error("No current locked user"));

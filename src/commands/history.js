@@ -22,7 +22,7 @@ module.exports = messer => {
         .then(threadHistory => {
           return formatThreadHistory(messer.messen, threadHistory);
         })
-        .catch(err => {
+        .catch(() => {
           throw new Error(`We couldn't find a thread for '${rawThreadName}'!`);
         });
     },

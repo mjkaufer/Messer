@@ -4,7 +4,7 @@ module.exports = messer => {
 
     help: "logout",
 
-    handler(command) {
+    handler() {
       return messer.logout();
     },
   };

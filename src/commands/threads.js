@@ -4,7 +4,7 @@ module.exports = messer => {
 
     help: "threads",
 
-    handler(command) {
+    handler() {
       return new Promise(resolve => {
         const threads = messer.messen.store.threads.getThreadList();
         if (threads.length === 0)

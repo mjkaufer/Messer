@@ -1,5 +1,3 @@
-const path = require("path");
-
 const { ThreadStore } = require("messen/dist/store/threads");
 const { UserStore } = require("messen/dist/store/users");
 const transformers = require("messen/dist/util/transformers");
@@ -181,15 +179,14 @@ const getUserStore = function getUserStore() {
 };
 
 const getMessen = function getMessen() {
-  class MockMesser {
+  class MockMessen {
     constructor() {
       this.api = getApi();
       this.state = {
         authenticated: false,
       };
       this.options = {
-        dir: path.resolve(__dirname),
-        appstateFilePath: path.resolve(__dirname, "appstate.json"),
+        dir: process.env.APP_DIR,
       };
 
       this.store = {
@@ -212,7 +209,7 @@ const getMessen = function getMessen() {
     }
   }
 
-  return new MockMesser();
+  return new MockMessen();
 };
 
 module.exports = {

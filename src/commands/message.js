@@ -39,7 +39,7 @@ module.exports = messer => {
               },
             );
           })
-          .catch(e => {
+          .catch(() => {
             return reject(
               Error(
                 `User '${rawReceiver}' could not be found in your friends list!`,

@@ -54,6 +54,14 @@ Messer.prototype.registerCommand = function registerCommand(command) {
     throw new Error("Invalid Command");
   }
 
+  if (this._commandRegistry.commands[primaryCommand]) {
+    throw new Error(`Command [${primaryCommand}] already registered`);
+  }
+
+  if (this._commandRegistry.shortcutMap[shortcutCommand]) {
+    throw new Error(`Shortcut [${shortcutCommand}] already registered`);
+  }
+
   this._commandRegistry.commands[primaryCommand] = command;
   if (shortcutCommand) {
     this._commandRegistry.shortcutMap[shortcutCommand] = primaryCommand;

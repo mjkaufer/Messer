@@ -169,4 +169,8 @@ Send a message to a group by using the `message` command. The `name` is the name
 
 ## Contributing
 
-Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. Only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
+Want to add a new command, fix a bug or improve Messer in another way? Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
+
+## License
+
+This project is licensed under the ISC License - see the LICENSE file for details

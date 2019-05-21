@@ -153,6 +153,12 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
 
   const argv = rawCommand.match(/([A-z]+).*/);
 
+  // if we're in a lock, hack args to use the `message` command
+  if (this.lock.isLocked()) {
+    argv[1] = "message";
+    rawCommand = `message "${this.lock.getLockedTarget()}" ${rawCommand}`;
+  }
+
   if (!argv || !argv[1]) {
     return Promise.reject(Error("Invalid command - check your syntax"));
   }
@@ -169,11 +175,11 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   }
 
   return commandEntry.handler(rawCommand).then(res => {
-    // TODO(tom) probably a better way to handle this (probably in the message funciton itself)
-    if (!this.lock.isLocked() && !this.lock.isAnonymous()) return res;
+    // TODO(tom) might be a better way to handle this (probably in the message funciton itself)
+    if (!this.lock.isLocked() || !this.lock.isAnonymous()) return res;
 
     // delete the last message
-    commandEntry = this._commandRegistry.commands["delete"];
+    commandEntry = this._commandRegistry.commands.delete;
     const deleteCommand = `delete "${lock.getLockedTarget()}" 1`;
     return commandEntry.handler(deleteCommand).then(() => {
       return res;

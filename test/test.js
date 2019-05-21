@@ -27,6 +27,7 @@ function MockMesser() {
 
   const messer = new Messer();
   messer.messen = getMessen();
+  messer.setPrompt = _ => {};
 
   COMMANDS.forEach(command => {
     messer.registerCommand(command(messer));
@@ -284,7 +285,7 @@ describe("Messer", function() {
           });
       });
 
-      it("should lock on to a valid thread name that is not a friend and porcess every input line as a message command", async function() {
+      it("should lock on to a valid thread name that is not a friend and process every input line as a message command", async function() {
         await messer
           .processCommand('lock "waylon"')
           .then(() => {

@@ -352,7 +352,7 @@ describe("Messer", function() {
         await messer
           .processCommand('lock "test"')
           .then(() => {
-            return messer.processCommand("unlock");
+            return messer.processCommand("--unlock");
           })
           .then(() => {
             return messer.processCommand('m "test" hey, dude');
@@ -363,7 +363,7 @@ describe("Messer", function() {
       });
 
       it("should fail if no lock command was issued beforehand", async function() {
-        await messer.processCommand("unlock").catch(err => {
+        await messer.processCommand("--unlock").catch(err => {
           assert.ok(err);
         });
       });

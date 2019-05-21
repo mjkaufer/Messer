@@ -120,6 +120,8 @@ Messer.prototype.start = function start(interactive = true) {
         completer: line => {
           const argv = line.match(/([A-z]+)\s+"(.*)/);
 
+          if (!argv || !argv[1] || !argv[2]) return [[], line];
+
           const command = argv[1];
           const nameQuery = argv[2];
 
@@ -155,8 +157,13 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
 
   // if we're in a lock, hack args to use the `message` command
   if (this.lock.isLocked()) {
-    argv[1] = "message";
-    rawCommand = `message "${this.lock.getLockedTarget()}" ${rawCommand}`;
+    if (rawCommand === "--unlock\n") {
+      argv[1] = "--unlock";
+      rawCommand = "--unlock";
+    } else {
+      argv[1] = "message";
+      rawCommand = `message "${this.lock.getLockedTarget()}" ${rawCommand}`;
+    }
   }
 
   if (!argv || !argv[1]) {

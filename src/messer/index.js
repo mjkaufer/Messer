@@ -41,7 +41,7 @@ function Messer(options = {}) {
   this.messen = _getMessen(this);
   this.state = {
     threads: {
-      lastThread: undefined,
+      lastThreadId: undefined,
       unreadThreadIds: [],
     },
   };

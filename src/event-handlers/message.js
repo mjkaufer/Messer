@@ -55,7 +55,7 @@ module.exports = messer => {
       }
 
       messer.state.threads.unreadThreadIds.push(thread.threadID);
-      messer.state.threads.lastThread = ev.threadID;
+      messer.state.threads.lastThreadId = ev.threadID;
 
       notifyTerminal(messer.state.threads.unreadThreadIds.length); // Terminal notification in title
       process.stderr.write("\x07"); // Terminal notification

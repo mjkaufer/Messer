@@ -6,6 +6,14 @@ Command-line Messaging for Facebook Messenger
 ![Version](https://img.shields.io/npm/v/messer.svg)
 ![License](https://img.shields.io/npm/l/messer.svg)
 
+## Want to be a beta tester?
+
+We're working on the next generation of Messer. Help us test our new features and help shape the future! Please create issues for anything, but make sure to note they're on the `v1` branch
+
+```
+npm install -g git@github.com:mjkaufer/Messer.git#v1
+```
+
 ![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
 
 ## Installation

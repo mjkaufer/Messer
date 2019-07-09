@@ -30,16 +30,19 @@ module.exports = messer => {
               .then(thread => {
                 if (!thread) throw new Error("No thread found");
                 return messer.messen.api.sendMessage(
-                  { body: val },
+                  {
+                    url: val,
+                  },
                   thread.threadID,
                   err => {
+                    console.log(err);
                     if (err) return reject(err);
-
                     return resolve(`Sent message to ${thread.name}`);
                   },
                 );
               })
-              .catch(() => {
+              .catch(err => {
+                console.log(err);
                 return reject(
                   Error(
                     `User '${rawReceiver}' could not be found in your friends list!`,
@@ -48,7 +51,7 @@ module.exports = messer => {
               });
           })
           .catch(val => {
-            console.error(value);
+            console.error(val);
           });
       });
     },

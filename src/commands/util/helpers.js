@@ -1,4 +1,5 @@
 const chalk = require("chalk");
+const request = require("request");
 const helpers = require("../../util/helpers.js");
 
 const getThreadByName = (messen, nameQuery) => {
@@ -31,6 +32,18 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
         },
       );
     });
+  });
+};
+
+exports.sendRequest = () => {
+  return new Promise((resolve, reject) => {
+    request(
+      "https://api.giphy.com/v1/gifs/random?api_key=Zl14Xzhqe4HpU8wBpcu6JkLbYY8oe0Jl&tag=&rating=G",
+      function(error, response, body) {
+        if (error) return reject(error);
+        resolve(JSON.parse(body).data.url);
+      },
+    );
   });
 };
 

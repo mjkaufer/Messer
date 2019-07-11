@@ -34,7 +34,7 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
     });
   });
 };
-// TODO export api key to config. Separate request method from parser.
+
 exports.sendRequest = () => {
   return new Promise((resolve, reject) => {
     request(
@@ -44,6 +44,15 @@ exports.sendRequest = () => {
         resolve(JSON.parse(body).data.embed_url);
       },
     );
+  });
+};
+
+exports.sendGetRequest = url => {
+  return new Promise((resolve, reject) => {
+    request(url, function(error, response, body) {
+      if (error) return reject(error);
+      resolve(body);
+    });
   });
 };
 

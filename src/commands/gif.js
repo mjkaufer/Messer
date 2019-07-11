@@ -1,5 +1,6 @@
 const patterns = require("./util/patterns");
 const { getThreadByName, sendRequest } = require("./util/helpers");
+const { getRandomGifEmbedUrl } = require("./util/gify");
 
 module.exports = messer => {
   return {
@@ -24,7 +25,7 @@ module.exports = messer => {
 
         // clean message
         const message = rawMessage.split("\\n").join("\u000A");
-        sendRequest()
+        getRandomGifEmbedUrl()
           .then(val => {
             return getThreadByName(messer.messen, rawReceiver)
               .then(thread => {

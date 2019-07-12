@@ -25,34 +25,32 @@ module.exports = messer => {
 
         // clean message
         const message = rawMessage.split("\\n").join("\u000A");
-        getRandomGifEmbedUrl()
-          .then(val => {
-            return getThreadByName(messer.messen, rawReceiver)
-              .then(thread => {
-                if (!thread) throw new Error("No thread found");
+        return getThreadByName(messer.messen, rawReceiver)
+          .then(thread => {
+            if (!thread) throw new Error("No thread found");
+            getRandomGifEmbedUrl()
+              .then(embed_url => {
                 return messer.messen.api.sendMessage(
                   {
-                    url: val,
+                    url: embed_url,
                   },
                   thread.threadID,
                   err => {
-                    console.log(err);
                     if (err) return reject(err);
                     return resolve(`Sent message to ${thread.name}`);
                   },
                 );
               })
               .catch(err => {
-                console.log(err);
-                return reject(
-                  Error(
-                    `User '${rawReceiver}' could not be found in your friends list!`,
-                  ),
-                );
+                return reject(Error(`Failed to fetch embed url from gify`));
               });
           })
-          .catch(val => {
-            console.error(val);
+          .catch(err => {
+            return reject(
+              Error(
+                `User '${rawReceiver}' could not be found in your friends list!`,
+              ),
+            );
           });
       });
     },

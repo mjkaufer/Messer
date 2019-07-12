@@ -1,5 +1,5 @@
 const patterns = require("./util/patterns");
-const { getThreadByName, sendRequest } = require("./util/helpers");
+const { getThreadByName } = require("./util/helpers");
 const { getRandomGifEmbedUrl } = require("./util/gify");
 
 module.exports = messer => {
@@ -23,8 +23,6 @@ module.exports = messer => {
           return reject(Error("No message to send - check your syntax"));
         }
 
-        // clean message
-        const message = rawMessage.split("\\n").join("\u000A");
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
@@ -44,12 +42,11 @@ module.exports = messer => {
                   },
                 );
               })
-              .catch(err => {
-                console.log(err);
+              .catch(() => {
                 return reject(Error(`Failed to fetch embed url from gify`));
               });
           })
-          .catch(err => {
+          .catch(() => {
             return reject(
               Error(
                 `User '${rawReceiver}' could not be found in your friends list!`,

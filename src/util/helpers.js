@@ -1,6 +1,5 @@
 const prompt = require("prompt");
 const readline = require("readline");
-const request = require("request");
 
 const { log } = require("./logger");
 

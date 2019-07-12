@@ -1,7 +1,7 @@
 const { sendGetRequest } = require("./helpers");
 
 exports.getRandomGifEmbedUrl = (base_api, api_key, rating) => {
-  url = buildRandomGifUrl(base_api, api_key, rating);
+  var url = buildRandomGifUrl(base_api, api_key, rating);
   return getGifEmbedUrl(url);
 };
 

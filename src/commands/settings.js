@@ -6,8 +6,8 @@ module.exports = messer => {
 
     help: "settings (set | get | list) [<key>=<value>]",
 
-    handler() {
-      const argv = command.match(patterns[5]);
+    handler(cmd) {
+      const argv = cmd.match(patterns[5]);
       if (!argv || !argv[2])
         return Promise.reject("Invalid command - check your syntax");
 

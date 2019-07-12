@@ -9,7 +9,6 @@ let _settings = undefined;
 module.exports = {
   list() {
     if (_settings) return _settings;
-
     try {
       _settings = JSON.parse(fs.readFileSync(process.env.SETTINGS_FILEPATH));
     } catch (e) {
@@ -21,7 +20,6 @@ module.exports = {
   get(key) {
     const _list = this.list();
     const val = _list[key];
-
     return val;
   },
   set(key, value) {

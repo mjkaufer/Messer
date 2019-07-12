@@ -28,7 +28,10 @@ module.exports = messer => {
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
-            getRandomGifEmbedUrl()
+            const base_api = messer.settings.get("GIFY_BASE_API");
+            const api_key = messer.settings.get("GIFY_API_KEY");
+            const rating = messer.settings.get("GIFY_DEFAULT_RATING");
+            getRandomGifEmbedUrl(base_api, api_key, rating)
               .then(embed_url => {
                 return messer.messen.api.sendMessage(
                   {
@@ -42,6 +45,7 @@ module.exports = messer => {
                 );
               })
               .catch(err => {
+                console.log(err);
                 return reject(Error(`Failed to fetch embed url from gify`));
               });
           })

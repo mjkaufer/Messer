@@ -19,25 +19,13 @@ module.exports = messer => {
         const rawReceiver = argv[2];
         const base_api = messer.settings.get("GIFY_BASE_API");
         const api_key = messer.settings.get("GIFY_API_KEY");
-        var rating;
-        var random = false;
-        if (!argv[3]) {
-          random = true;
-          rating = messer.settings.get("GIFY_DEFAULT_RATING");
-        } else if (argv[3].match(/(Y|G|PG-13|PG|R){1}/)) {
-          random = true;
-          rating = argv[3];
-        } else if (argv[4].match(/(Y|G|PG-13|PG|R){1}/)) {
-          rating = argv[4];
-        } else {
-          return reject(Error("Invalid message - check your syntax"));
-        }
+        var rating = messer.settings.get("GIFY_DEFAULT_RATING");
 
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
             var urlPromise = undefined;
-            if (!random) {
+            if (argv[3]) {
               urlPromise = searchGifGetFirst(
                 base_api,
                 api_key,

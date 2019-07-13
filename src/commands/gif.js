@@ -8,32 +8,27 @@ module.exports = messer => {
 
     shortcutCommand: "gif",
 
-    help: 'gif "<thread-name>" [gif-keyword]',
+    help: 'gif "<thread-name>" [<gif-query>]',
 
     handler(command) {
       return new Promise((resolve, reject) => {
         const argv = command.match(patterns[6]);
         if (!argv || !argv[2])
           return reject(Error("Invalid message - check your syntax"));
-
         const rawReceiver = argv[2];
-        const base_api = messer.settings.get("GIPHY_BASE_API");
-        const api_key = messer.settings.get("GIPHY_API_KEY");
+        const gifQuery = argv[3];
+        const baseApi = messer.settings.get("GIPHY_BASE_API");
+        const apiKey = messer.settings.get("GIPHY_API_KEY");
         var rating = messer.settings.get("GIPHY_DEFAULT_RATING");
 
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
             var urlPromise = undefined;
-            if (argv[3]) {
-              urlPromise = searchGifGetFirst(
-                base_api,
-                api_key,
-                argv[3],
-                rating,
-              );
+            if (gifQuery) {
+              urlPromise = searchGifGetFirst(baseApi, apiKey, gifQuery, rating);
             } else {
-              urlPromise = getRandomGifEmbedUrl(base_api, api_key, rating);
+              urlPromise = getRandomGifEmbedUrl(baseApi, apiKey, rating);
             }
             urlPromise
               .then(embed_url => {
@@ -44,16 +39,15 @@ module.exports = messer => {
                   thread.threadID,
                   err => {
                     if (err) return reject(err);
-                    return resolve(`Sent message to ${thread.name}`);
+                    return resolve(`Sent gif to ${thread.name}`);
                   },
                 );
               })
               .catch(() => {
-                return reject(Error(`Failed to fetch embed url from gify`));
+                return reject(Error(`Failed to fetch embed url from giphy`));
               });
           })
-          .catch(err => {
-            console.log(err);
+          .catch(() => {
             return reject(
               Error(
                 `User '${rawReceiver}' could not be found in your friends list!`,

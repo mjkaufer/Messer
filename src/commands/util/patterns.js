@@ -5,5 +5,5 @@ module.exports = [
   /([A-z]+)\s+"(.*?)"(?:\s+)?(--[A-z]+)?/, // `lock "Tom Quirk" and `lock "Tom Quirk" --secret`,
   /([A-z]+)\s+"(.*?)"\s+"(.*?)"\s?(.+)?/, // `file "Tom Quirk" "/path/to/file"` and `file "Tom Quirk" "/path/to/file" cool pic`
   /([A-z]+)\s([A-z]+)(?:\s([A-z]+)(?:=([A-z0-9]+))?)?/, // `settings list` and `settings set key=value` and `settings get key`
-  /([A-z]+)\s+"(.*?)"\s+(.*)/, // `gif "Tom Quirk" and gif "Tom Quirk" something`
+  /([A-z]+)\s+"(.*?)"(?:\s+)?([A-z\s]+)?/, // `gif "Tom Quirk" and `gif "Tom Quirk" qury keywords go here`,
 ];

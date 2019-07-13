@@ -1,14 +1,14 @@
 const { sendGetRequest } = require("./helpers");
 
-exports.getRandomGifEmbedUrl = (base_api, api_key, rating) => {
-  var url = buildRandomGifUrl(base_api, api_key, rating);
+exports.getRandomGifEmbedUrl = (baseApi, apiKey, rating) => {
+  var url = buildRandomGifUrl(baseApi, apiKey, rating);
   return getGifEmbedUrl(url, body => {
     return JSON.parse(body).data.embed_url;
   });
 };
 
-exports.searchGifGetFirst = (base_api, api_key, query, rating) => {
-  var url = buildSearchGifUrl(base_api, api_key, query, rating);
+exports.searchGifGetFirst = (baseApi, apiKey, query, rating) => {
+  var url = buildSearchGifUrl(baseApi, apiKey, query, rating);
   return getGifEmbedUrl(url, body => {
     return JSON.parse(body).data[0].embed_url;
   });
@@ -27,23 +27,23 @@ function getGifEmbedUrl(url, getEmbedUrl) {
   });
 }
 
-function buildRandomGifUrl(base_api, api_key, rating) {
+function buildRandomGifUrl(baseApi, apiKey, rating) {
   return (
     "https://" +
-    base_api +
+    baseApi +
     "/random?api_key=" +
-    api_key +
+    apiKey +
     "&tag=&rating=" +
     rating
   );
 }
 
-function buildSearchGifUrl(base_api, api_key, query, rating) {
+function buildSearchGifUrl(baseApi, apiKey, query, rating) {
   return (
     "https://" +
-    base_api +
+    baseApi +
     "/search?api_key=" +
-    api_key +
+    apiKey +
     "&q=" +
     query +
     "&limit=1&offset=0" +

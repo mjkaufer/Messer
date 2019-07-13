@@ -1,6 +1,6 @@
 const patterns = require("./util/patterns");
 const { getThreadByName } = require("./util/helpers");
-const { getRandomGifEmbedUrl, searchGifGetFirst } = require("./util/gify");
+const { getRandomGifEmbedUrl, searchGifGetFirst } = require("./util/giphy");
 
 module.exports = messer => {
   return {
@@ -8,7 +8,7 @@ module.exports = messer => {
 
     shortcutCommand: "gif",
 
-    help: 'gif "<thread-name>" [gif-keyword] [gif-rating](Y|G|PG|PG-13|R)',
+    help: 'gif "<thread-name>" [gif-keyword]',
 
     handler(command) {
       return new Promise((resolve, reject) => {
@@ -17,9 +17,9 @@ module.exports = messer => {
           return reject(Error("Invalid message - check your syntax"));
 
         const rawReceiver = argv[2];
-        const base_api = messer.settings.get("GIFY_BASE_API");
-        const api_key = messer.settings.get("GIFY_API_KEY");
-        var rating = messer.settings.get("GIFY_DEFAULT_RATING");
+        const base_api = messer.settings.get("GIPHY_BASE_API");
+        const api_key = messer.settings.get("GIPHY_API_KEY");
+        var rating = messer.settings.get("GIPHY_DEFAULT_RATING");
 
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {

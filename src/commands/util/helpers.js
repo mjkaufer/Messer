@@ -35,18 +35,6 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
   });
 };
 
-exports.sendRequest = () => {
-  return new Promise((resolve, reject) => {
-    request(
-      "https://api.giphy.com/v1/gifs/random?api_key=Zl14Xzhqe4HpU8wBpcu6JkLbYY8oe0Jl&tag=&rating=G",
-      function(error, response, body) {
-        if (error) return reject(error);
-        resolve(JSON.parse(body).data.embed_url);
-      },
-    );
-  });
-};
-
 exports.sendGetRequest = url => {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, body) {

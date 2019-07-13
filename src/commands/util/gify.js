@@ -28,3 +28,16 @@ function buildRandomGifUrl(base_api, api_key, rating) {
     rating
   );
 }
+
+function buildSearchGifUrl(base_api, api_key, query, rating) {
+  return (
+    "https://" +
+    base_api +
+    "/search?api_key=" +
+    api_key +
+    "&q=" +
+    quary +
+    "&tag=&rating=" +
+    rating
+  );
+}

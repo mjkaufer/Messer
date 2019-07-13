@@ -3,6 +3,9 @@ const fs = require("fs");
 const DEFAULT_SETTINGS = {
   SHOW_TYPING: false,
   SHOW_READ: false,
+  GIFY_BASE_API: "api.giphy.com/v1/gifs",
+  GIFY_API_KEY: "Zl14Xzhqe4HpU8wBpcu6JkLbYY8oe0Jl",
+  GIFY_DEFAULT_RATING: "G",
 };
 
 let _settings = undefined;

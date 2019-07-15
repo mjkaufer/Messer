@@ -27,16 +27,16 @@ module.exports = messer => {
           return;
         }
 
-        // const lockName = lock.getLockedTarget();
-        // // I think leave this out for now. Undecided on the UX
-        // // if (lockName === thread.name) {
-        // messer.log(message, thread.color);
+        // I think leave this out for now. Undecided on the UX
+        // const lockName = messer.lock.getLockedTarget();
+        // if (lockName === thread.name) {
+        messer.log(message, thread.color);
 
-        // if (lock.isAnonymous()) {
-        //   // ew, but whatever
-        //   messer.messen.api.deleteMessage(ev.messageID, err => {});
+        if (messer.lock.isSecret()) {
+          // ew, but whatever
+          messer.messen.api.deleteMessage(ev.messageID, () => {});
+        }
         // }
-        // // }
       };
 
       if (ev.isGroup) {

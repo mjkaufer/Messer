@@ -1,5 +1,4 @@
 const chalk = require("chalk");
-const request = require("request");
 const helpers = require("../../util/helpers.js");
 
 const MENTIONS_REGEX = /.*@([A-z]+(?:\s[A-z]+)?).*/;

@@ -14,15 +14,17 @@ module.exports = messer => {
           return reject(Error("Invalid command - check your syntax"));
 
         const rawReceiver = argv[2];
-        const secret = argv[3] === "--secret";
+        const anonymous = argv[3] === "--secret";
 
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
-            messer.lock.lockOn(thread.name, secret);
-            messer.setPrompt(`${thread.name}${secret ? " 🔒" : ""}> `);
+            messer.lock.lockOn(thread.name, anonymous);
+            messer.setPrompt(`${thread.name}${anonymous ? " 🔒" : ""}> `);
 
             return resolve(
-              `Locked on to ${thread.name} ${secret ? "(secret mode)" : ""}`,
+              `Locked on to ${thread.name} ${
+                anonymous ? "(anonymous mode)" : ""
+              }`,
             );
           })
           .catch(() => {

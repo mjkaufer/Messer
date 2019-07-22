@@ -27,16 +27,16 @@ module.exports = messer => {
           return;
         }
 
-        // I think leave this out for now. Undecided on the UX
-        // const lockName = messer.lock.getLockedTarget();
-        // if (lockName === thread.name) {
-        messer.log(message, thread.color);
+        // const lockName = lock.getLockedTarget();
+        // // I think leave this out for now. Undecided on the UX
+        // // if (lockName === thread.name) {
+        // messer.log(message, thread.color);
 
-        if (messer.lock.isSecret()) {
-          // ew, but whatever
-          messer.messen.api.deleteMessage(ev.messageID, () => {});
-        }
+        // if (lock.isAnonymous()) {
+        //   // ew, but whatever
+        //   messer.messen.api.deleteMessage(ev.messageID, err => {});
         // }
+        // // }
       };
 
       if (ev.isGroup) {
@@ -55,7 +55,7 @@ module.exports = messer => {
       }
 
       messer.state.threads.unreadThreadIds.push(thread.threadID);
-      messer.state.threads.lastThreadId = ev.threadID;
+      messer.state.threads.lastThread = ev.threadID;
 
       notifyTerminal(messer.state.threads.unreadThreadIds.length); // Terminal notification in title
       process.stderr.write("\x07"); // Terminal notification

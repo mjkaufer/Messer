@@ -41,7 +41,7 @@ function Messer(options = {}) {
   this.messen = _getMessen(this);
   this.state = {
     threads: {
-      lastThreadId: undefined,
+      lastThread: undefined,
       unreadThreadIds: [],
     },
   };
@@ -145,11 +145,7 @@ Messer.prototype.start = function start(interactive = true, rawCommand) {
         },
       });
     })
-    .catch(err => {
-      console.log(err.message);
-      // recur
-      // return this.start(interactive, rawCommand);
-    });
+    .catch(err => console.log(err));
 };
 
 Messer.prototype.processCommand = function processCommand(rawCommand) {
@@ -186,7 +182,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
 
   return commandEntry.handler(rawCommand).then(res => {
     // TODO(tom) might be a better way to handle this (probably in the message funciton itself)
-    if (!this.lock.isLocked() || !this.lock.isSecret()) return res;
+    if (!this.lock.isLocked() || !this.lock.isAnonymous()) return res;
 
     // delete the last message
     commandEntry = this._commandRegistry.commands.delete;

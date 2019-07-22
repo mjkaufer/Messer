@@ -4,3 +4,4 @@ node_modules
 *debug.log*
 .vscode
 src/tmp/
+package-lock.json

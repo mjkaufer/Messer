@@ -25,6 +25,7 @@ function MockMesser() {
   messer.setPrompt = _ => {
     return _;
   };
+  messer.state.threads.lastThreadId = "100003961877411";
 
   COMMANDS.forEach(command => {
     messer.registerCommand(command(messer));

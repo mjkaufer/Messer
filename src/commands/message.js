@@ -1,5 +1,5 @@
 const patterns = require("./util/patterns");
-const { getThreadByName } = require("./util/helpers");
+const { getThreadByName, parseMessage } = require("./util/helpers");
 
 module.exports = messer => {
   return {
@@ -22,15 +22,15 @@ module.exports = messer => {
           return reject(Error("No message to send - check your syntax"));
         }
 
-        // clean message
-        const message = rawMessage.split("\\n").join("\u000A");
-
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) throw new Error("No thread found");
 
+            // clean message
+            const message = parseMessage(rawMessage, thread);
+
             return messer.messen.api.sendMessage(
-              { body: message },
+              message,
               thread.threadID,
               err => {
                 if (err) return reject(err);

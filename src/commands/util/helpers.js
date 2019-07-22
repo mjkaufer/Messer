@@ -35,15 +35,6 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
   });
 };
 
-exports.sendGetRequest = url => {
-  return new Promise((resolve, reject) => {
-    request(url, function(error, response, body) {
-      if (error) return reject(error);
-      resolve(body);
-    });
-  });
-};
-
 exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
   if (threadHistory && threadHistory.length === 0) {
     return "You haven't started a conversation!";
@@ -63,7 +54,6 @@ exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
         }
 
         let messageBody = message.body;
-
         if (message.attachments && message.attachments.length > 0) {
           messageBody += message.attachments
             .map(helpers.parseAttachment)

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const parseArgs = require("minimist");
 const Messer = require("./src/messer");
 const packageJson = require("./package.json");

@@ -8,15 +8,21 @@ const DEFAULT_SETTINGS = {
   GIPHY_DEFAULT_RATING: "G",
 };
 
+// settings cache
 let _settings = undefined;
+
 module.exports = {
   list() {
     if (_settings) return _settings;
+
+    let userSettings = {};
     try {
-      _settings = JSON.parse(fs.readFileSync(process.env.SETTINGS_FILEPATH));
+      userSettings = JSON.parse(fs.readFileSync(process.env.SETTINGS_FILEPATH));
     } catch (e) {
-      _settings = DEFAULT_SETTINGS;
+      userSettings = {};
     }
+
+    _settings = Object.assign(DEFAULT_SETTINGS, userSettings);
 
     return _settings;
   },

@@ -1,8 +1,6 @@
 const chalk = require("chalk");
 const helpers = require("../../util/helpers.js");
 
-const MENTIONS_REGEX = /.*@([A-z]+(?:\s[A-z]+)?).*/;
-
 const getThreadByName = (messen, nameQuery) => {
   return messen.store.threads.getThread({ name: nameQuery }).then(thread => {
     if (thread) return thread;
@@ -55,7 +53,6 @@ exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
         }
 
         let messageBody = message.body;
-
         if (message.attachments && message.attachments.length > 0) {
           messageBody += message.attachments
             .map(helpers.parseAttachment)
@@ -74,25 +71,4 @@ exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
 
     return threadHistoryText;
   });
-};
-
-exports.parseMessage = (rawMessage, thread) => {
-  const message = rawMessage.split("\\n").join("\u000A");
-  const rawMentions = message.match(MENTIONS_REGEX) || [];
-  const mentions = rawMentions
-    .map(mention => {
-      const person = thread.participants.find(p => p.name.startsWith(mention));
-      if (!person) return;
-
-      return {
-        tag: `@${mention}`,
-        id: person.userID,
-      };
-    })
-    .filter(Boolean);
-
-  return {
-    body: message,
-    mentions,
-  };
 };

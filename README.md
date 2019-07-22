@@ -23,6 +23,8 @@ $ npm install -g messer
    ```
 3. Enter your login details (don't worry, we don't store a thing)
 
+You can configure some of Messer's behaviour via the `settings` command.
+
 ## Commands Reference
 
 #### `message`
@@ -90,6 +92,19 @@ Examples
 - `recent 10`
 - `recent --history`
 
+#### `gif`
+
+Send a random gif to someone, powered by Giphy!
+
+```bash
+gif "<thread-name>" [<gif-query>]
+```
+
+Examples
+
+- `gif "Matthew"`
+- `gif "Tom" curb`
+
 #### `clear`
 
 Clears the number of unread messages in the window title. Since we cannot listen on focus events, it has to be done manually.
@@ -105,6 +120,29 @@ Logs you out
 ```bash
 logout
 ```
+
+#### `settings`
+
+Interact with your settings for Messer
+
+```bash
+settings (set | get | list) [<key>=<value>]
+```
+
+Examples
+
+- `settings get "Matthew"`
+- `gif "Tom" curb`
+
+##### Supported Settings
+
+- `SHOW_READ`: boolean (default: `false`),
+
+  - determines if your messages will be marked as "read" to your recipients
+
+- `GIPHY_BASE_API`: string
+- `GIPHY_API_KEY`: string,
+- `GIPHY_DEFAULT_RATING` - string (default: `G`),
 
 ### Lock-on Mode
 

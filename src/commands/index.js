@@ -3,6 +3,7 @@ module.exports = [
   require("./contacts"),
   require("./delete"),
   require("./file"),
+  require("./gif"),
   require("./help"),
   require("./history"),
   require("./lock"),

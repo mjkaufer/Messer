@@ -25,6 +25,7 @@ function MockMesser() {
   messer.setPrompt = _ => {
     return _;
   };
+  messer.state.threads.lastThreadId = "100003961877411";
 
   COMMANDS.forEach(command => {
     messer.registerCommand(command(messer));
@@ -89,6 +90,39 @@ describe("Messer", function() {
 
       it("should fail to send message to invalid threadname", async function() {
         await messer.processCommand('m "rick" hey dude').catch(err => {
+          assert.equal(
+            err,
+            "Error: User 'rick' could not be found in your friends list!",
+          );
+        });
+      });
+    });
+    /**
+     * Test the "gif" command
+     */
+    describe("#gif", function() {
+      it("should send gif to valid threadname", async function() {
+        await messer.processCommand('gif "test" hey dude').then(res => {
+          assert.ok(res);
+        });
+      });
+      it("should send random gif to valid threadname", async function() {
+        await messer.processCommand('gif "test"').then(res => {
+          assert.ok(res);
+        });
+      });
+      it("should send gif to valid thread that isn't a friend", async function() {
+        await messer.processCommand('gif "waylon" hey dude').then(res => {
+          assert.ok(res);
+        });
+      });
+      it("should send random gif to valid thread that isn't a friend", async function() {
+        await messer.processCommand('gif "waylon"').then(res => {
+          assert.ok(res);
+        });
+      });
+      it("should fail to send gif to invalid threadname", async function() {
+        await messer.processCommand('gif "rick" hey dude').catch(err => {
           assert.equal(
             err,
             "Error: User 'rick' could not be found in your friends list!",

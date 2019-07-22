@@ -3,3 +3,5 @@ node_modules
 .DS_Store
 *debug.log*
 .vscode
+src/tmp/
+package-lock.json

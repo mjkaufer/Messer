@@ -22,6 +22,7 @@ function promptCredentials() {
   log(
     "Enter your Facebook credentials - your password will not be visible as you type it in",
   );
+
   prompt.start();
 
   return new Promise((resolve, reject) => {
@@ -35,6 +36,7 @@ function promptCredentials() {
           name: "password",
           required: true,
           hidden: true,
+          replace: "*",
         },
       ],
       (err, result) => {

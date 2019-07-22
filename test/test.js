@@ -154,7 +154,6 @@ describe("Messer", function() {
           assert.ok(res);
         });
       });
-
       it("should fail to send file to invalid threadname", async function() {
         await messer.processCommand(`file "rick" "${testfile}"`).catch(err => {
           assert.equal(

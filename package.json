@@ -21,7 +21,7 @@
   ],
   "main": "index.js",
   "bin": {
-    "messer": "dist/index.js"
+    "messer": "index.js"
   },
   "repository": {
     "type": "git",

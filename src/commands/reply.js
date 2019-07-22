@@ -1,4 +1,5 @@
 const patterns = require("./util/patterns");
+const { parseMessage } = require("./util/helpers");
 
 module.exports = messer => {
   return {
@@ -10,14 +11,14 @@ module.exports = messer => {
 
     handler(command) {
       return new Promise((resolve, reject) => {
-        const argv = command.match(patterns[1]);
+        const argv = command.match(patterns[6]);
         if (!argv || !argv[2]) {
           return reject(Error("Invalid command - check your syntax"));
         }
 
-        const messageBody = argv[2];
+        const { lastThreadId } = messer.state.threads;
 
-        if (messer.lastThread === null) {
+        if (!lastThreadId) {
           return reject(
             Error(
               "Oops! You need to receive a message on Messer before using `reply`",
@@ -25,11 +26,17 @@ module.exports = messer => {
           );
         }
 
-        messer.messen.api.sendMessage(messageBody, messer.lastThread, err => {
-          if (err) return reject(err);
+        return messer.messen.store.threads
+          .getThread({ id: lastThreadId })
+          .then(thread => {
+            const message = parseMessage(argv[2], thread);
 
-          return resolve();
-        });
+            return messer.messen.api.sendMessage(message, lastThreadId, err => {
+              if (err) return reject(err);
+
+              return resolve();
+            });
+          });
       });
     },
   };

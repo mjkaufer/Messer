@@ -1,6 +1,6 @@
 {
   "name": "messer",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Command-line messaging for Facebook Messenger",
   "keywords": [
     "facebook",

@@ -9,5 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Install
+      run: npm ci
     - name: Test
       run: npm test

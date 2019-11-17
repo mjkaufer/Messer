@@ -144,6 +144,7 @@ describe("Messer", function() {
 
       it("should reply", async function() {
         messer.lastThread = getMockThread();
+        console.log(messer);
         await messer.processCommand("reply yea i agree").then(() => {
           assert.ok(true);
         });

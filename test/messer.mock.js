@@ -137,7 +137,10 @@ const getApi = function getApi() {
       return cb(undefined);
     },
     getThreadInfo(threadId, cb) {
-      return cb(undefined, threads.find(t => t.threadID === threadId));
+      return cb(
+        undefined,
+        threads.find(t => t.threadID === threadId),
+      );
     },
     getThreadList(limit, timestamp, tags, cb) {
       return cb(undefined, threads);

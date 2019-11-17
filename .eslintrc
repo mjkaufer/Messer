@@ -1,0 +1,18 @@
+{
+  "env": {
+    "commonjs": true,
+    "es6": true,
+    "node": true
+  },
+  "plugins": ["prettier"],
+  "extends": ["prettier"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "prettier/prettier": "error"
+    // "linebreak-style": ["error", "unix"],
+    // "no-console": "off"
+  }
+}

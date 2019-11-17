@@ -5,7 +5,7 @@ module.exports = messer => {
   return {
     primaryCommand: "recent",
 
-    help: 'recent "<thread-name>" [<n>]',
+    help: "recent [<n>] [--history]",
 
     handler(command) {
       const argv = command.match(patterns[1]);

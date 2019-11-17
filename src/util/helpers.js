@@ -1,11 +1,10 @@
 const prompt = require("prompt");
 const readline = require("readline");
 
-const log = require("./log");
+const { log } = require("./logger");
 
 /**
  * Adds the number of unread messages in the terminal title
- * @param {Object} unreadMessagesCount number of unread messages
  */
 function notifyTerminal(unreadMessagesCount) {
   const title = unreadMessagesCount
@@ -23,6 +22,7 @@ function promptCredentials() {
   log(
     "Enter your Facebook credentials - your password will not be visible as you type it in",
   );
+
   prompt.start();
 
   return new Promise((resolve, reject) => {
@@ -36,6 +36,7 @@ function promptCredentials() {
           name: "password",
           required: true,
           hidden: true,
+          replace: "*",
         },
       ],
       (err, result) => {
@@ -78,15 +79,13 @@ function objectValues(dict) {
  * @return {String}
  */
 function parseAttachment(attachment) {
-  const attachmentType = attachment.type.replace(/_/g, " ");
-
+  let attachmentType = attachment.type.replace(/_/g, " ");
   let messageBody = "";
 
   switch (attachmentType) {
     case "sticker":
       try {
-        messageBody =
-          fbAssets.facebookStickers[attachment.packID][attachment.stickerID];
+        messageBody = `<${attachment.caption}>`;
       } catch (e) {
         messageBody = "- only viewable in browser";
       }
@@ -98,7 +97,13 @@ function parseAttachment(attachment) {
       messageBody = `${attachment.url}`;
       break;
     case "share":
-      messageBody = `${attachment.url}`;
+      // its likely a game
+      if (attachment.target) {
+        attachmentType = "game";
+        messageBody = attachment.title;
+      } else {
+        messageBody = `${attachment.url}`;
+      }
       break;
     case "video":
       messageBody = `${attachment.url}`;
@@ -111,10 +116,19 @@ function parseAttachment(attachment) {
   return `[${attachmentType}] ${messageBody}`;
 }
 
+const sortObjects = (arr, key, asc = true) => {
+  return arr.sort((a, b) => {
+    if (a[key] < b[key]) return asc ? -1 : 1;
+    if (a[key] > b[key]) return asc ? 1 : -1;
+    return 0;
+  });
+};
+
 module.exports = {
   promptCredentials,
   promptCode,
   objectValues,
   notifyTerminal,
   parseAttachment,
+  sortObjects,
 };

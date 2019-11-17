@@ -6,15 +6,7 @@ Command-line Messaging for Facebook Messenger
 ![Version](https://img.shields.io/npm/v/messer.svg)
 ![License](https://img.shields.io/npm/l/messer.svg)
 
-## Want to be a beta tester?
-
-We're working on the next generation of Messer. Help us test our new features and help shape the future! Please create issues for anything, but make sure to note they're on the `v1` branch
-
-```
-npm install -g git@github.com:mjkaufer/Messer.git#v1
-```
-
-![](https://user-images.githubusercontent.com/12551741/27252310-6655f4f6-539e-11e7-978b-c8eaba02ba68.png)
+Messer is a fully featured Facebook Messenger client for your terminal. Send and receive messages, view chat historys and more!
 
 ## Installation
 
@@ -29,31 +21,11 @@ $ npm install -g messer
    ```bash
    $ messer
    ```
-3. Enter your details
-4. ...
-5. Profit
-
-For a list of commands, jump to the [Commands Reference](https://github.com/mjkaufer/Messer#commands-reference)
-
-## Setup
-
-### 2-Factor Authentication
-
-1. Start Messer and wait for "Enter Code" prompt
-2. Enter a 2FA code generated from your 2FA app
-
-   If at this point the login fails, go to [Facebook](https://www.facebook.com) and check for an "Unrecognised browser" notification
-
-3. Approve the browser/device (i.e. approve Messer)
-4. Retry from Step 1
-
-After you've successfully logged in, an `appstate.json` file is created which should allow you to skip this process every time you log in. If you wish to "start over", just delete that file.
-
-This _should™_ work! Please let us know if it doesn't: we've had a number of issues with it in the past.
+3. Enter your login details (don't worry, we don't store a thing)
 
 ## Commands Reference
 
-### `message`
+#### `message`
 
 Sends a _message_ to a given _user_
 
@@ -68,7 +40,7 @@ Examples
 
 When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
-### `reply`
+#### `reply`
 
 Replys to the last message you recevied i.e. Sends a message to the user of the most recently received message.
 
@@ -82,7 +54,7 @@ Example
 
 Note: this will only work if you have received at least one message through Messer.
 
-### `contacts`
+#### `contacts`
 
 Lists all of your Facebook friends
 
@@ -90,12 +62,12 @@ Lists all of your Facebook friends
 contacts
 ```
 
-### `history`
+#### `history`
 
 Displays the last _n_ messages in the conversation with a given user. The number of messages to retrieve are optional (default is 5).
 
 ```bash
-(history | h] "<user>" [<numMessages>]
+(history | h) "<user>" [<n>]
 ```
 
 Examples
@@ -103,20 +75,22 @@ Examples
 - `history "Matthew" 10`
 - `h "Matthew"`
 
-### `recent`
+#### `recent`
 
 Displays the _n_ most recent conversations. The number of threads is optional (default is 5).
+The `--history` option will display the 5 most recent messages in each thread.
 
 ```bash
-recent [<numThreads>]
+recent [<n>] [--history]
 ```
 
 Examples
 
-- `history "Matthew" 10`
-- `h "Matthew"`
+- `recent`
+- `recent 10`
+- `recent --history`
 
-### `clear`
+#### `clear`
 
 Clears the number of unread messages in the window title. Since we cannot listen on focus events, it has to be done manually.
 
@@ -124,7 +98,7 @@ Clears the number of unread messages in the window title. Since we cannot listen
 (clear | c)
 ```
 
-### `logout`
+#### `logout`
 
 Logs you out
 
@@ -132,12 +106,55 @@ Logs you out
 logout
 ```
 
+#### `settings`
+
+Configure your user settings on Messer
+
+```bash
+settings (set | get | list) [<key>=<value>]
+```
+
+Examples
+
+- `settings list`
+- `settings get SHOW_READ`
+- `settings set SHOW_READ=true`
+
+For supported settings, see section below
+
+### Supported Settings
+
+- `SHOW_READ`
+  - Marks conversation as "read" when using `clear` command
+
+### Lock-on Mode
+
+Locking on to a user or group allows you to send messages without having to specify the `message` command; just type away!
+
+```bash
+lock "Tom Q"
+```
+
+**To unlock**, simply run:
+
+```bash
+unlock
+```
+
+### Secret Mode
+
+When in this mode, any messages sent or recieved in the thread will be deleted for you (note, **they won't be deleted for everyone**).
+
+```bash
+lock "Tom Q" --secret
+```
+
 ### Non-interactive Mode
 
 Messer can be run in non-interactive mode with command line arguments to execute a single command.
 
 ```bash
-messer --command='[command]'
+messer --command='<command>'
 ```
 
 Login will be prompted if this is the first time logging in.
@@ -157,7 +174,11 @@ $ messer cleanup
 
 ## FAQ
 
-### Group Chats
+### Do you store any of my data?
+
+**We don't store your username, password, or any of your interactions on Messer**. The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `messer cleanup`, or if you're in a Messer session, run the `logout` command.
+
+### How do group chats work?
 
 Messages from group chats appear like
 
@@ -169,16 +190,8 @@ Send a message to a group by using the `message` command. The `name` is the name
 
 ## Contributing
 
-Take a look in [Issues](https://github.com/mjkaufer/Messer/issues) for things to contribute to. Only PR's that reference an issue will be considered. If you have a feature idea, submit an issue so it can be discussed!
+Want to add a new command, fix a bug or improve Messer in another way? Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
 
-### Before you submit your PR, ask yourself...
+## License
 
-1. Does this PR resolve a particular issue? (if not, then why is this PR necessary)?
-
-2. Have I written tests? (where appropriate)
-
-3. Have I made sure the tests pass?
-
-```bash
-npm test
-```
+This project is licensed under the ISC License - see the LICENSE file for details

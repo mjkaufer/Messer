@@ -1,12 +1,11 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-
+about: Report a but to help us improve Messer
 ---
 
 ### Description
 
-[Description of the issue]
+> Description of the issue
 
 ### Steps to Reproduce
 
@@ -20,10 +19,11 @@ about: Create a report to help us improve
 
 ### Versions
 
-Run, and copy-paste the results, of the following:
-  - npm -v
-  - node -v
-  - messer -v
+Run and copy-paste the results of the following:
+
+- npm -v
+- node -v
+- messer -v
 
 Also, please include the OS and what version of the OS you're running.
 

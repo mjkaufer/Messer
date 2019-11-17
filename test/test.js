@@ -143,8 +143,7 @@ describe("Messer", function() {
       });
 
       it("should reply", async function() {
-        messer.lastThread = getMockThread();
-        console.log(messer);
+        messer.state.threads.lastThreadId = "100003961877411";
         await messer.processCommand("reply yea i agree").then(() => {
           assert.ok(true);
         });

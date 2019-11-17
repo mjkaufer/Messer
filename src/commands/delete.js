@@ -10,7 +10,7 @@ module.exports = messer => {
     handler(command) {
       const argv = command.match(patterns[2]);
       if (!argv || !argv[2])
-        return Promise.reject("Invalid command - check your syntax");
+        return Promise.reject(Error("Invalid command - check your syntax"));
 
       const rawThreadName = argv[2];
       const messageCount = argv[3] ? parseInt(argv[3].trim(), 10) : 1;

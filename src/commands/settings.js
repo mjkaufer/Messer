@@ -9,7 +9,7 @@ module.exports = messer => {
     handler(rawCommand) {
       const argv = rawCommand.match(patterns[5]);
       if (!argv || !argv[2])
-        return Promise.reject("Invalid command - check your syntax");
+        return Promise.reject(Error("Invalid command - check your syntax"));
 
       const command = argv[2];
       const key = argv[3];

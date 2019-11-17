@@ -11,7 +11,8 @@ module.exports = messer => {
       const DEFAULT_COUNT = 5;
 
       const argv = command.match(patterns[2]);
-      if (!argv) return Promise.reject("Invalid command - check your syntax");
+      if (!argv)
+        return Promise.reject(Error("Invalid command - check your syntax"));
 
       const rawThreadName = argv[2];
       const messageCount = argv[3]

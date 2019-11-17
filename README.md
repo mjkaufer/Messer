@@ -106,6 +106,27 @@ Logs you out
 logout
 ```
 
+#### `settings`
+
+Configure your user settings on Messer
+
+```bash
+settings (set | get | list) [<key>=<value>]
+```
+
+Examples
+
+- `settings list`
+- `settings get SHOW_READ`
+- `settings set SHOW_READ=true`
+
+For supported settings, see section below
+
+### Supported Settings
+
+- `SHOW_READ`
+  - Marks conversation as "read" when using `clear` command
+
 ### Lock-on Mode
 
 Locking on to a user or group allows you to send messages without having to specify the `message` command; just type away!
@@ -120,7 +141,7 @@ lock "Tom Q"
 unlock
 ```
 
-#### Secret Mode
+### Secret Mode
 
 When in this mode, any messages sent or recieved in the thread will be deleted for you (note, **they won't be deleted for everyone**).
 

@@ -138,7 +138,7 @@ lock "Tom Q"
 **To unlock**, simply run:
 
 ```bash
-unlock
+--unlock
 ```
 
 ### Secret Mode

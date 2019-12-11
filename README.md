@@ -18,9 +18,11 @@ $ npm install -g messer
 
 1. Install `messer`
 2. Run `messer`
+
    ```bash
    $ messer
    ```
+
 3. Enter your login details (don't worry, we don't store a thing)
 
 ## Commands Reference

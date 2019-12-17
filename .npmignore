@@ -1,0 +1,6 @@
+test/
+.github/
+assets/
+.eslint*
+.prettier*
+CONTRIBUTING.md

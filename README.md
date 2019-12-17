@@ -6,7 +6,9 @@ Command-line Messaging for Facebook Messenger
 ![Version](https://img.shields.io/npm/v/messer.svg)
 ![License](https://img.shields.io/npm/l/messer.svg)
 
-Messer is a fully featured Facebook Messenger client for your terminal. Send and receive messages, view chat historys and more!
+Messer is a rich Facebook Messenger client for your terminal. Send and receive messages, view chat historys and more!
+
+![demo](./assets/messer_cli_demo.gif)
 
 ## Installation
 
@@ -24,6 +26,29 @@ $ npm install -g messer
    ```
 
 3. Enter your login details (don't worry, we don't store a thing)
+
+
+## FAQ
+
+### Do you store any of my data?
+
+**_We don't store your username, password, or any of your interactions on Messer_**.
+
+The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `messer cleanup`, or if you're in a Messer session, run the `logout` command.
+
+### Can I use a deactivated Facebook account?
+
+No, unforunately not. If you use Messer with a deactivated Facebook account, your account will be reactivated.
+
+### How do group chats work?
+
+Messages from group chats appear like
+
+```bash
+(My cool friends) John Smith - hey guys!!$$@@
+```
+
+Send a message to a group by using the `message` command. The `name` is the name of the group chat! Reply works as normal
 
 ## Commands Reference
 
@@ -173,22 +198,6 @@ If ever you want to clean up any old Messer sessions and start from scratch, run
 ```bash
 $ messer cleanup
 ```
-
-## FAQ
-
-### Do you store any of my data?
-
-**We don't store your username, password, or any of your interactions on Messer**. The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `messer cleanup`, or if you're in a Messer session, run the `logout` command.
-
-### How do group chats work?
-
-Messages from group chats appear like
-
-```bash
-(My cool friends) John Smith - hey guys!!$$@@
-```
-
-Send a message to a group by using the `message` command. The `name` is the name of the group chat! Reply works as normal
 
 ## Contributing
 

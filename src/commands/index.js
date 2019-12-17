@@ -13,4 +13,6 @@ module.exports = [
   require("./settings"),
   require("./threads"),
   require("./unlock"),
+  require("./mute"),
+  require("./unmute"),
 ];

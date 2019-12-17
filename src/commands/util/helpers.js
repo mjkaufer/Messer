@@ -36,6 +36,19 @@ exports.getThreadHistory = (messen, rawThreadName, messageCount = 5) => {
   });
 };
 
+exports.muteThread = (messen, rawThreadName, seconds = -1) => {
+  return getThreadByName(messen, rawThreadName).then(thread => {
+    if (!thread) throw new Error("no thread");
+
+    return new Promise((resolve, reject) => {
+      return messen.api.muteThread(thread.threadID, seconds, (err, res) => {
+        if (err) return reject(err);
+        return resolve(res);
+      });
+    });
+  });
+};
+
 exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
   if (threadHistory && threadHistory.length === 0) {
     return "You haven't started a conversation!";

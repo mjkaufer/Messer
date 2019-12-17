@@ -133,6 +133,22 @@ Logs you out
 logout
 ```
 
+#### `mute`
+
+Mutes a thread. If no seconds are specified, the thread is muted indefinetely.
+
+```bash
+mute "<thread-name>" [seconds]
+```
+
+#### `unmute`
+
+Unmutes a thread
+
+```bash
+unmute "<thread-name>"
+```
+
 #### `settings`
 
 Configure your user settings on Messer

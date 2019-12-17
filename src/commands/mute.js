@@ -7,7 +7,7 @@ module.exports = messer => {
 
     shortcutCommand: undefined,
 
-    help: "mute <thread name>",
+    help: 'mute "<thread name>" [<seconds>]',
 
     handler(command) {
       return new Promise((resolve, reject) => {

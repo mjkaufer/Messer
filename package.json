@@ -34,6 +34,7 @@
     "test": "NODE_ENV=test && npm run lint && npm run test-unit"
   },
   "dependencies": {
+    "@types/minimist": "file:minimist",
     "chalk": "^2.4.2",
     "messen": "1.0.0-beta.9",
     "minimist": "^1.2.5",

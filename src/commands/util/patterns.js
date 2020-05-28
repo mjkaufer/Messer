@@ -6,4 +6,6 @@ module.exports = [
   /([A-z]+)\s+"(.*?)"\s+"(.*?)"\s?(.+)?/, // `file "Tom Quirk" "/path/to/file"` and `file "Tom Quirk" "/path/to/file" cool pic`
   /([A-z]+)\s([A-z]+)(?:\s([A-z]+)(?:=([A-z0-9]+))?)?/, // `settings list` and `settings set key=value` and `settings get key`,
   /([A-z]+)\s(.*)/, // reply
+  /([A-z]+)\s+"(.*?)"\s+([0-9]+)+(.+)/, // 'message "Tom Quirk" 5 hello world'
+  /(--[A-z]+)?/, // '--stop'
 ];

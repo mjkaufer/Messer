@@ -146,7 +146,7 @@ Messer.prototype.start = function start(interactive = true, rawCommand) {
       });
     })
     .catch(err => {
-      console.log(err.message);
+      console.log(err.message || err);
       // recur
       // return this.start(interactive, rawCommand);
     });

@@ -328,6 +328,28 @@ describe("Messer", function() {
           });
       });
 
+      it("should allow special characters to be used in the message body", async function() {
+        await messer
+          .processCommand('lock "waylon"')
+          .then(() => {
+            return messer.processCommand("?!!${}\"");
+          })
+          .then(res => {
+            assert.ok(res)
+          })
+      })
+
+      it("should allow foreign languages to be used in the message body", async function() {
+        await messer
+          .processCommand('lock "waylon"')
+          .then(() => {
+            return messer.processCommand("大家好");
+          })
+          .then(res => {
+            assert.ok(res)
+          })
+      })
+
       it("should fail if no thread name is specified", async function() {
         await messer.processCommand("lock").catch(err => {
           assert.ok(err);

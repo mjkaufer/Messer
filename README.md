@@ -18,6 +18,8 @@ $ npm install -g messer
 
 ## Quick Start
 
+> `node` version 12.x required
+
 1. Install `messer`
 2. Run `messer`
 

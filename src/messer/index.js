@@ -156,10 +156,11 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   // ignore if rawCommand is only spaces
   if (rawCommand.trim().length === 0) return Promise.resolve();
 
-  const argv = rawCommand.match(/([A-z]+).*/);
+  let argv = rawCommand.match(/([A-z]+).*/);
 
   // if we're in a lock, hack args to use the `message` command
   if (this.lock.isLocked()) {
+    argv = rawCommand.match(/.*/);
     if (rawCommand === "--unlock\n") {
       argv[1] = "--unlock";
       rawCommand = "--unlock";

@@ -4,8 +4,9 @@ const { getThreadHistory, formatThreadHistory } = require("./util/helpers");
 module.exports = messer => {
   return {
     primaryCommand: "history",
+    shortcutCommand: "h",
 
-    help: 'history "<thread-name>" [<n>]',
+    help: '(history | h) "<thread-name>" [<n>]',
 
     handler(command) {
       const DEFAULT_COUNT = 5;

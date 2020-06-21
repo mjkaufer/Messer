@@ -9,7 +9,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Install
+    - name: install
       run: npm ci
-    - name: Test
-      run: npm test
+    - name: lint
+      run: npm run eslint
+    - name: test
+      run: npm run test-unit

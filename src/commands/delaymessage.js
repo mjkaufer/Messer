@@ -8,7 +8,7 @@ module.exports = messer => {
 
     shortcutCommand: "dm",
 
-    help: '(delaymessage | m) "<thread-name>" <message> <delay in minutes>',
+    help: '(delaymessage | m) "<thread-name>" <delay in minutes> <message>',
 
     handler(command) {
       return new Promise((resolve, reject) => {

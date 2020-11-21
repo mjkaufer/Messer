@@ -68,14 +68,14 @@ exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
         }
 
         let messageBody = message.body;
-
+        let timeStamp=new Date(parseFloat(message.timestamp)).toLocaleString();
         if (message.attachments && message.attachments.length > 0) {
           messageBody += message.attachments
             .map(helpers.parseAttachment)
             .join(", ");
         }
 
-        let logText = `${sender.name}: ${messageBody}`;
+        let logText = `[${timeStamp}] ${sender.name}: ${messageBody}`;
         if (message.isUnread) logText = `(unread) ${logText}`;
         if (message.senderID === messen.store.users.me.user.id) {
           logText = chalk.dim(logText);

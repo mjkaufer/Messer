@@ -34,7 +34,7 @@ module.exports = messer => {
             }
 
             if (!thread.zuccnetPublicKey) {
-              throw new Error(`Public key for ${rawReceiver} unknown`);
+              throw new Error(`Public key for ${rawReceiver} unknown.`);
             }
 
             // clean message

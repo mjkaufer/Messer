@@ -1,7 +1,6 @@
 const patterns = require("./util/patterns");
 const { getThreadByName } = require("./util/helpers");
-const crypto = require("crypto");
-const fs = require("fs");
+const { setUserPublicKey } = require("../messer/public_keys");
 
 module.exports = messer => {
   return {
@@ -21,8 +20,6 @@ module.exports = messer => {
         const rawReceiver = argv[2];
         const publicKeyPath = argv[3];
 
-        const publicKeyRaw = fs.readFileSync(publicKeyPath);
-
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
             if (!thread) {
@@ -31,10 +28,13 @@ module.exports = messer => {
               );
             }
 
-            messer.messen.store.threads._threads[
-              thread.threadID
-            ].zuccnetPublicKey = crypto.createPublicKey(publicKeyRaw);
-
+            return setUserPublicKey(
+              messer.messen,
+              thread.threadID,
+              publicKeyPath,
+            );
+          })
+          .then(() => {
             return resolve();
           })
           .catch(err => {

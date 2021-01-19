@@ -1,31 +1,32 @@
 {
-  "name": "messer",
-  "version": "0.7.3",
-  "description": "Command-line messaging for Facebook Messenger",
+  "name": "zuccnet",
+  "version": "0.0.1",
+  "description": "End-to-end Encrypted Facebook Messenger",
   "keywords": [
     "facebook",
     "messenger",
     "repl",
     "chat",
-    "node"
+    "node",
+    "encryption",
+    "encrypted"
   ],
-  "homepage": "https://github.com/mjkaufer/Messer#readme",
+  "homepage": "https://github.com/tomquirk/zuccnet#readme",
   "bugs": {
-    "url": "https://github.com/mjkaufer/Messer/issues"
+    "url": "https://github.com/tomquirk/zuccnet/issues"
   },
   "license": "ISC",
-  "author": "Matthew Kaufer <mjkaufer@gmail.com>",
+  "author": "Tom Quirk <tomquirkacc@gmail.com>",
   "contributors": [
-    "Matthew Kaufer <mjkaufer@gmail.com>",
     "Tom Quirk <tomquirkacc@gmail.com>"
   ],
   "main": "index.js",
   "bin": {
-    "messer": "index.js"
+    "zuccnet": "index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/mjkaufer/Messer.git"
+    "url": "git+ssh://git@github.com/tomquirk/zuccnet.git"
   },
   "scripts": {
     "start": "node index.js",

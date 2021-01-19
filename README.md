@@ -1,30 +1,30 @@
-# Messer
+# Zuccnet
 
-Command-line Messaging for Facebook Messenger
+End-to-end Encrypted Facebook Messenger
 
-![Downloads](https://img.shields.io/npm/dm/messer.svg)
-![Version](https://img.shields.io/npm/v/messer.svg)
-![License](https://img.shields.io/npm/l/messer.svg)
+![Downloads](https://img.shields.io/npm/dm/zuccnet.svg)
+![Version](https://img.shields.io/npm/v/zuccnet.svg)
+![License](https://img.shields.io/npm/l/zuccnet.svg)
 
-Messer is a rich Facebook Messenger client for your terminal. Send and receive messages, view chat historys and more!
+Zuccnet is a fork of []
 
-![demo](./assets/messer_cli_demo.gif)
+![demo](./assets/zuccnet_cli_demo.gif)
 
 ## Installation
 
 ```bash
-$ npm install -g messer
+$ npm install -g zuccnet
 ```
 
 ## Quick Start
 
 > `node` version 12.x required
 
-1. Install `messer`
-2. Run `messer`
+1. Install `zuccnet`
+2. Run `zuccnet`
 
    ```bash
-   $ messer
+   $ zuccnet
    ```
 
 3. Enter your login details (don't worry, we don't store a thing)
@@ -34,13 +34,13 @@ $ npm install -g messer
 
 ### Do you store any of my data?
 
-**_We don't store your username, password, or any of your interactions on Messer_**.
+**_We don't store your username, password, or any of your interactions on Zuccnet_**.
 
-The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `messer cleanup`, or if you're in a Messer session, run the `logout` command.
+The only thing we store is a temporary login token when you first log in. This let's us authenticate you with Facebook _without_ you having to enter your username and password every time. If you want to get rid of it, simply run `zuccnet cleanup`, or if you're in a Zuccnet session, run the `logout` command.
 
 ### Can I use a deactivated Facebook account?
 
-No, unforunately not. If you use Messer with a deactivated Facebook account, your account will be reactivated.
+No, unforunately not. If you use Zuccnet with a deactivated Facebook account, your account will be reactivated.
 
 ### How do group chats work?
 
@@ -67,7 +67,7 @@ Examples
 - `message "Matthew" hello world!`
 - `m "Matthew" hello world!`
 
-When sending a message, Messer picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
+When sending a message, Zuccnet picks the closest match to what you type in as `user`. For this reason, you should probably use last names if you want to avoid accidentally texting someone.
 
 #### `reply`
 
@@ -81,7 +81,7 @@ Example
 
 - `r "hey yo this is my reply"`
 
-Note: this will only work if you have received at least one message through Messer.
+Note: this will only work if you have received at least one message through Zuccnet.
 
 #### `contacts`
 
@@ -153,7 +153,7 @@ unmute "<thread-name>"
 
 #### `settings`
 
-Configure your user settings on Messer
+Configure your user settings on Zuccnet
 
 ```bash
 settings (set | get | list) [<key>=<value>]
@@ -196,30 +196,30 @@ lock "Tom Q" --secret
 
 ### Non-interactive Mode
 
-Messer can be run in non-interactive mode with command line arguments to execute a single command.
+Zuccnet can be run in non-interactive mode with command line arguments to execute a single command.
 
 ```bash
-messer --command='<command>'
+zuccnet --command='<command>'
 ```
 
 Login will be prompted if this is the first time logging in.
 
 Examples
 
-- `messer --command='m "John Smith" Hey, John'`
-- `messer --command='r Hey, John'`
+- `zuccnet --command='m "John Smith" Hey, John'`
+- `zuccnet --command='r Hey, John'`
 
 ### Cleanup
 
-If ever you want to clean up any old Messer sessions and start from scratch, run:
+If ever you want to clean up any old Zuccnet sessions and start from scratch, run:
 
 ```bash
-$ messer cleanup
+$ zuccnet cleanup
 ```
 
 ## Contributing
 
-Want to add a new command, fix a bug or improve Messer in another way? Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
+Want to add a new command, fix a bug or improve Zuccnet in another way? Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## License
 

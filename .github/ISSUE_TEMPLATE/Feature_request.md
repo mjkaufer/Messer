@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a feature for Messer
+about: Suggest a feature for Zuccnet
 ---
 
 ## Summary

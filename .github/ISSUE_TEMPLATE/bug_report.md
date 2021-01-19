@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a but to help us improve Messer
+about: Report a but to help us improve Zuccnet
 ---
 
 ### Description
@@ -23,7 +23,7 @@ Run and copy-paste the results of the following:
 
 - npm -v
 - node -v
-- messer -v
+- zuccnet -v
 
 Also, please include the OS and what version of the OS you're running.
 

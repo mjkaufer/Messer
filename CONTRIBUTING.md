@@ -1,8 +1,8 @@
 # Contributing
 
-Hey 👋 So you want to contribute to Messer - awesome!
+Hey 👋 So you want to contribute to Zuccnet - awesome!
 
-When contributing to Messer, please first discuss the change you wish to make via an Issue.
+When contributing to Zuccnet, please first discuss the change you wish to make via an Issue.
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
@@ -17,7 +17,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 ## Pull Request Checklist
 
 - [x] Build passes
-- [x] README updated with new commands, changes to commands or any other additional changes to Messer
+- [x] README updated with new commands, changes to commands or any other additional changes to Zuccnet
 
 <a name="commands" />
 

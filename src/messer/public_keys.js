@@ -50,7 +50,7 @@ const setUserPublicKey = (messen, threadID, publicKeyPath) => {
 
       return handleFile();
     });
-  })
+  });
 };
 
 module.exports = {

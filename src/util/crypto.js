@@ -63,7 +63,6 @@ const encryptMessage = (message, recipientPublicKey) => {
     },
     Buffer.from(message),
   );
-  console.log(encryptedMessage);
 
   return encryptedMessage.toString("base64");
 };

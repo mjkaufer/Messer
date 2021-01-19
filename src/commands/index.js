@@ -15,4 +15,5 @@ module.exports = [
   require("./unlock"),
   require("./mute"),
   require("./unmute"),
+  require("./public_key"),
 ];

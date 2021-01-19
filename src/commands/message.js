@@ -33,7 +33,7 @@ module.exports = messer => {
               );
             }
 
-            if (!thread.messerPublicKey) {
+            if (!thread.zuccnetPublicKey) {
               throw new Error(`Public key for ${rawReceiver} unknown`);
             }
 
@@ -41,7 +41,7 @@ module.exports = messer => {
             const message = parseMessage(rawMessage, thread);
             const encryptedMessageBody = encryptMessage(
               message.body,
-              thread.messerPublicKey,
+              thread.zuccnetPublicKey,
             );
 
             message.body = encryptedMessageBody;

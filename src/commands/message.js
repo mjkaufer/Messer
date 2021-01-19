@@ -1,5 +1,8 @@
 const patterns = require("./util/patterns");
 const { getThreadByName, parseMessage } = require("./util/helpers");
+const { encryptMessage } = require("../util/crypto");
+const crypto = require("crypto");
+const fs = require("fs");
 
 module.exports = messer => {
   return {
@@ -24,10 +27,24 @@ module.exports = messer => {
 
         return getThreadByName(messer.messen, rawReceiver)
           .then(thread => {
-            if (!thread) throw new Error("No thread found");
+            if (!thread) {
+              throw new Error(
+                `User '${rawReceiver}' could not be found in your friends list!`,
+              );
+            }
+
+            if (!thread.messerPublicKey) {
+              throw new Error(`Public key for ${rawReceiver} unknown`);
+            }
 
             // clean message
             const message = parseMessage(rawMessage, thread);
+            const encryptedMessageBody = encryptMessage(
+              message.body,
+              thread.messerPublicKey,
+            );
+
+            message.body = encryptedMessageBody;
 
             return messer.messen.api.sendMessage(
               message,
@@ -35,16 +52,12 @@ module.exports = messer => {
               err => {
                 if (err) return reject(err);
 
-                return resolve(`Sent message to ${thread.name}`);
+                return resolve(`Sent encrypted message to ${thread.name}`);
               },
             );
           })
-          .catch(() => {
-            return reject(
-              Error(
-                `User '${rawReceiver}' could not be found in your friends list!`,
-              ),
-            );
+          .catch(err => {
+            return reject(err || Error("Failed to send message"));
           });
       });
     },

@@ -7,7 +7,10 @@ const getThreadByName = (messen, nameQuery) => {
   return messen.store.threads.getThread({ name: nameQuery }).then(thread => {
     if (thread) return thread;
     return messen.store.users.getUser({ name: nameQuery }).then(user => {
-      if (!user) throw new Error();
+      if (!user)
+        throw new Error(
+          `User '${nameQuery}' could not be found in your friends list!`,
+        );
       return {
         threadID: user.id,
         name: user.name,
@@ -68,7 +71,9 @@ exports.formatThreadHistory = (messen, threadHistory, prefix = "") => {
         }
 
         let messageBody = message.body;
-        let timeStamp=new Date(parseFloat(message.timestamp)).toLocaleString();
+        let timeStamp = new Date(
+          parseFloat(message.timestamp),
+        ).toLocaleString();
         if (message.attachments && message.attachments.length > 0) {
           messageBody += message.attachments
             .map(helpers.parseAttachment)

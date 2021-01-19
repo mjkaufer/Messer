@@ -1,4 +1,5 @@
 const { notifyTerminal, parseAttachment } = require("../util/helpers");
+const { decryptMessage } = require("../util/crypto");
 
 module.exports = messer => {
   return {
@@ -15,7 +16,8 @@ module.exports = messer => {
       const { thread } = ev;
 
       let sender = thread.name;
-      let messageBody = ev.body;
+      const messageBodyEncrypted = ev.body;
+      let messageBody = decryptMessage(messageBodyEncrypted);
 
       if (ev.attachments.length > 0) {
         messageBody += ev.attachments.map(parseAttachment).join(", ");

@@ -171,7 +171,7 @@ Messer.prototype.processCommand = function processCommand(rawCommand) {
   }
 
   if (!argv || !argv[1]) {
-    return Promise.reject(Error("Invalid command - check your syntax"));
+    return Promise.reject(Error("Invalid command - check your syntax0"));
   }
 
   let commandEntry = this._commandRegistry.commands[argv[1]];

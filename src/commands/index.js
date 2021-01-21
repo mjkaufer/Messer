@@ -1,6 +1,7 @@
 module.exports = [
   require("./clear"),
   require("./contacts"),
+  require("./delaymessage"),
   require("./delete"),
   require("./file"),
   require("./help"),
@@ -15,4 +16,5 @@ module.exports = [
   require("./unlock"),
   require("./mute"),
   require("./unmute"),
+  require("./stop"),
 ];

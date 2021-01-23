@@ -83,6 +83,18 @@ Example
 
 Note: this will only work if you have received at least one message through Messer.
 
+#### `file`
+
+Sends a file attachment to a conversation thread. Can be used to send pictures in a chat.
+
+```bash
+file "<thread-name>" "<filepath>" <message>
+```
+
+Example
+
+- `file "Matthew" "/home/myname/Pictures/funny-cat.jpg" What do you think of my crazy cat?`
+
 #### `contacts`
 
 Lists all of your Facebook friends
